@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
+  faSearch,
   faAngleRight,
   faCircleCheck,
   faChartLine,
@@ -34,10 +35,17 @@ export default function OrdersDataTable() {
   const [activeTab, setActiveTab] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [search, setSearch] = useState("");
 
   const [filterPayment, setFilterPayment] = useState("all");
   const [sortAsc, setSortAsc] = useState(true);
   const ordersPerPage = 8;
+
+  // avrage order
+  const [averageData, setAverageData] = useState({
+    averageOrder: 0,
+    deliveryRate: "0%",
+  });
 
   // Fetch orders from API
   useEffect(() => {
@@ -90,11 +98,46 @@ export default function OrdersDataTable() {
     };
 
     fetchOrders();
+
+    // fetch average data
+    const fetchAverageData = async () => {
+      try {
+        const res = await axios.get(
+          "https://la-dolce-vita.onrender.com/api/order/orders-average"
+        );
+        console.log("Average API Response:", res.data); // ✅ log backend response
+
+        if (res.data.success) {
+          setAverageData({
+            averageOrder: res.data.averages.lastDay,
+            deliveryRate: res.data.deliverySuccessRate.lastDay,
+          });
+        }
+      } catch (err) {
+        console.error("Error fetching average data:", err);
+      }
+    };
+
+    fetchAverageData();
   }, []);
 
   // Filter + Sort + Tabs
   const filteredOrders = useMemo(() => {
     let result = [...orders];
+
+    // console.log("Original orders:", orders);
+
+    // search functionality
+    if (search.trim()) {
+      const term = search.toLowerCase();
+      result = result.filter(
+        (c) =>
+          c.customer.toLowerCase().includes(term) ||
+          c.product.toLowerCase().includes(term) ||
+          c.shipping.toLowerCase().includes(term) ||
+          c.id.toString().includes(term)
+      );
+    }
 
     if (activeTab === "active") {
       result = result.filter(
@@ -117,7 +160,7 @@ export default function OrdersDataTable() {
     });
 
     return result;
-  }, [orders, activeTab, filterPayment, sortAsc]);
+  }, [orders, activeTab, filterPayment, sortAsc, search]);
 
   const totalPages = Math.ceil(filteredOrders.length / ordersPerPage);
   const currentOrders = filteredOrders.slice(
@@ -204,6 +247,24 @@ export default function OrdersDataTable() {
         </div>
       </div>
 
+      {/* search bar code */}
+      <div className="flex gap-2 mx-6 relative mt-5">
+        <FontAwesomeIcon
+          icon={faSearch}
+          className="absolute left-3 top-3 text-gray-400"
+        />
+        <input
+          type="text"
+          placeholder="Search"
+          value={search}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setCurrentPage(1);
+          }}
+          className="w-full pl-10 pr-4 py-2 rounded-md border border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+
       {/* Orders Table */}
       <div className="p-6 bg-gray-50 min-h-screen">
         <div className="grid grid-cols-12 gap-4">
@@ -226,7 +287,7 @@ export default function OrdersDataTable() {
               <tbody>
                 {currentOrders.length > 0 ? (
                   currentOrders.map((order, index) => (
-                    <tr key={order._id} className="border-b hover:bg-gray-50">
+                    <tr key={order.id} className="border-b hover:bg-gray-50">
                       <td className="py-3 px-4 font-semibold">{index + 1}</td>
                       <td className="py-3 px-4">{order.customer}</td>
                       <td className="py-3 px-4">{order.product}</td>
@@ -306,39 +367,42 @@ export default function OrdersDataTable() {
               </button>
             </div>
 
-           <div className="grid grid-cols-2 lg:w-3xl gap-6 mt-16 mx-auto">
-      {/* TikTok Live Event Card */}
-      <div className="bg-white rounded-lg shadow p-6 border">
-        <h3 className="font-semibold text-gray-800">TikTok Live Event</h3>
-        <div className="flex gap-8 mt-6 text-sm font-medium text-gray-700">
-          <button className="hover:text-black">Day</button>
-          <button className="hover:text-black">Week</button>
-          <button className="hover:text-black">Month</button>
-        </div>
-      </div>
+            <div className="grid grid-cols-2 lg:w-3xl gap-6 mt-16 mx-auto">
+              {/* TikTok Live Event Card */}
+              <div className="bg-white rounded-lg shadow p-6 border">
+                <h3 className="font-semibold text-gray-800">
+                  TikTok Live Event
+                </h3>
+                <div className="flex gap-8 mt-6 text-sm font-medium text-gray-700">
+                  <button className="hover:text-black">Day</button>
+                  <button className="hover:text-black">Week</button>
+                  <button className="hover:text-black">Month</button>
+                </div>
+              </div>
 
-      {/* Average Order Value Card */}
-      <div className="bg-white rounded-lg shadow p-6 border flex items-center justify-between">
-        {/* Left Section */}
-        <div>
-          <h3 className="font-semibold text-gray-800">Average Order value</h3>
-          <p className="text-2xl font-bold mt-2">€28</p>
-          <p className="text-gray-600 text-sm">Average Order value</p>
-        </div>
+              {/* Average Order Value Card */}
+              <div className="bg-white rounded-lg shadow p-6 border flex items-center justify-between">
+                {/* Left Section */}
+                <div>
+                  <h3 className="font-semibold text-sm text-gray-800 mb-2">
+                    Average Order value
+                  </h3>
+                  <p className="text-2xl font-bold mt-2">€{averageData.averageOrder}</p>
+                  <p className="text-gray-600 text-sm mt-2">Average Order value</p>
+                </div>
 
-        {/* Divider */}
-        <div className="w-px bg-gray-300 h-16 mx-6"></div>
+                {/* Divider */}
+                <div className="w-px bg-gray-300 h-16 mx-6"></div>
 
-        {/* Right Section */}
-        <div className="text-sm text-gray-700">
-          <p className="font-medium">Delivery status</p>
-          <p className="mt-1">
-            Delivered : <span className="font-semibold">75%</span>
-          </p>
-        </div>
-      </div>
-    </div>
-
+                {/* Right Section */}
+                <div className="text-sm text-gray-700">
+                  <p className="font-medium">Delivery status</p>
+                  <p className="mt-8">
+                    Delivered : <span className="font-semibold">{averageData.deliveryRate}</span>
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Right Panel */}
@@ -346,7 +410,7 @@ export default function OrdersDataTable() {
             <div className="col-span-3 bg-white rounded-lg shadow p-6 transition-all duration-300">
               <div className="flex justify-between items-center border-b pb-3">
                 <h2 className="text-md font-medium">
-                  Order {selectedOrder.id}        
+                  Order {selectedOrder.id}
                 </h2>
                 <button
                   className="underline"

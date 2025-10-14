@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { data, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
+  faSearch,
   faAngleRight,
   faArrowLeft,
   faArrowRight,
@@ -25,54 +26,53 @@ export default function TiktokLiveTable() {
   const [selectAll, setSelectAll] = useState(false);
 
   const [showFilter, setShowFilter] = useState(false);
+  const [search, setSearch] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("All");
   const [sortAsc, setSortAsc] = useState(true);
 
   const itemsPerPage = 10;
 
   // ---- Fetch live events ----
- useEffect(() => {
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      const res = await axios.get(
-        "https://la-dolce-vita.onrender.com/api/event/event-list"
-      );
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const res = await axios.get(
+          "https://la-dolce-vita.onrender.com/api/event/event-list"
+        );
 
-      const eventsArray = res.data.data || [];
-      console.log("API Response:", res.data);
+        const eventsArray = res.data.data || [];
+        console.log("API Response:", res.data);
 
-      // Map the API response to your table format
-      const formatted = eventsArray.map((item) => ({
-        id: item._id,
-        name: item.eventDetails?.eventName || "N/A",
-        sessionID: item.eventDetails?.sessionID || "N/A",
-        start: item.eventDetails?.startDateTime
-          ? new Date(item.eventDetails.startDateTime).toLocaleString()
-          : "N/A",
-        end: item.eventDetails?.endDateTime
-          ? new Date(item.eventDetails.endDateTime).toLocaleString()
-          : "N/A",
-        // status: item.eventDetails?.status.toUpperCase(0,1) || "Inactive",
-        status: item.eventDetails?.status
-    ? item.eventDetails.status.charAt(0).toUpperCase() + item.eventDetails.status.slice(1).toLowerCase()
-    : "Inactive",
+        // Map the API response to your table format
+        const formatted = eventsArray.map((item) => ({
+          id: item._id,
+          name: item.eventDetails?.eventName || "N/A",
+          sessionID: item.eventDetails?.sessionID || "N/A",
+          start: item.eventDetails?.startDateTime
+            ? new Date(item.eventDetails.startDateTime).toLocaleString()
+            : "N/A",
+          end: item.eventDetails?.endDateTime
+            ? new Date(item.eventDetails.endDateTime).toLocaleString()
+            : "N/A",
+          // status: item.eventDetails?.status.toUpperCase(0,1) || "Inactive",
+          status: item.eventDetails?.status
+            ? item.eventDetails.status.charAt(0).toUpperCase() +
+              item.eventDetails.status.slice(1).toLowerCase()
+            : "Inactive",
+        }));
 
-      }));
+        setLiveData(formatted);
+      } catch (err) {
+        console.error("API Error:", err);
+        setError("Failed to fetch live events");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-      setLiveData(formatted);
-    } catch (err) {
-      console.error("API Error:", err);
-      setError("Failed to fetch live events");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  fetchData();
-}, []);
-
-
+    fetchData();
+  }, []);
 
   if (loading) return <p className="p-6">Loading live events...</p>;
   if (error) return <p className="p-6 text-red-500">{error}</p>;
@@ -80,12 +80,23 @@ export default function TiktokLiveTable() {
   // ---- Filtering Logic ----
   let tabFilteredData = liveData;
   if (activeTab === "active")
-    tabFilteredData = liveData.filter((e) => e.status === "Active");
+    tabFilteredData = liveData.filter((e) => e.status === "Active")
+
+    // ✅ Search logic (fixed)
+  if (search.trim()) {
+    tabFilteredData = tabFilteredData.filter(
+      (c) =>
+        c.name.toLowerCase().includes(search.toLowerCase()) ||
+        c.sessionID.toLowerCase().includes(search.toLowerCase()) ||
+        c.id.toString().includes(search)
+    );
+  }
 
   const filteredData =
     selectedStatus !== "All"
       ? tabFilteredData.filter((e) => e.status === selectedStatus)
       : tabFilteredData;
+
 
   // ---- Sorting Logic ----
   const sortedData = [...filteredData].sort((a, b) =>
@@ -207,6 +218,24 @@ export default function TiktokLiveTable() {
         </div>
       </div>
 
+      {/* search bar code */}
+      <div className="flex gap-2 mx-6 relative mt-5">
+        <FontAwesomeIcon
+          icon={faSearch}
+          className="absolute left-3 top-3 text-gray-400"
+        />
+        <input
+          type="text"
+          placeholder="Search"
+          value={search}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setCurrentPage(1);
+          }}
+          className="w-full pl-10 pr-4 py-2 rounded-md border border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+
       {/* Table */}
       <div className="p-6">
         <div className="overflow-x-auto rounded-lg">
@@ -214,7 +243,11 @@ export default function TiktokLiveTable() {
             <thead className="border-b">
               <tr className="text-left">
                 <th className="p-3">
-                  <input type="checkbox" checked={selectAll} onChange={handleSelectAll} />
+                  <input
+                    type="checkbox"
+                    checked={selectAll}
+                    onChange={handleSelectAll}
+                  />
                 </th>
                 <th className="p-3">Event Name</th>
                 <th className="p-3">Session ID</th>
@@ -239,14 +272,22 @@ export default function TiktokLiveTable() {
                     <td className="p-3">{item.start}</td>
                     <td className="p-3">{item.end}</td>
                     <td className="p-3">
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusStyle(item.status)}`}>
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusStyle(
+                          item.status
+                        )}`}
+                      >
                         {item.status}
                       </span>
                     </td>
                     <td className="p-3 text-right">
-                  <button onClick={() => navigate(`/live-event-detail/${item.id}`)}>
-                    {/* onClick={() => navigate(`/live-event-detail/${eventId}`)} */}
-                    {/* onClick={() => navigate("/live-event-detail")} */}
+                      <button
+                        onClick={() =>
+                          navigate(`/live-event-detail/${item.id}`)
+                        }
+                      >
+                        {/* onClick={() => navigate(`/live-event-detail/${eventId}`)} */}
+                        {/* onClick={() => navigate("/live-event-detail")} */}
                         <FontAwesomeIcon icon={faAngleRight} />
                       </button>
                     </td>
@@ -277,7 +318,9 @@ export default function TiktokLiveTable() {
             <button
               key={index}
               className={`px-3 py-1 border rounded ${
-                currentPage === index + 1 ? "bg-black text-white" : "bg-white text-black"
+                currentPage === index + 1
+                  ? "bg-black text-white"
+                  : "bg-white text-black"
               }`}
               onClick={() => setCurrentPage(index + 1)}
             >
@@ -297,5 +340,3 @@ export default function TiktokLiveTable() {
     </div>
   );
 }
-
-

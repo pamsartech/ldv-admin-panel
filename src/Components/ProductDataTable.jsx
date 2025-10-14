@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
+  faSearch,
   faTrash,
   faChevronLeft,
   faChevronRight,
@@ -23,10 +24,11 @@ export default function ProductTable() {
 
   // image helper function
   const getImageUrl = (img) => {
-  if (!img) return "/placeholder-image.png"; // fallback image
-  return img.startsWith("http") ? img : `https://la-dolce-vita.onrender.com${img}`;
-};
-
+    if (!img) return "/placeholder-image.png"; // fallback image
+    return img.startsWith("http")
+      ? img
+      : `https://la-dolce-vita.onrender.com${img}`;
+  };
 
   // 🔹 UI State
   const [activeTab, setActiveTab] = useState("all");
@@ -35,6 +37,7 @@ export default function ProductTable() {
 
   const [showFilter, setShowFilter] = useState(false);
   const [showSort, setShowSort] = useState(false);
+  const [search, setSearch] = useState("");
 
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [sortOrder, setSortOrder] = useState("asc");
@@ -49,7 +52,7 @@ export default function ProductTable() {
         const res = await axios.get(
           "https://la-dolce-vita.onrender.com/api/product/product-list"
         );
-
+        // console.log(res.data);
         if (res.data && res.data.data) {
           setProducts(res.data.data);
         } else {
@@ -61,7 +64,6 @@ export default function ProductTable() {
         setLoading(false);
       }
     };
-   
 
     fetchProducts();
   }, []);
@@ -72,6 +74,19 @@ export default function ProductTable() {
     filteredProducts = filteredProducts.filter((p) => p.status === "active");
   } else if (activeTab === "archived") {
     filteredProducts = filteredProducts.filter((p) => p.status === "archived");
+  }
+
+  
+  // search logic
+  if (search.trim()) {
+    const term = search.toLowerCase();
+    filteredProducts = filteredProducts.filter(
+      (p) =>
+        (p.productName && p.productName.toLowerCase().includes(term)) ||
+        (p.productCode && p.productCode.toLowerCase().includes(term)) ||
+        (p.category && p.category.toLowerCase().includes(term)) ||
+        (p._id && p._id.toLowerCase().includes(term))
+    );
   }
 
   // 🔹 Filter by Category
@@ -230,6 +245,24 @@ export default function ProductTable() {
         </div>
       </div>
 
+      {/* search bar code */}
+      <div className="flex gap-2 mx-6 relative mt-5">
+        <FontAwesomeIcon
+          icon={faSearch}
+          className="absolute left-3 top-3 text-gray-400"
+        />
+        <input
+          type="text"
+          placeholder="Search"
+          value={search}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setCurrentPage(1);
+          }}
+          className="w-full pl-10 pr-4 py-2 rounded-md border border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+
       {/* Loading / Error */}
       {loading ? (
         <p className="text-center py-6">Loading products...</p>
@@ -286,9 +319,6 @@ export default function ProductTable() {
                       alt={item.productName}
                       className="w-10 h-10 rounded-md object-cover border"
                     />
-
-                
-
                   </td>
                   <td className="p-3">{item.productName}</td>
                   <td className="p-3">{item.price}</td>
@@ -364,5 +394,3 @@ export default function ProductTable() {
     </div>
   );
 }
-
-

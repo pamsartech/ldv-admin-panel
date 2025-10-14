@@ -41,15 +41,6 @@ import CreateLiveEvent from "./Pages/TikTok-Live-Session/CreateLiveEvent";
 import EventDetail from "./Pages/TikTok-Live-Session/EventDetail";
 import UpdateEvent from "./Pages/TikTok-Live-Session/UpdateEvent";
 
-// home page routes
-import Home from "./Landing/Home";
-import PurchaseStep1 from "./Landing/Purchase-Steps/PurchaseStep1";
-import PurchaseStep2 from "./Landing/Purchase-Steps/PurchaseStep2";
-import CreateAccount from "./Landing/Purchase-Steps/CreateAccount";
-import PurchaseStep3 from "./Landing/Purchase-Steps/PurchaseStep3";
-import PurchaseStep4 from "./Landing/Purchase-Steps/PurchaseStep4";
-import Navigation from "./Pages/Navigation";
-
 
 function App() {
   return (
