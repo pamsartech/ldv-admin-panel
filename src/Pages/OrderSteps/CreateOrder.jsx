@@ -113,6 +113,7 @@ const CreateOrder = () => {
       paymentStatus,
       shippingMethod,
       shippingStatus,
+      orderTotal : total
     };
 
     console.log("📤 Sending order:", payload);
@@ -120,7 +121,7 @@ const CreateOrder = () => {
     try {
       const res = await axios.post(
         "https://la-dolce-vita.onrender.com/api/order/create-order",
-        payload
+        payload, { headers: { "Content-Type": "application/json" } }
       );
       console.log("✅ Order created:", res.data);
       if (res.data?.success || res.status === 200) {
@@ -413,9 +414,8 @@ const CreateOrder = () => {
               className="w-full rounded-lg border px-3 py-2 text-sm"
             >
               <option value="">Select Payment method</option>
-              <option>Credit Card</option>
+              <option>Stripe</option>
               <option>Paypal</option>
-              <option>Bank Transfer</option>
             </select>
             {errors.paymentMethod && (
               <p className="text-red-500 text-sm">{errors.paymentMethod}</p>

@@ -328,7 +328,7 @@ export default function ProductTable() {
                   <td className="p-3">{item.color}</td>
                   <td className="p-3 flex gap-4 justify-center">
                     <button className="text-gray-500 hover:text-gray-700">
-                      <FontAwesomeIcon icon={faTrash} />
+                      {/* <FontAwesomeIcon icon={faTrash} /> */}
                     </button>
                     <button
                       onClick={() => navigate(`/view-product/${item._id}`)}

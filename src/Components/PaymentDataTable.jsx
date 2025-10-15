@@ -285,7 +285,7 @@ export default function PaymentDataTable() {
                         statusStyles[p.status]
                       }`}
                     >
-                      <FontAwesomeIcon icon={statusIcons[p.status]} />{" "}
+                      {/* <FontAwesomeIcon icon={statusIcons[p.status]} /> */}
                       {p.status}
                     </span>
                   </td>

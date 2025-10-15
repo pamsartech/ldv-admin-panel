@@ -177,12 +177,37 @@ const ViewProduct = () => {
             </div>
 
             {/* Colours */}
-            <div>
+            {/* <div>
               <span className="block text-sm font-semibold mb-2">Colour</span>
               <div className="flex gap-3">
                 <span className="px-3 py-1 rounded-lg border border-gray-300">
                   {product.color}
                 </span>
+              </div>
+            </div> */}
+
+            {/* Colors */}
+            <div className="mt-3">
+              <span className="text-sm font-semibold mb-2 ">Color:</span>
+              <div className="mt-2 flex flex-wrap gap-4">
+                {Array.isArray(product.color) ? (
+                  product.color.map((c, i) => (
+                    <div key={i} className="flex flex-col items-center">
+                      <span
+                        className="w-6 h-6 rounded-full border border-gray-300 cursor-pointer"
+                        style={{ backgroundColor: c }}
+                      ></span>
+                      <span className="text-xs text-gray-600 mt-1">{c}</span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="flex flex-col items-center">
+                    <span
+                      className="w-6 h-6 rounded-full border border-gray-400 cursor-pointer"
+                      style={{ backgroundColor: product.color }}
+                    ></span>
+                  </div>
+                )}
               </div>
             </div>
 

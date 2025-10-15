@@ -71,6 +71,7 @@ const ViewCustomer = () => {
 
         // Map API data to component state
         setCustomer({
+          _id: data._id,  //for fetching id
           name: data.customerName,
           email: data.email,
           status: data.isActive ? "Active" : "Inactive",

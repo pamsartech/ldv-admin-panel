@@ -168,7 +168,7 @@ function AddProductStep2({ formData, setFormData, prevStep, nextStep }) {
             </div>
 
             {/* Size Chart Upload (optional, so no required) */}
-            <div>
+            {/* <div>
               <label
                 htmlFor="sizeGuideUpload"
                 className="flex items-center gap-2 px-4 py-2 rounded-lg border font-medium cursor-pointer hover:bg-gray-100 transition"
@@ -185,7 +185,7 @@ function AddProductStep2({ formData, setFormData, prevStep, nextStep }) {
               {formData.sizeGuideFile && (
                 <div className="mt-2 text-sm text-gray-600">{formData.sizeGuideFile.name}</div>
               )}
-            </div>
+            </div> */}
           </div>
 
           {/* Right column */}

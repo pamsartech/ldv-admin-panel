@@ -1,6 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 // import { BrowserRouter as Router } from "react-router-dom";
-// import HomeRoutes from "./Routers/HomeRouter";
 // import DashboardRoutes from "./Routers/DashboardRouter";
 
 
@@ -49,18 +48,7 @@ function App() {
 
        
 
-      {/* this is home page navigation  */}
-      {/* <Router>
-        <Routes>
-           <Route path="/" element={ <Home /> } />
-           <Route path="/choose-item/step-1" element={ <PurchaseStep1 /> } />
-           <Route path="/choose-item/step-2" element={ <PurchaseStep2 /> } />
-           <Route path="/create-account"    element={ <CreateAccount /> } />
-           <Route path="/choose-item/step-3" element={ <PurchaseStep3 /> } />
-           <Route path="/choose-item/step-4" element={ <PurchaseStep4 /> } />
-          
-        </Routes>
-      </Router> */}
+     
 
        {/* login routers */}
        {/* <Router>
