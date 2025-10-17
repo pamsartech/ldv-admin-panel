@@ -208,9 +208,9 @@ const UpdateOrder = () => {
                   className="w-full rounded-xl border border-gray-300 px-2 py-2 text-sm"
                 >
                   <option value="">Select product</option>
-                  <option>Product A</option>
-                  <option>Product B</option>
-                  <option>Product C</option>
+                  <option>Asus</option>
+                  <option>Adidas Backpack</option>
+                  <option>Nike Air Max 2024</option>
                 </select>
               </div>
               <div className="md:col-span-1 text-center">
@@ -258,10 +258,8 @@ const UpdateOrder = () => {
               className="w-full rounded-lg border border-gray-400 px-3 py-2 text-sm"
             >
               <option value="">Select Payment method</option>
-              <option>Credit Card</option>
+              <option>Stripe</option>
               <option>Paypal</option>
-              <option>Bank Transfer</option>
-              <option>UPI</option>
             </select>
           </div>
           <div>

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
+  faSearch,
   faAngleRight,
   faCircleCheck,
   faChartLine,
@@ -32,13 +33,14 @@ export default function OrdersDataTable() {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [filterPayment, setFilterPayment] = useState("all");
   const [sortAsc, setSortAsc] = useState(true);
+  const [search, setSearch] = useState("");
   const ordersPerPage = 8;
 
   // avrage order
-    const [averageData, setAverageData] = useState({
-      averageOrder: 0,
-      deliveryRate: "0%",
-    });
+  const [averageData, setAverageData] = useState({
+    averageOrder: 0,
+    deliveryRate: "0%",
+  });
 
   // Fetch orders from API
   useEffect(() => {
@@ -49,6 +51,7 @@ export default function OrdersDataTable() {
         const response = await axios.get(
           "https://la-dolce-vita.onrender.com/api/order/order-list"
         );
+        console.log("Order table data", response.data);
         // Adjust this based on the actual API shape
         const apiOrders = response.data.orders || response.data.data || [];
         console.log("API Response:", response.data);
@@ -68,6 +71,7 @@ export default function OrdersDataTable() {
               : 0,
           date: o.createdAt || "",
         }));
+
         // const formattedOrders = apiOrders.map((o) => ({
         //   id: o._id || o.id || "N/A",
         //   customer: o.customerName || o.customer || "Unknown",
@@ -87,13 +91,13 @@ export default function OrdersDataTable() {
     };
     fetchOrders();
 
-     // fetch average data
+    // fetch average data
     const fetchAverageData = async () => {
       try {
         const res = await axios.get(
           "https://la-dolce-vita.onrender.com/api/order/orders-average"
         );
-        console.log("Average API Response:", res.data); // ✅ log backend response
+        // console.log("Average API Response:", res.data); // ✅ log backend response
 
         if (res.data.success) {
           setAverageData({
@@ -111,6 +115,18 @@ export default function OrdersDataTable() {
   // Filter + Sort + Tabs
   const filteredOrders = useMemo(() => {
     let result = [...orders];
+
+    if (search.trim()) {
+      const lowerSearch = search.toLowerCase();
+      result = result.filter(
+        (o) =>
+          o.customer.toLowerCase().includes(lowerSearch) ||
+          o.product.toLowerCase().includes(lowerSearch) ||
+          // o.shipping.toLowerCase().includes(lowerSearch) || 
+          o.id.toString().toLowerCase().includes(lowerSearch)
+      );
+    }
+
     if (activeTab === "active") {
       result = result.filter(
         (o) => o.payment === "Pending" || o.shipping === "Shipped"
@@ -129,7 +145,7 @@ export default function OrdersDataTable() {
       return sortAsc ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
     });
     return result;
-  }, [orders, activeTab, filterPayment, sortAsc]);
+  }, [orders, activeTab, filterPayment, sortAsc, search]);
   const totalPages = Math.ceil(filteredOrders.length / ordersPerPage);
   const currentOrders = filteredOrders.slice(
     (currentPage - 1) * ordersPerPage,
@@ -208,6 +224,26 @@ export default function OrdersDataTable() {
           </button>
         </div>
       </div>
+
+      {/* Search functionality */}
+      {/* search bar code */}
+      <div className="flex gap-2 mx-6 relative mt-5">
+        <FontAwesomeIcon
+          icon={faSearch}
+          className="absolute left-3 top-3 text-gray-400"
+        />
+        <input
+          type="text"
+          placeholder="Search"
+          value={search}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setCurrentPage(1);
+          }}
+          className="w-full pl-10 pr-4 py-2 rounded-md border border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+
       {/* Orders Table */}
       <div className="p-6 bg-gray-50 min-h-screen">
         <div className="grid grid-cols-12 gap-4">
@@ -307,7 +343,6 @@ export default function OrdersDataTable() {
               </button>
             </div>
             <div className="grid grid-cols-2 lg:w-3xl gap-6 mt-16 mx-auto">
-              
               {/* TikTok Live Event Card */}
               <div className="bg-white rounded-lg shadow p-6 border">
                 <h3 className="font-semibold text-gray-800">
@@ -327,8 +362,12 @@ export default function OrdersDataTable() {
                   <h3 className="font-semibold text-sm text-gray-800 mb-2">
                     Average Order value
                   </h3>
-                  <p className="text-2xl font-bold mt-2">€{averageData.averageOrder}</p>
-                  <p className="text-gray-600 text-sm mt-2">Average Order value</p>
+                  <p className="text-2xl font-bold mt-2">
+                    €{averageData.averageOrder}
+                  </p>
+                  <p className="text-gray-600 text-sm mt-2">
+                    Average Order value
+                  </p>
                 </div>
 
                 {/* Divider */}
@@ -338,11 +377,13 @@ export default function OrdersDataTable() {
                 <div className="text-sm text-gray-700">
                   <p className="font-medium">Delivery status</p>
                   <p className="mt-8">
-                    Delivered : <span className="font-semibold">{averageData.deliveryRate}</span>
+                    Delivered :{" "}
+                    <span className="font-semibold">
+                      {averageData.deliveryRate}
+                    </span>
                   </p>
                 </div>
               </div>
-
             </div>
           </div>
           {/* Right Panel  */}
@@ -369,52 +410,91 @@ export default function OrdersDataTable() {
               </div>
               {/* Order Info */}
               <div className="mt-4 text-xs text-gray-700 space-y-2 ">
-                <p><strong>Order ID:</strong> {selectedOrder.id}</p>
-                <p><strong>Date:</strong> {selectedOrder.date || "20/08/2025"}  </p>
-                <p><strong>Order amount:</strong> € {selectedOrder.amount || "28.23"}  </p>
-                <p><strong>Status:</strong> {selectedOrder.payment}</p>
+                <p>
+                  <strong>Order ID:</strong> {selectedOrder.id}
+                </p>
+                <p>
+                  <strong>Date:</strong> {selectedOrder.date || "20/08/2025"}{" "}
+                </p>
+                <p>
+                  <strong>Order amount:</strong> €{" "}
+                  {selectedOrder.amount || "28.23"}{" "}
+                </p>
+                <p>
+                  <strong>Status:</strong> {selectedOrder.payment}
+                </p>
               </div>
-                <hr className="my-4" />
-          
+              <hr className="my-4" />
+
               {/* Customer Info */}
               <div className="text-xs text-gray-700 space-y-2">
-                <h3 className="font-bold text-sm text-gray-800">Customer Info</h3>
-                <p> <strong>Name:</strong>  {selectedOrder.customer} Smith</p>
-                <p> <strong>Email:</strong>  {selectedOrder.customer.toLowerCase()}@gmail.com</p>
-                <p> <strong>Phone:</strong>  9238972921</p>
+                <h3 className="font-bold text-sm text-gray-800">
+                  Customer Info
+                </h3>
+                <p>
+                  {" "}
+                  <strong>Name:</strong> {selectedOrder.customer} Smith
+                </p>
+                <p>
+                  {" "}
+                  <strong>Email:</strong> {selectedOrder.customer.toLowerCase()}
+                  @gmail.com
+                </p>
+                <p>
+                  {" "}
+                  <strong>Phone:</strong> 9238972921
+                </p>
               </div>
-          
+
               <hr className="my-4" />
-               {/* Payment Info */}
+              {/* Payment Info */}
               <div className="text-xs text-gray-700 space-y-2">
-                <h3 className="font-bold text-sm text-gray-800">Payment Info</h3>
-                <p> <strong>Method:</strong>  Stripe</p>
-                <p> <strong>Status: </strong> {selectedOrder.payment}</p>
-                <p> <strong>Transaction ID:</strong>  21e71378182221</p>
+                <h3 className="font-bold text-sm text-gray-800">
+                  Payment Info
+                </h3>
+                <p>
+                  {" "}
+                  <strong>Method:</strong> Stripe
+                </p>
+                <p>
+                  {" "}
+                  <strong>Status: </strong> {selectedOrder.payment}
+                </p>
+                <p>
+                  {" "}
+                  <strong>Transaction ID:</strong> 21e71378182221
+                </p>
               </div>
-          
+
               <hr className="my-4" />
-          
+
               {/* TikTok Live Ref */}
               <div className="text-xs text-gray-700 space-y-2">
-                <h3 className="font-bold text-sm text-gray-800">TikTok Live Ref</h3>
-                <p> <strong>Session name:</strong>  Clothing code </p>
+                <h3 className="font-bold text-sm text-gray-800">
+                  TikTok Live Ref
+                </h3>
+                <p>
+                  {" "}
+                  <strong>Session name:</strong> Clothing code{" "}
+                </p>
               </div>
-          
+
               <hr className="my-4" />
-               {/* Products Sold */}
+              {/* Products Sold */}
               <div>
                 <h3 className="font-bold text-gray-800">Products Sold</h3>
                 <div className="space-y-2 mt-2">
                   {[1, 2, 3].map((_, i) => (
-                    <div key={i} className="flex items-center justify-between text-sm">
+                    <div
+                      key={i}
+                      className="flex items-center justify-between text-sm"
+                    >
                       <div className="flex items-center gap-2">
                         <img
                           src="https://m.media-amazon.com/images/I/81+uJH8pxYL._UY1100_.jpg"
                           alt="Product"
                           className="w-8 h-8 border-1 rounded-lg border-gray-400  object-contain "
                         />
-                        
                       </div>
                       <span className="text-xs ">Denim shirt</span>
                       <span className="text-xs ">€13.53</span>
@@ -422,14 +502,28 @@ export default function OrdersDataTable() {
                   ))}
                 </div>
               </div>
-          
+
               <hr className="my-4" />
-          
+
               {/* Totals */}
               <div className="text-sm text-end  text-gray-700 space-y-1">
-                <p> <strong className="px-1 font-semibold">Subtotal:</strong>  €28.23</p>
-                <p> <strong className="px-1 font-semibold"> Shipping : </strong>  Free</p>
-                <p>  <strong className="px-1 font-semibold">Total:</strong>  €28.23</p>
+                <p>
+                  {" "}
+                  <strong className="px-1 font-semibold">Subtotal:</strong>{" "}
+                  €28.23
+                </p>
+                <p>
+                  {" "}
+                  <strong className="px-1 font-semibold">
+                    {" "}
+                    Shipping :{" "}
+                  </strong>{" "}
+                  Free
+                </p>
+                <p>
+                  {" "}
+                  <strong className="px-1 font-semibold">Total:</strong> €28.23
+                </p>
               </div>
             </div>
           )}
@@ -438,15 +532,3 @@ export default function OrdersDataTable() {
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-

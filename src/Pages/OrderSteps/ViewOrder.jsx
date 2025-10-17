@@ -41,6 +41,7 @@ export default function ViewOrder() {
         const response = await axios.get(
           `https://la-dolce-vita.onrender.com/api/order/order-details/${orderId}`
         );
+        console.log('Veiw order page', response.data)
         if (response.data.success && response.data.data) {
           setOrder(response.data.data);
           setOrderStatus(response.data.data.shippingStatus || "Pending");

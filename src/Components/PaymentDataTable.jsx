@@ -57,7 +57,7 @@ export default function PaymentDataTable() {
       .get("https://la-dolce-vita.onrender.com/api/payment/payment-list")
       .then((res) => {
         const paymentsArray = res.data.data || [];
-        console.log("API Response:", res.data);
+        console.log("Payment list Response:", res.data);
 
         const formatted = paymentsArray.map((item) => ({
           id: item._id,

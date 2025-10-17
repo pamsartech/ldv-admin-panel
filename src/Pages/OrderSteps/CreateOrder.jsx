@@ -113,10 +113,11 @@ const CreateOrder = () => {
       paymentStatus,
       shippingMethod,
       shippingStatus,
-      orderTotal : total
+      // orderTotal : total
     };
 
     console.log("📤 Sending order:", payload);
+    console.log('orderItem', payload.orderItems)
 
     try {
       const res = await axios.post(
@@ -124,6 +125,7 @@ const CreateOrder = () => {
         payload, { headers: { "Content-Type": "application/json" } }
       );
       console.log("✅ Order created:", res.data);
+
       if (res.data?.success || res.status === 200) {
         setPopupMessage("Order created successfully!");
         setShowPopup(true);
@@ -132,7 +134,7 @@ const CreateOrder = () => {
           navigate("/Orders");
         }, 1500);
       } else {
-        setPopupMessage(res.data.message || "Failed to create order ❌");
+        setPopupMessage(res.data.message || "Failed to create order");
         setShowPopup(true);
       }
     } catch (err) {
@@ -317,9 +319,9 @@ const CreateOrder = () => {
                   className="w-full text-sm  rounded-xl border px-2 py-2"
                 >
                   <option value="">Select product</option>
-                  <option>Travel bag</option>
-                  <option>clothes</option>
-                  <option>boots</option>
+                  <option>Converse Chuck Taylor</option>
+                  <option>	Asus</option>
+                  <option>Nike Air Max 2024</option>
                 </select>
                 {errors[`product_${idx}`] && (
                   <p className="text-red-500 text-sm">
