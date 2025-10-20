@@ -14,7 +14,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
 
-export default function ProductTable() {
+export default function ProductTable({ selectedProducts, setSelectedProducts }) {
   const navigate = useNavigate();
 
   // 🔹 API Data
@@ -114,12 +114,13 @@ export default function ProductTable() {
   );
 
   // 🔹 Select all / row
-  const toggleSelectAll = (e) => {
-    if (e.target.checked) setSelected(currentProducts.map((p) => p._id));
-    else setSelected([]);
+   const toggleSelectAll = (e) => {
+    if (e.target.checked)
+      setSelectedProducts(currentProducts.map((p) => p._id));
+    else setSelectedProducts([]);
   };
   const toggleSelect = (id) => {
-    setSelected((prev) =>
+    setSelectedProducts((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
     );
   };
