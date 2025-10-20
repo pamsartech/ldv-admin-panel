@@ -86,7 +86,7 @@ function Products() {
 
   return (
     <div>
-      <Navbar heading="Product Management" />
+      <Navbar heading="Product Managements" />
 
       {/* my product panel */}
       <div className="flex items-center justify-between px-6 mt-5  pb-3">
