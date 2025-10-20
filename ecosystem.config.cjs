@@ -3,7 +3,7 @@ module.exports = {
         {
             name: "ldv-admin-prod",
             script: "serve",
-            args: "-s dist -l 4173",
+            args: ["-s", "dist", "-l", "4173"],
             cwd: "/var/www/ldv/prod/ldv-admin-panel",
             env: {
                 NODE_ENV: "production"
@@ -17,7 +17,7 @@ module.exports = {
         {
             name: "ldv-admin-dev",
             script: "serve",
-            args: "-s dist -l 5173",
+            args: ["-s", "dist", "-l", "5173"],
             cwd: "/var/www/ldv/dev/ldv-admin-panel",
             env: {
                 NODE_ENV: "development"
