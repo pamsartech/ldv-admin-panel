@@ -1,3 +1,401 @@
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faSearch,
+  faTrash,
+  faChevronLeft,
+  faChevronRight,
+  faAngleRight,
+  faBoxArchive,
+  faCircleCheck,
+  faChartLine,
+  faChevronDown,
+} from "@fortawesome/free-solid-svg-icons";
+import axios from "axios";
+
+export default function ProductTable({ selectedProducts, setSelectedProducts }) {
+  const navigate = useNavigate();
+
+  // 🔹 API Data
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  // image helper function
+  const getImageUrl = (img) => {
+    if (!img) return "/placeholder-image.png"; // fallback image
+    return img.startsWith("http")
+      ? img
+      : `https://la-dolce-vita.onrender.com${img}`;
+  };
+
+  // 🔹 UI State
+  const [activeTab, setActiveTab] = useState("all");
+  const [selected, setSelected] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const [showFilter, setShowFilter] = useState(false);
+  const [showSort, setShowSort] = useState(false);
+  const [search, setSearch] = useState("");
+
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [sortOrder, setSortOrder] = useState("asc");
+
+  const rowsPerPage = 7;
+
+  // 🔹 Fetch Products API
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const res = await axios.get(
+          "https://la-dolce-vita.onrender.com/api/product/product-list"
+        );
+        // console.log(res.data);
+        if (res.data && res.data.data) {
+          setProducts(res.data.data);
+        } else {
+          setError("Failed to fetch products");
+        }
+      } catch (err) {
+        setError("Error fetching products");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  // 🔹 Filter by Tab (status)
+  let filteredProducts = [...products];
+  if (activeTab === "active") {
+    filteredProducts = filteredProducts.filter((p) => p.status === "active");
+  } else if (activeTab === "archived") {
+    filteredProducts = filteredProducts.filter((p) => p.status === "archived");
+  }
+
+  
+  // search logic
+  if (search.trim()) {
+    const term = search.toLowerCase();
+    filteredProducts = filteredProducts.filter(
+      (p) =>
+        (p.productName && p.productName.toLowerCase().includes(term)) ||
+        (p.productCode && p.productCode.toLowerCase().includes(term)) ||
+        (p.category && p.category.toLowerCase().includes(term)) ||
+        (p._id && p._id.toLowerCase().includes(term))
+    );
+  }
+
+  // 🔹 Filter by Category
+  filteredProducts =
+    selectedCategory === "All"
+      ? filteredProducts
+      : filteredProducts.filter((p) => p.category === selectedCategory);
+
+  // 🔹 Sort
+  filteredProducts =
+    sortOrder === "asc"
+      ? [...filteredProducts].sort((a, b) =>
+          (a.productName || "").localeCompare(b.productName || "")
+        )
+      : [...filteredProducts].sort((a, b) =>
+          (b.productName || "").localeCompare(a.productName || "")
+        );
+
+  // 🔹 Pagination
+  const totalPages = Math.ceil(filteredProducts.length / rowsPerPage);
+  const startIndex = (currentPage - 1) * rowsPerPage;
+  const currentProducts = filteredProducts.slice(
+    startIndex,
+    startIndex + rowsPerPage
+  );
+
+  // 🔹 Select all / row
+   const toggleSelectAll = (e) => {
+    if (e.target.checked)
+      setSelectedProducts(currentProducts.map((p) => p._id));
+    else setSelectedProducts([]);
+  };
+  const toggleSelect = (id) => {
+    setSelectedProducts((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  };
+  const allSelected =
+    currentProducts.length > 0 &&
+    currentProducts.every((p) => selected.includes(p._id));
+
+  return (
+    <div>
+      {/* Tabs & Filter/Sort */}
+      <div className="flex justify-between items-center border-2 border-gray-300 px-6 mt-5 rounded-md p-2 mx-6">
+        {/* Tabs */}
+        <div className="flex gap-6">
+          <button
+            onClick={() => {
+              setActiveTab("all");
+              setCurrentPage(1);
+            }}
+            className={`flex items-center gap-2 text-sm px-2 pb-1 ${
+              activeTab === "all"
+                ? "text-black font-medium border-b-2 border-black"
+                : "text-gray-600 hover:text-black"
+            }`}
+          >
+            <FontAwesomeIcon icon={faCircleCheck} /> All
+          </button>
+          <button
+            onClick={() => {
+              setActiveTab("active");
+              setCurrentPage(1);
+            }}
+            className={`flex items-center gap-2 text-sm px-2 pb-1 ${
+              activeTab === "active"
+                ? "text-black font-medium border-b-2 border-black"
+                : "text-gray-600 hover:text-black"
+            }`}
+          >
+            <FontAwesomeIcon icon={faChartLine} /> Active
+          </button>
+          <button
+            onClick={() => {
+              setActiveTab("archived");
+              setCurrentPage(1);
+            }}
+            className={`flex items-center gap-2 text-sm px-2 pb-1 ${
+              activeTab === "archived"
+                ? "text-black font-medium border-b-2 border-black"
+                : "text-gray-600 hover:text-black"
+            }`}
+          >
+            <FontAwesomeIcon icon={faBoxArchive} /> Archived
+          </button>
+        </div>
+
+        {/* Filter & Sort */}
+        <div className="flex gap-2 relative">
+          {/* Filter Dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => setShowFilter((prev) => !prev)}
+              className="flex items-center gap-2 border border-gray-400 px-3 py-1.5 rounded-md text-sm text-gray-900 hover:bg-gray-100 transition"
+            >
+              Filter
+              <FontAwesomeIcon
+                icon={faChevronDown}
+                className="ml-1 text-gray-600"
+              />
+            </button>
+            {showFilter && (
+              <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-300 rounded-md shadow-md z-50">
+                {["All", "Clothing", "Shoes", "Accessories"].map((cat) => (
+                  <div
+                    key={cat}
+                    onClick={() => {
+                      setSelectedCategory(cat);
+                      setCurrentPage(1);
+                      setShowFilter(false);
+                    }}
+                    className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+                  >
+                    {cat}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Sort Dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => setShowSort((prev) => !prev)}
+              className="flex items-center gap-2 border border-gray-400 px-3 py-1.5 rounded-md text-sm text-gray-900 hover:bg-gray-100 transition"
+            >
+              Sort
+              <FontAwesomeIcon
+                icon={faChevronDown}
+                className="ml-1 text-gray-600"
+              />
+            </button>
+            {showSort && (
+              <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-300 rounded-md shadow-md z-50">
+                <div
+                  onClick={() => {
+                    setSortOrder("asc");
+                    setShowSort(false);
+                  }}
+                  className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+                >
+                  A → Z
+                </div>
+                <div
+                  onClick={() => {
+                    setSortOrder("desc");
+                    setShowSort(false);
+                  }}
+                  className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+                >
+                  Z → A
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* search bar code */}
+      <div className="flex gap-2 mx-6 relative mt-5">
+        <FontAwesomeIcon
+          icon={faSearch}
+          className="absolute left-3 top-3 text-gray-400"
+        />
+        <input
+          type="text"
+          placeholder="Search"
+          value={search}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setCurrentPage(1);
+          }}
+          className="w-full pl-10 pr-4 py-2 rounded-md border border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+
+      {/* Loading / Error */}
+      {loading ? (
+        <p className="text-center py-6">Loading products...</p>
+      ) : error ? (
+        <p className="text-center py-6 text-red-500">{error}</p>
+      ) : (
+        <div className="overflow-x-auto border-gray-400 rounded-lg shadow bg-white mx-6 mt-5">
+          <table className="w-full text-sm text-left text-gray-700">
+            <thead className="bg-gray-50 text-gray-600 uppercase text-xs border-b">
+              <tr>
+                <th className="p-3">
+                  <input
+                    type="checkbox"
+                    checked={allSelected}
+                    onChange={toggleSelectAll}
+                    className="w-4 h-4 rounded border-gray-300 cursor-pointer"
+                  />
+                </th>
+                <th className="p-3">Image</th>
+                <th className="p-3">Product Name</th>
+                <th className="p-3">Price</th>
+                <th className="p-3">Category</th>
+                <th className="p-3">Product Code</th>
+                <th className="p-3">Size</th>
+                <th className="p-3">Color</th>
+                <th className="p-3 text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {currentProducts.map((item) => (
+                <tr
+                  key={item._id}
+                  className={`border-b hover:bg-gray-50 transition-colors ${
+                    selected.includes(item._id) ? "bg-gray-50" : ""
+                  }`}
+                >
+                  <td className="p-3">
+                    <input
+                      type="checkbox"
+                      checked={selected.includes(item._id)}
+                      onChange={() => toggleSelect(item._id)}
+                      className="w-4 h-4 rounded border-gray-300 cursor-pointer"
+                    />
+                  </td>
+                  <td className="p-3 flex items-center gap-3">
+                    {/* <img
+                      src={`https://la-dolce-vita.onrender.com${item.images[0]}`}
+                      alt={item.productName}
+                      className="w-10 h-10 rounded-md object-cover border"
+                    /> */}
+
+                    <img
+                      src={getImageUrl(item.images?.[0])}
+                      alt={item.productName}
+                      className="w-10 h-10 rounded-md object-cover border"
+                    />
+                  </td>
+                  <td className="p-3">{item.productName}</td>
+                  <td className="p-3">{item.price}</td>
+                  <td className="p-3">{item.category}</td>
+                  <td className="p-3">{item.productCode}</td>
+                  <td className="p-3">{item.size}</td>
+                  <td className="p-3">{item.color}</td>
+                  <td className="p-3 flex gap-4 justify-center">
+                    <button className="text-gray-500 hover:text-gray-700">
+                      {/* <FontAwesomeIcon icon={faTrash} /> */}
+                    </button>
+                    <button
+                      onClick={() => navigate(`/view-product/${item._id}`)}
+                      className="text-gray-600 hover:text-black"
+                    >
+                      <FontAwesomeIcon icon={faAngleRight} />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {/* Pagination */}
+          <div className="flex justify-between items-center p-3 text-sm text-gray-600 bg-gray-50 border-t">
+            <span className="text-gray-500">
+              Showing {startIndex + 1}–
+              {Math.min(startIndex + rowsPerPage, filteredProducts.length)} of{" "}
+              {filteredProducts.length}
+            </span>
+            <div className="flex gap-2 items-center">
+              <button
+                onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                disabled={currentPage === 1}
+                className={`px-3 py-1 border rounded flex items-center gap-1 ${
+                  currentPage === 1
+                    ? "text-gray-400 cursor-not-allowed"
+                    : "hover:bg-gray-100"
+                }`}
+              >
+                <FontAwesomeIcon icon={faChevronLeft} /> Previous
+              </button>
+              {[...Array(totalPages)].map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setCurrentPage(i + 1)}
+                  className={`px-3 py-1 border rounded ${
+                    currentPage === i + 1
+                      ? "bg-black text-white"
+                      : "hover:bg-gray-100"
+                  }`}
+                >
+                  {i + 1}
+                </button>
+              ))}
+              <button
+                onClick={() =>
+                  setCurrentPage((p) => Math.min(p + 1, totalPages))
+                }
+                disabled={currentPage === totalPages}
+                className={`px-3 py-1 border rounded flex items-center gap-1 ${
+                  currentPage === totalPages
+                    ? "text-gray-400 cursor-not-allowed"
+                    : "hover:bg-gray-100"
+                }`}
+              >
+                Next <FontAwesomeIcon icon={faChevronRight} />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 import { useEffect, useState } from "react";
 import Navbar from "../Components/Navbar";
 import TopButton from "../Components/TopButton";
@@ -57,32 +455,34 @@ function Products() {
     fetchRecentProducts();
   }, []);
 
-  // const products = [
-  //   {
-  //     img: "https://m.media-amazon.com/images/I/813K52JIyYL._UY1100_.jpg",
-  //     name: "Red Dress",
-  //     id: "202035",
-  //     sold: 688,
-  //   },
-  //   {
-  //     img: "https://rukminim2.flixcart.com/image/704/844/xif0q/hand-messenger-bag/7/n/0/exotic610-11-2-hb-610-handbag-exotic-8-5-original-imahc8zcygd8u2nv.jpeg?q=90&crop=false",
-  //     name: "Black Handbag",
-  //     id: "202045",
-  //     sold: 512,
-  //   },
-  //   {
-  //     img: "https://www.forevershoes.in/cdn/shop/files/LSD06481.jpg?v=1727959319",
-  //     name: "Beige Heels",
-  //     id: "202055",
-  //     sold: 450,
-  //   },
-  //   {
-  //     img: "https://assets.ajio.com/medias/sys_master/root/20240809/hNk9/66b5f1f31d763220fa6d0937/-473Wx593H-700274434-silver-MODEL.jpg",
-  //     name: "Silver Earrings",
-  //     id: "202075",
-  //     sold: 391,
-  //   },
-  // ];
+  // Export selected products
+  // const handleExportSelected = async () => {
+  //   if (selectedProducts.length === 0) {
+  //     alert("Please select at least one product to export");
+  //     return;
+  //   }
+
+  //   try {
+  //     // For backend, you can pass count as selected products length
+  //     const count = selectedProducts.length;
+
+  //     const res = await axios.get(
+  //       `https://la-dolce-vita.onrender.com/api/product/export?count=${count}`,
+  //       {
+  //         responseType: "blob", // Important
+  //       }
+  //     );
+
+  //     const blob = new Blob([res.data], {
+  //       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  //     });
+
+  //     saveAs(blob, `products_export_${Date.now()}.xlsx`);
+  //   } catch (error) {
+  //     console.error("Export failed", error);
+  //     alert("Failed to export products");
+  //   }
+  // };
 
   return (
     <div>
@@ -103,11 +503,13 @@ function Products() {
           </label>
 
           {/* Export Input (Button) */}
-          <label className="flex items-center gap-2 border border-gray-400 px-3 py-1.5 rounded-md text-sm text-gray-700 hover:bg-gray-100 transition cursor-pointer">
+          <button
+            className="flex items-center gap-2 border border-gray-400 px-3 py-1.5 rounded-md text-sm text-gray-700 hover:bg-gray-100 transition cursor-pointer"
+          >
             <FontAwesomeIcon icon={faUpload} className="text-gray-600" />
             Export
             <input type="file" accept=".jpg,.jpeg,.png" className="hidden" />
-          </label>
+          </button>
 
           {/* Add Product Button */}
           <button
@@ -120,7 +522,7 @@ function Products() {
         </div>
       </div>
 
-      <DataTable />
+      <DataTable/>
 
       {/* best selling and recently products section */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
@@ -140,7 +542,9 @@ function Products() {
                     <p className="font-medium">
                       {product.productCategory || "N/A"}
                     </p>
-                    <p className="text-sm text-gray-500">{product.productCode || 'N/A'}</p>
+                    <p className="text-sm text-gray-500">
+                      {product.productCode || "N/A"}
+                    </p>
                   </div>
                 </div>
                 <span className="font-semibold">
@@ -166,8 +570,13 @@ function Products() {
                     className=" w-10 h-10 border-1 rounded-lg border-gray-400"
                   />
                   <div>
-                    <p className="font-medium"> {product.productName || "N/A"}</p>
-                    <p className="text-sm text-gray-500">{product.productCode || "N/A"}</p>
+                    <p className="font-medium">
+                      {" "}
+                      {product.productName || "N/A"}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {product.productCode || "N/A"}
+                    </p>
                   </div>
                 </div>
                 <span className="font-semibold">₹{product.price || 0}</span>
@@ -181,3 +590,4 @@ function Products() {
 }
 
 export default Products;
+

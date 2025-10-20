@@ -1,29 +1,48 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useParams ,useLocation } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import Navbar from "../../Components/Navbar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faCreditCard, faXmark, faClock } from "@fortawesome/free-solid-svg-icons";
+import {
+  faArrowLeft,
+  faCreditCard,
+  faXmark,
+  faClock,
+} from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
 
 export default function UpdatePayment() {
-   const navigate = useNavigate();
+  const navigate = useNavigate();
   const { paymentId } = useParams();
   const location = useLocation();
 
+  // const [paymentData, setPaymentData] = useState({
+  //   _id: "", // backend payment/order id
+  //   userId: "", // backend userId
+  //   customerName: "",
+  //   email: "",
+  //   phoneNumber: "",
+  //   orderTotal: "",
+  //   transactionId: "",
+  //   paymentMethod: "",
+  //   paymentStatus: "Pending",
+  //   deliveryStatus: "Pending",
+  //   dateTime: "",
+  //   notes: "",
+  // });
+
   const [paymentData, setPaymentData] = useState({
-    customerName: "",
-    customerId: "",
-    email: "",
-    phone: "",
-    orderId: "",
-    transactionId: "",
-    amount: "",
-    paymentMethod: "",
-    paymentStatus: "Pending",
-    deliveryStatus: "Pending",
-    dateTime: "",
-    notes: "",
-  });
+  _id: "",              // backend payment id
+  userId: "",           // backend user id
+  customerName: "",
+  email: "",
+  phoneNumber: "",
+  orderTotal: 0,        // number
+  paymentMethod: "",
+  paymentStatus: "Pending",
+  shippingStatus: "Pending",
+  dateTime: "",         // ISO string
+  notes: "",
+});
 
   const [loading, setLoading] = useState(true);
 
@@ -33,40 +52,47 @@ export default function UpdatePayment() {
 
     if (prefillData) {
       setPaymentData({
-        customerName: prefillData.customerDetails.customerName,
-        customerId: prefillData.customerDetails.customerID,
-        email: prefillData.customerDetails.email,
-        phone: prefillData.customerDetails.phoneNumber,
-        orderId: prefillData.orderDetails.orderID,
-        transactionId: prefillData.orderDetails.transactionID,
-        amount: prefillData.orderDetails.amount,
-        paymentMethod: prefillData.orderDetails.paymentMethod,
-        paymentStatus: prefillData.orderDetails.paymentStatus,
-        deliveryStatus: prefillData.orderDetails.deliveryStatus,
-        dateTime: prefillData.orderDetails.date?.slice(0, 16) || "",
-        notes: prefillData.orderDetails.notes || "",
+        _id: prefillData._id,
+        customerName: prefillData.customerName,
+        userId: prefillData.userId,
+        email: prefillData.email,
+        phoneNumber: prefillData.phoneNumber,
+        orderTotal: prefillData.orderTotal || 0,
+        // transactionId: prefillData.stripeTransaction?.paymentIntentId || "",
+        // amount: prefillData.orderTotal,
+        paymentMethod: prefillData.paymentMethod,
+        paymentStatus: prefillData.paymentStatus,
+        shippingStatus: prefillData.shippingStatus,
+        dateTime: prefillData.createdAt
+          ? new Date(prefillData.createdAt).toISOString().slice(0, 16)
+          : "",
+        notes: prefillData.notes || "",
       });
       setLoading(false);
     } else {
       const fetchPayment = async () => {
         try {
           const res = await axios.get(
-            `https://la-dolce-vita.onrender.com/api/payment/update-payment/${paymentId}`
+            `http://dev-api.payonlive.com/api/payment/update-payment/${paymentId}`
           );
           const data = res.data.data;
           setPaymentData({
-            customerName: data.customerDetails.customerName,
-            customerId: data.customerDetails.customerID,
-            email: data.customerDetails.email,
-            phone: data.customerDetails.phoneNumber,
-            orderId: data.orderDetails.orderID,
-            transactionId: data.orderDetails.transactionID,
-            amount: data.orderDetails.amount,
-            paymentMethod: data.orderDetails.paymentMethod,
-            paymentStatus: data.orderDetails.paymentStatus,
-            deliveryStatus: data.orderDetails.deliveryStatus,
-            dateTime: data.orderDetails.date?.slice(0, 16) || "",
-            notes: data.orderDetails.notes || "",
+            _id: data._id,
+            userId: data.userId,
+            customerName: data.customerName,
+            customerId: data.userId,
+            email: data.email,
+            phoneNumber: data.phoneNumber,
+            // orderId: data.orderId,
+            // transactionId: data.stripeTransaction?.paymentIntentId || "",
+             orderTotal: data.orderTotal || 0,
+            paymentMethod: data.paymentMethod,
+            paymentStatus: data.paymentStatus,
+            shippingStatus: data.shippingStatus || "Pending",
+            dateTime: data.createdAt
+              ? new Date(data.createdAt).toISOString().slice(0, 16)
+              : "",
+            notes: data.notes || "",
           });
         } catch (error) {
           console.error("Error fetching payment:", error);
@@ -87,27 +113,25 @@ export default function UpdatePayment() {
   const handleUpdate = async (e) => {
     e.preventDefault();
     const payload = {
-      customerDetails: {
-        customerName: paymentData.customerName,
-        customerID: paymentData.customerId,
-        email: paymentData.email,
-        phoneNumber: paymentData.phone,
-      },
-      orderDetails: {
-        orderID: paymentData.orderId,
-        transactionID: paymentData.transactionId,
-        amount: Number(paymentData.amount),
-        paymentMethod: paymentData.paymentMethod,
-        paymentStatus: paymentData.paymentStatus,
-        deliveryStatus: paymentData.deliveryStatus,
-        date: paymentData.dateTime,
-        notes: paymentData.notes,
-      },
+      _id: paymentData._id,
+      userId: paymentData.userId,
+      customerName: paymentData.customerName,
+      email: paymentData.email,
+      phoneNumber: paymentData.phoneNumber,
+      paymentMethod: paymentData.paymentMethod,
+      paymentStatus: paymentData.paymentStatus,
+      shippingMethod: "Standard", // or keep editable
+      shippingStatus: paymentData.shippingStatus,
+      orderTotal: Number(paymentData.orderTotal), // ensure number
+      notes: paymentData.notes || "",
+      dateTime: new Date(paymentData.dateTime).toISOString(),
     };
+
+    console.log("update payment payload", payload);
 
     try {
       await axios.put(
-        `https://la-dolce-vita.onrender.com/api/payment/update-payment/${paymentId}`,
+        `http://dev-api.payonlive.com/api/payment/update-payment/${paymentId}`,
         payload
       );
       alert("Payment updated successfully!");
@@ -118,24 +142,31 @@ export default function UpdatePayment() {
     }
   };
 
-
-
   // Helper for status classes
   const getStatusClass = (status, type) => {
     if (type === "payment") {
       switch (status) {
-        case "Paid": return "bg-green-100 text-green-600 border-green-400";
-        case "Pending": return "bg-orange-100 text-orange-600 border-orange-400";
-        case "Failed": return "bg-red-100 text-red-600 border-red-400";
-        default: return "bg-gray-100 text-gray-600 border-gray-400";
+        case "Paid":
+          return "bg-green-100 text-green-600 border-green-400";
+        case "Pending":
+          return "bg-orange-100 text-orange-600 border-orange-400";
+        case "Failed":
+          return "bg-red-100 text-red-600 border-red-400";
+        default:
+          return "bg-gray-100 text-gray-600 border-gray-400";
       }
     } else if (type === "delivery") {
       switch (status) {
-        case "Delivered": return "bg-green-100 text-green-600 border-green-400";
-        case "Shipped": return "bg-blue-100 text-blue-600 border-blue-600";
-        case "Pending": return "bg-orange-100 text-orange-600 border-orange-400";
-        case "Cancelled": return "bg-red-100 text-red-600 border-red-400";
-        default: return "bg-gray-100 text-gray-600 border-gray-400";
+        case "Delivered":
+          return "bg-green-100 text-green-600 border-green-400";
+        case "Shipped":
+          return "bg-blue-100 text-blue-600 border-blue-600";
+        case "Pending":
+          return "bg-orange-100 text-orange-600 border-orange-400";
+        case "Cancelled":
+          return "bg-red-100 text-red-600 border-red-400";
+        default:
+          return "bg-gray-100 text-gray-600 border-gray-400";
       }
     }
   };
@@ -154,7 +185,11 @@ export default function UpdatePayment() {
           onClick={() => navigate("/Payments")}
           className="px-3 py-1 border rounded-md text-white bg-[#02B978] hover:bg-[#04D18C]"
         >
-          <FontAwesomeIcon icon={faArrowLeft} size="lg" className="text-white px-2" />
+          <FontAwesomeIcon
+            icon={faArrowLeft}
+            size="lg"
+            className="text-white px-2"
+          />
           Back to Main View
         </button>
       </div>
@@ -165,7 +200,9 @@ export default function UpdatePayment() {
           <h2 className="text-lg font-medium mb-4">Customer Details</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Customer Name</label>
+              <label className="block text-sm font-medium mb-1">
+                Customer Name
+              </label>
               <input
                 required
                 id="customerName"
@@ -177,12 +214,14 @@ export default function UpdatePayment() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Customer ID</label>
+              <label className="block text-sm font-medium mb-1">
+                Customer ID
+              </label>
               <input
                 required
-                id="customerId"
-                type="text"
-                value={paymentData.customerId}
+                id="userId"
+                type="hidden"
+                value={paymentData.userId}
                 onChange={handleChange}
                 className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm"
               />
@@ -204,9 +243,9 @@ export default function UpdatePayment() {
               <label className="block text-sm font-medium mb-1">Phone</label>
               <input
                 required
-                id="phone"
+                id="phoneNumber"
                 type="text"
-                value={paymentData.phone}
+                value={paymentData.phoneNumber || ''}
                 onChange={handleChange}
                 className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm"
               />
@@ -222,16 +261,18 @@ export default function UpdatePayment() {
               <label className="block text-sm font-medium mb-1">Order ID</label>
               <input
                 required
-                id="orderId"
-                type="text"
-                value={paymentData.orderId}
+                id="_id"
+                type="hidden"
+                value={paymentData._id}
                 onChange={handleChange}
                 className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Transaction ID</label>
+              <label className="block text-sm font-medium mb-1">
+                Transaction ID
+              </label>
               <input
                 required
                 id="transactionId"
@@ -246,18 +287,20 @@ export default function UpdatePayment() {
               <label className="block text-sm font-medium mb-1">Amount</label>
               <input
                 required
-                id="amount"
+                id="orderTotal"
                 type="number"
                 min="0"
                 step="0.01"
-                value={paymentData.amount}
+                value={paymentData.orderTotal || ''}
                 onChange={handleChange}
                 className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Payment Method</label>
+              <label className="block text-sm font-medium mb-1">
+                Payment Method
+              </label>
               <select
                 required
                 id="paymentMethod"
@@ -272,7 +315,9 @@ export default function UpdatePayment() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Payment Status</label>
+              <label className="block text-sm font-medium mb-1">
+                Payment Status
+              </label>
               <select
                 required
                 id="paymentStatus"
@@ -288,11 +333,13 @@ export default function UpdatePayment() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Delivery Status</label>
+              <label className="block text-sm font-medium mb-1">
+                Delivery Status
+              </label>
               <select
                 required
-                id="deliveryStatus"
-                value={paymentData.deliveryStatus}
+                id="shippingStatus"
+                value={paymentData.shippingStatus}
                 onChange={handleChange}
                 className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm"
               >
@@ -305,7 +352,9 @@ export default function UpdatePayment() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Time & Date</label>
+              <label className="block text-sm font-medium mb-1">
+                Time & Date
+              </label>
               <input
                 required
                 id="dateTime"
@@ -380,4 +429,3 @@ export default function UpdatePayment() {
     </div>
   );
 }
-

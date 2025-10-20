@@ -32,7 +32,7 @@ export default function CustomersTable() {
   // ---- GET API call ----
   useEffect(() => {
     axios
-      .get("https://la-dolce-vita.onrender.com/api/user/customer-list") // <-- your API endpoint
+      .get("http://dev-api.payonlive.com/api/user/customer-list") // <-- your API endpoint
       .then((res) => {
         console.log("API Response:", res.data);
         const customersArray = res.data.data || [];

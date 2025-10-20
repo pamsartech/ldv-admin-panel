@@ -59,15 +59,26 @@ export default function PaymentDataTable() {
         const paymentsArray = res.data.data || [];
         console.log("Payment list Response:", res.data);
 
+        // const formatted = paymentsArray.map((item) => ({
+        //   id: item._id,
+        //   amount: item.orderDetails?.amount || "N/A",
+        //   status: item.paymentStatus || "Pending",
+        //   transactionId: item.orderDetails?.transactionID || "N/A",
+        //   orderId: item.orderDetails?.orderID || "N/A",
+        //   email: item.customerDetails?.email || "N/A",
+        //   date: item.createdAt ? new Date(item.createdAt) : new Date(),
+        //   method: item.orderDetails?.paymentMethod || "N/A",
+        // }));
+
         const formatted = paymentsArray.map((item) => ({
-          id: item._id,
-          amount: item.orderDetails?.amount || "N/A",
-          status: item.paymentStatus || "Pending",
-          transactionId: item.orderDetails?.transactionID || "N/A",
-          orderId: item.orderDetails?.orderID || "N/A",
-          email: item.customerDetails?.email || "N/A",
+          id: item.payment_id,
+          amount: item.amount || "N/A",
+          status: item.status || "Pending",
+          transactionId: item.transactionId || "N/A",
+          orderId: item.orderId || "N/A",
+          email: item.email || "N/A",
           date: item.createdAt ? new Date(item.createdAt) : new Date(),
-          method: item.orderDetails?.paymentMethod || "N/A",
+          method: item.method || "N/A",
         }));
 
         setPayments(formatted);
@@ -91,10 +102,10 @@ export default function PaymentDataTable() {
   if (activeTab === "Refunded")
     tabFiltered = payments.filter((p) => p.status === "Refunded");
 
-   // search logic
+  // search logic
   if (search.trim()) {
     const term = search.toLowerCase();
-    tabFiltered  = tabFiltered .filter(
+    tabFiltered = tabFiltered.filter(
       (p) =>
         p.status.toLowerCase().includes(search.toLowerCase()) ||
         p.email.toLowerCase().includes(search.toLowerCase()) ||
