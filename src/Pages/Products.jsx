@@ -87,7 +87,7 @@ function Products() {
 
   return (
     <div>
-      <Navbar heading="Product Managements" />
+      <Navbar heading="Product Management" />
 
       <div className="flex items-center justify-between px-6 mt-5 pb-3">
         <h2 className="text-lg font-semibold text-gray-800"> My Product </h2>
