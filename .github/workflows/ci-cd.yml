@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - devops
       - dev
 
 jobs:
@@ -51,7 +50,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: development
     needs: build
-    if: github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/devops'
+    if: github.ref == 'refs/heads/dev'
     steps:
       - name: Deploy to development
         uses: appleboy/ssh-action@v0.1.10
@@ -63,12 +62,7 @@ jobs:
           script: |
             set -e
             cd /var/www/ldv/dev/ldv-admin-panel
-            if [ "$GITHUB_REF" = "refs/heads/devops" ]; then
-              git fetch origin devops
-              git reset --hard origin/devops
-            else
-              git fetch origin dev
-              git reset --hard origin/dev
-            fi
+            git fetch origin dev
+            git reset --hard origin/dev
             npm ci
             npm run build
