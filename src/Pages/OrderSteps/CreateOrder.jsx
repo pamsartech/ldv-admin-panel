@@ -113,28 +113,26 @@ const CreateOrder = () => {
       paymentStatus,
       shippingMethod,
       shippingStatus,
-      // orderTotal : total
+      orderTotal : total
     };
 
     console.log("📤 Sending order:", payload);
-    console.log('orderItem', payload.orderItems)
 
     try {
       const res = await axios.post(
-        "https://la-dolce-vita.onrender.com/api/order/create-order",
+        "http://dev-api.payonlive.com/api/order/create-order",
         payload, { headers: { "Content-Type": "application/json" } }
       );
       console.log("✅ Order created:", res.data);
-
       if (res.data?.success || res.status === 200) {
         setPopupMessage("Order created successfully!");
         setShowPopup(true);
         setTimeout(() => {
           console.log("Redirecting to /Orders");
-          navigate("/Orders");
+          navigate("/user/Orders");
         }, 1500);
       } else {
-        setPopupMessage(res.data.message || "Failed to create order");
+        setPopupMessage(res.data.message || "Failed to create order ❌");
         setShowPopup(true);
       }
     } catch (err) {
@@ -161,7 +159,7 @@ const CreateOrder = () => {
       <div className="flex justify-between mt-5 mx-10">
         <h1 className="font-medium text-lg">Order Creation</h1>
         <button
-          onClick={() => navigate("/Orders")}
+          onClick={() => navigate("/user/Orders")}
           className="px-3 py-1 border border-red-700 text-red-700 bg-red-50 rounded-md hover:bg-gray-100"
         >
           <FontAwesomeIcon
@@ -319,9 +317,9 @@ const CreateOrder = () => {
                   className="w-full text-sm  rounded-xl border px-2 py-2"
                 >
                   <option value="">Select product</option>
-                  <option>Converse Chuck Taylor</option>
-                  <option>	Asus</option>
-                  <option>Nike Air Max 2024</option>
+                  <option>Travel bag</option>
+                  <option>clothes</option>
+                  <option>boots</option>
                 </select>
                 {errors[`product_${idx}`] && (
                   <p className="text-red-500 text-sm">

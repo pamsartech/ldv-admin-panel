@@ -67,7 +67,7 @@ const UpdateOrder = () => {
     const payload = { ...orderData, orderItems, _id: existingOrder._id };
 
     const response = await axios.put(
-      `https://la-dolce-vita.onrender.com/api/order/update-order/${existingOrder._id}`,
+      `http://dev-api.payonlive.com/api/order/update-order/${existingOrder._id}`,
       payload,
       {
         // Add headers if backend expects auth
@@ -80,7 +80,7 @@ const UpdateOrder = () => {
 
     if (response.status === 200 && response.data.success) {
       alert(response.data.message || "Order updated successfully!");
-      navigate("/Orders");
+      navigate("/user/Orders");
     } else {
       alert(response.data.message || "Failed to update order. Please try again.");
     }
@@ -110,7 +110,7 @@ const UpdateOrder = () => {
       <div className="flex justify-between mt-5 mx-10">
         <h1 className="font-medium text-lg">Update Order</h1>
         <button
-          onClick={() => navigate("/Orders")}
+          onClick={() => navigate("/user/Orders")}
           className="px-3 py-1 border border-red-700 text-red-700 bg-red-50 rounded-md hover:bg-gray-100"
         >
           <FontAwesomeIcon icon={faXmark} size="lg" className="text-red-700 px-2" />
@@ -208,9 +208,9 @@ const UpdateOrder = () => {
                   className="w-full rounded-xl border border-gray-300 px-2 py-2 text-sm"
                 >
                   <option value="">Select product</option>
-                  <option>Asus</option>
-                  <option>Adidas Backpack</option>
-                  <option>Nike Air Max 2024</option>
+                  <option>Product A</option>
+                  <option>Product B</option>
+                  <option>Product C</option>
                 </select>
               </div>
               <div className="md:col-span-1 text-center">
@@ -258,8 +258,10 @@ const UpdateOrder = () => {
               className="w-full rounded-lg border border-gray-400 px-3 py-2 text-sm"
             >
               <option value="">Select Payment method</option>
-              <option>Stripe</option>
+              <option>Credit Card</option>
               <option>Paypal</option>
+              <option>Bank Transfer</option>
+              <option>UPI</option>
             </select>
           </div>
           <div>

@@ -112,13 +112,31 @@ function AddProductStep1({ formData, setFormData, nextStep }) {
                 className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm"
               />
             </div>
+            
+
+         {/* ✅ Status Dropdown */}
+          <div> 
+            <label className=" text-sm font-medium mb-1">Status</label>
+            <select
+              required
+              name="status"
+              value={formData.status || ""}
+              onChange={handleChange}
+              className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm bg-white"
+            >
+              <option value="">Select Status</option>
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </select>
+          </div>
+             
           </div>
 
           {/* navigation buttons */}
           <div className="flex justify-between mt-6">
             <button
               type="button"
-              onClick={() => navigate("/Products")}
+              onClick={() => navigate("/user/Products")}
               className="px-3 py-1 border border-red-700 text-red-700 bg-red-50 rounded-md hover:bg-gray-100"
             >
               <FontAwesomeIcon

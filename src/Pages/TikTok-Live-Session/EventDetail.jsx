@@ -32,7 +32,7 @@ export default function EventDetail() {
     const fetchEvent = async () => {
       try {
         const response = await axios.get(
-          `https://la-dolce-vita.onrender.com/api/event/event-details/${eventId}`
+          `http://dev-api.payonlive.com/api/event/event-details/${eventId}`
         );
         if (response.data.success && response.data.data) {
           setEvent(response.data.data);
@@ -84,7 +84,7 @@ export default function EventDetail() {
 
     if (response.data.success) {
       alert("Event deleted successfully!");
-      navigate("/tiktok"); // Redirect after delete
+      navigate("/user/tiktok"); // Redirect after delete
     } else {
       alert(`Failed to delete event: ${response.data.message || "Unknown error"}`);
     }
@@ -116,7 +116,7 @@ export default function EventDetail() {
           </button>
 
           <button
-              onClick={() => navigate(`/update-event/${event._id}`, { state: { event } })}
+              onClick={() => navigate(`/user/update-event/${event._id}`, { state: { event } })}
             className="mx-2 px-3 py-1 border rounded-md text-[#114E9D] bg-blue-50 hover:bg-blue-100"
           >
             <FontAwesomeIcon icon={faArrowRotateLeft} className="px-2" />
@@ -124,7 +124,7 @@ export default function EventDetail() {
           </button>
 
           <button
-            onClick={() => navigate("/tiktok")}
+            onClick={() => navigate("/user/tiktok")}
             className="px-3 py-1 border rounded-md text-white bg-[#02B978] hover:bg-[#04D18C]"
           >
             <FontAwesomeIcon icon={faArrowLeft} className="text-white px-2" />

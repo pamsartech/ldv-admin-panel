@@ -1,11 +1,16 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faEye,
+  faEyeSlash,
+} from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
 
-function Login() {
+function Login({ onLoginSuccess }) {
   const navigate = useNavigate();
 
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -18,23 +23,29 @@ function Login() {
     setLoading(true);
 
     try {
-      // Send POST request to your login API
-      const response = await axios.post("https://la-dolce-vita.onrender.com/api/admin/login", {
-        email: username, // Assuming your backend expects "email"
-        password: password,
-      });
+      const response = await axios.post(
+        "http://dev-api.payonlive.com/api/admin/login",
+        {
+          email,
+          password,
+        }
+      );
 
       if (response.data.success) {
-        // Save token in localStorage
-        localStorage.setItem("token", response.data.token);
+        const { token, user } = response.data;
 
-        // Optionally save user info
-        localStorage.setItem("user", JSON.stringify(response.data.user));
+        // ✅ Save token & user info
+        localStorage.setItem("token", token);
+        localStorage.setItem("user", JSON.stringify(user));
+        localStorage.setItem("isAuthenticated", "true");
 
-        // Redirect to dashboard
-        navigate("/dashboard");
+        // ✅ Notify App and redirect
+        onLoginSuccess();
+        navigate("/user/dashboard");
+        alert("Login successful!");
       } else {
         setError(response.data.message || "Login failed");
+        alert("Failed to login");
       }
     } catch (err) {
       setError(err.response?.data?.message || "Server error");
@@ -60,20 +71,19 @@ function Login() {
           <h2 className="text-green-800 text-2xl md:text-3xl font-semibold mb-6 text-center md:text-left">
             SIGN IN
           </h2>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Username */}
-            <div>
-              <input
-                type="text"
-                placeholder="Username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="w-full border-b-2 border-green-800 bg-transparent py-2 text-green-800 placeholder-green-800 focus:outline-none"
-                required
-              />
-            </div>
 
-            {/* Password with toggle */}
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Email */}
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full border-b-2 border-green-800 bg-transparent py-2 text-green-800 placeholder-green-800 focus:outline-none"
+              required
+            />
+
+            {/* Password */}
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
@@ -86,54 +96,14 @@ function Login() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-0 transform -translate-y-1/2 pr-2 text-green-800 focus:outline-none"
+                className="absolute right-0 transform -translate-y-1/2 pr-2 text-green-800 focus:outline-none top-1/2"
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
-                {showPassword ? (
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5 sm:h-6 sm:w-6"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                    />
-                  </svg>
-                ) : (
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5 sm:h-6 sm:w-6"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M13.875 18.825A10.05 10.05 0 0112 19c-4.477 0-8.268-2.943-9.542-7a9.956 9.956 0 012.223-3.434m1.77-1.77A9.956 9.956 0 0112 5c4.477 0 8.268 2.943 9.542 7a10.05 10.05 0 01-1.223 2.432M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M3 3l18 18"
-                    />
-                  </svg>
-                )}
+                <FontAwesomeIcon icon={showPassword ? faEye : faEyeSlash} size="lg" />
               </button>
             </div>
 
-            {/* Remember me + Forgot password */}
+            {/* Remember Me + Forgot Password */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-green-800 text-sm gap-3">
               <label className="flex items-center space-x-2">
                 <input
@@ -146,7 +116,7 @@ function Login() {
               </label>
               <button
                 type="button"
-                onClick={() => navigate("/reset-password")}
+                onClick={() => navigate("/user/reset-password")}
                 className="hover:underline text-center sm:text-right"
               >
                 Forgot password?
@@ -156,7 +126,7 @@ function Login() {
             {/* Error message */}
             {error && <p className="text-red-600 text-sm">{error}</p>}
 
-            {/* Submit */}
+            {/* Submit button */}
             <button
               type="submit"
               disabled={loading}

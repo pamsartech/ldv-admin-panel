@@ -1,6 +1,5 @@
 import React, { useRef, useState } from "react";
 import Navbar from "../Components/Navbar";
-// import TopButton from "../Components/TopButton";
 import { useNavigate } from "react-router-dom";
 import OrdersDataTable from "../Components/OrderDataTable";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -28,7 +27,7 @@ function Orders() {
       setExportError(null);
       setExporting(true);
 
-      const url = "https://la-dolce-vita.onrender.com/api/order/export-orders"; // update as needed
+      const url = "http://dev-api.payonlive.com/api/order/export-orders"; // update as needed
 
       const response = await axios.get(url, {
         responseType: "blob",
@@ -89,7 +88,7 @@ function Orders() {
       setImporting(true);
       setImportProgress(0);
 
-      const url = "https://la-dolce-vita.onrender.com/api/order/import-orders"; // update as needed
+      const url = "http://dev-api.payonlive.com/api/order/import-orders"; // update as needed
       const formData = new FormData();
       formData.append("file", file);
 
@@ -195,7 +194,7 @@ function Orders() {
 
           {/* Add Product Button */}
           <button
-            onClick={() => navigate("/create-order")}
+            onClick={() => navigate("/user/create-order")}
             className="flex items-center gap-2 bg-[#02B978] text-white px-4 py-1.5 rounded-md text-sm hover:bg-[#04D18C] transition"
           >
             <FontAwesomeIcon icon={faPlus} className="text-white" />

@@ -62,7 +62,7 @@ const UpdateCustomer = () => {
       const fetchCustomer = async () => {
         try {
           const res = await axios.get(
-            `https://la-dolce-vita.onrender.com/api/user/user-details/${customerId}`
+            `http://dev-api.payonlive.com/api/user/user-details/${customerId}`
           );
           const data = res.data.data;
           setFormData({
@@ -129,13 +129,13 @@ const UpdateCustomer = () => {
     //  console.log("Customer ID:", customerId);
     try {
       const res = await axios.put(
-        `https://la-dolce-vita.onrender.com/api/user/update-customer/${customerId}`,
+        `http://dev-api.payonlive.com/api/user/update-customer/${customerId}`,
         payload
       );
 
       console.log("✅ Customer updated:", res.data);
       alert("Customer updated successfully!");
-      navigate("/Customers");
+      navigate("/user/Customers");
     } catch (err) {
       console.error(
         "❌ Error updating customer:",
@@ -155,7 +155,7 @@ const UpdateCustomer = () => {
       <div className="flex justify-between mt-5 mx-10">
         <h1 className="font-medium text-lg">Update Customer Details</h1>
         <button
-          onClick={() => navigate("/Customers")}
+          onClick={() => navigate("/user/Customers")}
           className="px-3 py-1 border border-red-700 text-red-700 bg-red-50 rounded-md hover:bg-gray-100"
         >
           <FontAwesomeIcon

@@ -21,7 +21,7 @@ const ViewProduct = () => {
     const fetchProduct = async () => {
       try {
         const res = await axios.get(
-          `https://la-dolce-vita.onrender.com/api/product/product-details/${productId}` // <-- update API endpoint
+          `http://dev-api.payonlive.com/api/product/product-details/${productId}` // <-- update API endpoint
         );
         if (res.data.success) {
           setProduct(res.data.data);
@@ -66,7 +66,7 @@ const ViewProduct = () => {
 
       if (response.data.success) {
         alert("Product deleted successfully!");
-        navigate("/Products");
+        navigate("/user/Products");
       } else {
         alert(
           `Failed to delete product: ${
@@ -104,7 +104,7 @@ const ViewProduct = () => {
           </button>
 
           <button
-            onClick={() => navigate(`/update-product/${product._id}`)}
+            onClick={() => navigate(`/user/update-product/${product._id}`)}
             className="mx-2 px-3 py-1 border rounded-md text-[#114E9D] bg-blue-50 hover:bg-blue-100"
           >
             <FontAwesomeIcon icon={faArrowRotateLeft} className="px-2" />
@@ -112,7 +112,7 @@ const ViewProduct = () => {
           </button>
 
           <button
-            onClick={() => navigate("/Products")}
+            onClick={() => navigate("/user/Products")}
             className="px-3 py-1 border rounded-md text-white bg-[#02B978] hover:bg-[#04D18C]"
           >
             <FontAwesomeIcon icon={faArrowLeft} className="text-white px-2" />

@@ -233,7 +233,7 @@ function AddProductStep2({ formData, setFormData, prevStep, nextStep }) {
         <div className="flex justify-between max-w-lg mx-auto mt-10 ">
           <button
             type="button"
-            onClick={() => navigate("/Products")}
+            onClick={() => navigate("/user/Products")}
             className=" px-3 py-1 border border-red-700 text-red-700 bg-red-50 rounded-md hover:bg-gray-100"
           >
             <FontAwesomeIcon icon={faXmark} size="lg" className="text-red-700 px-2" />

@@ -1,5 +1,4 @@
 import Navbar from "../Components/Navbar";
-import TopButton from "../Components/TopButton";
 import PaymentDataTable from "../Components/PaymentDataTable";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -40,7 +39,7 @@ function Payments() {
 
           {/* Add Product Button */}
           <button
-            onClick={() => navigate("/create-payment")}
+            onClick={() => navigate("/user/create-payment")}
             className="flex items-center gap-2 bg-[#02B978] text-white px-4 py-1.5 rounded-md text-sm hover:bg-[#04D18C] transition"
           >
             <FontAwesomeIcon icon={faPlus} className="text-white" />
@@ -49,13 +48,7 @@ function Payments() {
         </div>
       </div>
 
-      {/* active nav links  */}
-      {/* <TopButton
-        firstNav="All"
-        secondNav="Succeeded"
-        icon={faBoxArchive}
-        thirdNav="Refunded"
-      /> */}
+     
 
       
 

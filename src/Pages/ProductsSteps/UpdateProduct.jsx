@@ -1,7 +1,8 @@
-import React, { useState , useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { SketchPicker } from "react-color";
 import Navbar from "../../Components/Navbar";
+import { useAlert } from "../../Components/AlertContext"; // Make sure path is correct
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowLeft,
@@ -14,51 +15,48 @@ import {
 import axios from "axios";
 
 function UpdateProduct() {
-
-   const { productId } = useParams();
+  const { productId } = useParams();
   const navigate = useNavigate();
+  const { showAlert } = useAlert();
 
   const [loading, setLoading] = useState(true);
 
   const [selectedGender, setSelectedGender] = useState("Men");
   const [selectedSize, setSelectedSize] = useState("M");
-  const [colors, setColors] = useState([]);
-  const [selectedColor, setSelectedColor] = useState("");
+  const [selectedColor, setSelectedColor] = useState("#FF0000");
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [images, setImages] = useState([]);
 
   const [productDetails, setProductDetails] = useState({
-    tiktokSession: "",
-    price: "",
-    name: "",
+    productName: "",
     productCode: "",
+    price: "",
     stock: "",
     category: "",
+    status: "", // ✅ Added status field
   });
 
-  // ✅ Fetch product details when page loads
+  // ✅ Fetch product details on mount
   useEffect(() => {
     const fetchProduct = async () => {
       try {
         const res = await axios.get(
-          `https://la-dolce-vita.onrender.com/api/product/product-details/${productId}`
+          `http://dev-api.payonlive.com/api/product/product-details/${productId}`
         );
         if (res.data.success) {
           const data = res.data.data;
 
-          // Pre-fill states
           setProductDetails({
-            tiktokSession: data.tiktokSession || "",
-            price: data.price || "",
-            name: data.productName || "",
+            productName: data.productName || "",
             productCode: data.productCode || "",
+            price: data.price || "",
             stock: data.stock || "",
             category: data.category || "",
+            status: data.status || "Active", // ✅ Pre-fill status if available
           });
 
           setSelectedGender(data.gender || "Men");
           setSelectedSize(data.size || "M");
-          setColors(data.colors || ["#FF0000", "#2563EB"]);
           setSelectedColor(data.color || "#FF0000");
           setImages(data.images || []);
         }
@@ -72,22 +70,21 @@ function UpdateProduct() {
     fetchProduct();
   }, [productId]);
 
+  // ✅ Handle form field changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setProductDetails((prev) => ({ ...prev, [name]: value }));
   };
 
+  // ✅ Handle color picker
   const handleColorChange = (color) => setSelectedColor(color.hex);
+  const handleColorCommit = (color) => setSelectedColor(color.hex);
 
-  const handleColorCommit = (color) => {
-    const newColor = color.hex;
-    if (!colors.includes(newColor)) setColors((prev) => [...prev, newColor]);
-    setSelectedColor(newColor);
-  };
-
+  // ✅ Image handling (preview only, no actual upload)
   const handleImageUpload = (event, index) => {
     const file = event.target.files[0];
     if (!file) return;
+
     const newImage = URL.createObjectURL(file);
     setImages((prev) => {
       const updated = [...prev];
@@ -100,28 +97,43 @@ function UpdateProduct() {
     setImages((prev) => prev.filter((_, i) => i !== index));
   };
 
+  // ✅ Update product API call
   const handleUpdate = async (e) => {
     e.preventDefault();
-    try {
-      const payload = {
-        ...productDetails,
-        gender: selectedGender,
-        size: selectedSize,
-        colors,
-        selectedColor,
-        images,
-      };
 
-      await axios.put(
+    const payload = {
+      productName: productDetails.productName,
+      productCode: productDetails.productCode,
+      price: Number(productDetails.price),
+      status: productDetails.status, // ✅ Added to payload
+      gender: selectedGender,
+      color: selectedColor,
+      size: selectedSize,
+      stock: Number(productDetails.stock),
+      category: productDetails.category,
+      images: images,
+    };
+
+    try {
+      const response = await axios.put(
         `https://la-dolce-vita.onrender.com/api/product/update-product/${productId}`,
-        payload
+        payload,
+        {
+          headers: { "Content-Type": "application/json" },
+        }
       );
 
-      alert("Product updated successfully!");
-      navigate("/Products");
+      if (response.data.success) {
+        showAlert("Product updated successfully!", "success", () => {
+          navigate("/user/products"); // navigate after clicking OK
+        });
+      } else {
+        // alert(response.data.message || "❌ Failed to update product.");
+        showAlert("Failed to update product.", "error");
+      }
     } catch (error) {
       console.error("Error updating product:", error);
-      alert("Failed to update product. Please try again.");
+      alert(error?.response?.data?.message || "⚠️ Failed to update product.");
     }
   };
 
@@ -129,8 +141,6 @@ function UpdateProduct() {
     return <p className="text-center mt-10">Loading product details...</p>;
   }
 
-
-  
   return (
     <div>
       <Navbar heading="Payment Management" />
@@ -139,7 +149,7 @@ function UpdateProduct() {
       <div className="flex justify-between mt-5 mx-10">
         <h1 className="font-medium text-lg">Update Product Details</h1>
         <button
-          onClick={() => navigate("/Products")}
+          onClick={() => navigate("/user/Products")}
           className="px-3 py-1 border rounded-md text-white bg-[#02B978] hover:bg-[#04D18C]"
         >
           <FontAwesomeIcon icon={faArrowLeft} size="lg" className="px-2" />
@@ -150,20 +160,8 @@ function UpdateProduct() {
       <form onSubmit={handleUpdate}>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mx-10 mt-10">
           {/* Basic Info */}
-          <section className="border border-gray-300 rounded-xl shadow-sm p-7 bg-gray-50">
+            <section className="border border-gray-300 rounded-xl shadow-sm p-7 bg-gray-50">
             <div className="grid grid-cols-1 gap-6">
-              <div>
-                <label className="block text-sm font-medium mb-1">TikTok session</label>
-                <input
-                  required
-                  type="text"
-                  name="tiktokSession"
-                  value={productDetails.tiktokSession}
-                  onChange={handleChange}
-                  placeholder="Clothing code 2025"
-                  className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm"
-                />
-              </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Price</label>
                 <input
@@ -181,10 +179,10 @@ function UpdateProduct() {
                 <input
                   required
                   type="text"
-                  name="name"
-                  value={productDetails.name}
+                  name="productName"
+                  value={productDetails.productName}
                   onChange={handleChange}
-                  placeholder="Denim shirt 202045"
+                  placeholder="Product Name"
                   className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm"
                 />
               </div>
@@ -200,6 +198,22 @@ function UpdateProduct() {
                   className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm"
                 />
               </div>
+
+              {/* ✅ Status Dropdown */}
+              <div>
+                <label className="block text-sm font-medium mb-1">Status</label>
+                <select
+                  required
+                  name="status"
+                  value={productDetails.status}
+                  onChange={handleChange}
+                  className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm bg-white"
+                >
+                  <option value="">Select Status</option>
+                  <option value="Active">Active</option>
+                  <option value="Inactive">Inactive</option>
+                </select>
+              </div>
             </div>
           </section>
 
@@ -214,7 +228,11 @@ function UpdateProduct() {
                   className="flex flex-col items-center justify-center border-2 border-gray-300 rounded-xl h-64 cursor-pointer bg-white hover:bg-gray-50 overflow-hidden"
                 >
                   {images[0] ? (
-                    <img src={images[0]} alt="Main Upload" className="h-full w-full object-cover rounded-lg" />
+                    <img
+                      src={images[0]}
+                      alt="Main Upload"
+                      className="h-full w-full object-cover rounded-lg"
+                    />
                   ) : (
                     <span className="text-gray-500">Add Main Image</span>
                   )}
@@ -243,10 +261,14 @@ function UpdateProduct() {
                   <div key={index} className="relative">
                     <label
                       htmlFor={`sideImageUpload-${index}`}
-                      className="w-20 h-20 flex items-center justify-center bg-gray-200 rounded-lg cursor-pointer hover:bg-gray-300 overflow-hidden"
+                      className="w-15 h-15 flex items-center justify-center bg-gray-200 rounded-lg cursor-pointer hover:bg-gray-300 overflow-hidden"
                     >
                       {images[index] ? (
-                        <img src={images[index]} alt={`Upload ${index}`} className="w-full h-full object-cover rounded-lg" />
+                        <img
+                          src={images[index]}
+                          alt={`Upload ${index}`}
+                          className="w-full h-full object-cover rounded-lg"
+                        />
                       ) : (
                         <FontAwesomeIcon icon={faPlus} className="text-gray-600" />
                       )}
@@ -300,20 +322,15 @@ function UpdateProduct() {
                 </div>
               </div>
 
-              {/* Colors */}
+              {/* Color Picker */}
               <div>
-                <h3 className="font-semibold text-gray-800 mb-2">Colours</h3>
+                <h3 className="font-semibold text-gray-800 mb-2">Colour</h3>
                 <div className="flex gap-3 items-center flex-wrap">
-                  {colors.map((color, idx) => (
-                    <div
-                      key={idx}
-                      className={`w-8 h-8 rounded-full border cursor-pointer ${
-                        selectedColor === color ? "ring-2 ring-purple-600 scale-110" : ""
-                      }`}
-                      style={{ backgroundColor: color }}
-                      onClick={() => setSelectedColor(color)}
-                    ></div>
-                  ))}
+                  <div
+                    className={`w-8 h-8 rounded-full border cursor-pointer ring-2 ring-purple-600 scale-110`}
+                    style={{ backgroundColor: selectedColor }}
+                    onClick={() => setShowColorPicker(!showColorPicker)}
+                  ></div>
                   <button
                     type="button"
                     onClick={() => setShowColorPicker(!showColorPicker)}
@@ -324,7 +341,11 @@ function UpdateProduct() {
                 </div>
                 {showColorPicker && (
                   <div className="mt-3">
-                    <SketchPicker color={selectedColor} onChange={handleColorChange} onChangeComplete={handleColorCommit} />
+                    <SketchPicker
+                      color={selectedColor}
+                      onChange={handleColorChange}
+                      onChangeComplete={handleColorCommit}
+                    />
                   </div>
                 )}
               </div>
@@ -348,17 +369,6 @@ function UpdateProduct() {
                     </button>
                   ))}
                 </div>
-              </div>
-
-              {/* Size Guide */}
-              <div>
-                <label
-                  htmlFor="sizeGuideUpload"
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg border-gray-400 border cursor-pointer hover:bg-gray-100"
-                >
-                  <FontAwesomeIcon icon={faUpload} /> Add Size Guide Chart
-                </label>
-                <input id="sizeGuideUpload" type="file" accept=".png,.jpg,.jpeg,.pdf" className="hidden" />
               </div>
             </div>
 
@@ -385,19 +395,11 @@ function UpdateProduct() {
                   onChange={handleChange}
                   className="w-full bg-gray-50 border border-gray-400 rounded-lg px-3 py-2"
                 >
-                  <option>Jacket</option>
-                  <option>Shoes</option>
-                  <option>T-shirt</option>
+                  <option value="">Select Category</option>
+                  <option value="Jacket">Jacket</option>
+                  <option value="Shoes">Shoes</option>
+                  <option value="T-shirt">T-shirt</option>
                 </select>
-              </div>
-
-              <div className="flex gap-3">
-                <button type="button" className="px-6 py-2 rounded-full bg-[#6750A4] text-white">
-                  Add Category
-                </button>
-                <button type="button" className="px-4 py-2 rounded-full bg-[#6750A4] text-white">
-                  Create Category
-                </button>
               </div>
             </div>
           </div>
@@ -408,7 +410,7 @@ function UpdateProduct() {
         <div className="flex justify-between max-w-5xl mx-auto my-10">
           <button
             type="button"
-            onClick={() => navigate("/Products")}
+            onClick={() => navigate("/user/Products")}
             className="px-3 py-1 border border-red-700 text-red-700 bg-red-50 rounded-md hover:bg-gray-100"
           >
             <FontAwesomeIcon icon={faXmark} size="lg" className="px-2" />
@@ -428,3 +430,5 @@ function UpdateProduct() {
 }
 
 export default UpdateProduct;
+
+

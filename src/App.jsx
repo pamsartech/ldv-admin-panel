@@ -1,7 +1,5 @@
+// this is routes backup code 
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-// import { BrowserRouter as Router } from "react-router-dom";
-// import DashboardRoutes from "./Routers/DashboardRouter";
-
 
 import Login from "./Pages/Login";
 import ResetPassword from "./Pages/ResetPassword";
@@ -46,19 +44,13 @@ function App() {
     <div>
      
 
-       
-
-     
-
        {/* login routers */}
        {/* <Router>
         <Routes>
            <Route path="/" element={ <Login /> } />
-           <Route path="/reset-password" element={ <ResetPassword /> } />
-          
+           <Route path="/reset-password" element={ <ResetPassword /> } />         
         </Routes>
       </Router> */}
-
 
 
       {/* this is dashboard routers */}
@@ -67,34 +59,39 @@ function App() {
         <Sidebar />
         <main className="flex-1 bg-white min-h-screen">
           <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/products" element={<Products />} />
-            <Route path="/orders" element={<Orders />} />
-            <Route path="/customers" element={<Customers />} />
-            <Route path="/payments" element={<Payments />} />
-            <Route path="/tiktok" element={<TikTokLive />} />
-            <Route path="/setting" element={<Setting />} />
 
-            <Route path="/view-product/:productId" element={<ViewProduct />} />   
-            <Route path="/add-product" element={<AddProductWizard />} />        
-            <Route path="/update-product/:productId" element= { <UpdateProduct /> } />
+            <Route path="/user/dashboard" element={<Dashboard />} />
+            <Route path="/user/products" element={<Products />} />         
+            <Route path="/user/orders" element={<Orders />} />
+            <Route path="/user/customers" element={<Customers />} />
+            <Route path="/user/payments" element={<Payments />} />
+            <Route path="/user/tiktok" element={<TikTokLive />} />
+            <Route path="/user/setting" element={<Setting />} />
 
-            <Route path="/create-order" element= { <CreateOrder /> } />
-            <Route path="/view-order/:orderId" element= { <ViewOrder /> } />
-            <Route path="/update-order/:id" element= { <UpdateOrder /> } />
+            {/* this is product sub pages routes */}
+            <Route path="/user/view-product/:productId" element={<ViewProduct />} />   
+            <Route path="/user/add-product" element={<AddProductWizard />} />        
+            <Route path="/user/update-product/:productId" element= { <UpdateProduct /> } />
 
-            <Route path="/create-customer" element= { <CreateCustomer /> } />
-            <Route path="/view-customer/:customerId" element= { <ViewCustomer /> } />
-            <Route path="/update-customer/:customerId" element= { <UpdateCustomer /> } />
+            {/* this is order sub pages routes */}
+            <Route path="/user/create-order" element= { <CreateOrder /> } />
+            <Route path="/user/view-order/:orderId" element= { <ViewOrder /> } />
+            <Route path="/user/update-order/:id" element= { <UpdateOrder /> } />
 
-            <Route path="/create-payment" element= { <CreatePayment /> } />
-            <Route path="/view-payment/:paymentId" element= { <ViewPayment /> } />
-            <Route path="/update-payment/:paymentId" element= { <UpdatePayment /> } />
+            {/* this is customer sub pages routes */}
+            <Route path="/user/create-customer" element= { <CreateCustomer /> } />
+            <Route path="/user/view-customer/:customerId" element= { <ViewCustomer /> } />
+            <Route path="/user/update-customer/:customerId" element= { <UpdateCustomer /> } />
 
-            <Route path="/create-live-event" element= { <CreateLiveEvent /> } />
-            <Route path="/live-event-detail/:eventId" element= { <EventDetail /> } />
-            <Route path="/update-event/:eventId" element= { <UpdateEvent /> } />
+            {/* this is payment sub pages routes */}
+            <Route path="/user/create-payment" element= { <CreatePayment /> } />
+            <Route path="/user/view-payment/:paymentId" element= { <ViewPayment /> } />
+            <Route path="/user/update-payment/:paymentId" element= { <UpdatePayment /> } />
 
+            {/* this is tiktok live sub pages routes */}
+            <Route path="/user/create-live-event" element= { <CreateLiveEvent /> } />
+            <Route path="/user/live-event-detail/:eventId" element= { <EventDetail /> } />
+            <Route path="/user/update-event/:eventId" element= { <UpdateEvent /> } />
            
           </Routes>
         </main>

@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faClipboard, faTrash, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faClipboard, faXmark } from "@fortawesome/free-solid-svg-icons";
 import Navbar from "../../Components/Navbar";
 import axios from "axios";
+import { useAlert } from "../../Components/AlertContext"; // Make sure path is correct
 
 function UpdateEvent() {
   const { eventId } = useParams();
   const { state } = useLocation();
   const navigate = useNavigate();
+  const { showAlert } = useAlert();
 
   // Pre-fill with state if available, otherwise empty
   const [eventDetails, setEventDetails] = useState({
@@ -67,32 +69,30 @@ function UpdateEvent() {
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(eventDetails.eventLink);
-    alert("TikTok live event link copied to clipboard!");
+    showAlert("TikTok live event link copied to clipboard!", "success");
   };
 
   const handleUpdate = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const payload = {
-        eventDetails,
-        hostInformation: hostInfo,
-      };
+      const payload = { eventDetails, hostInformation: hostInfo };
 
       const response = await axios.put(
-        `https://la-dolce-vita.onrender.com/api/event/update-event/${eventId}`,
+        `http://dev-api.payonlive.com/api/event/update-event/${eventId}`,
         payload
       );
 
       if (response.data.success) {
-        alert(response.data.message);
-        navigate("/tiktok"); // navigate back to list
+        showAlert("Event updated successfully!", "success", () => {
+          navigate("/user/tiktok"); // navigate after clicking OK
+        });
       } else {
-        alert("Failed to update event.");
+        showAlert("Failed to update event.", "error");
       }
     } catch (error) {
       console.error("Error updating event:", error);
-      alert("Failed to update event. Please try again.");
+      showAlert("Failed to update event. Please try again.", "error");
     } finally {
       setLoading(false);
     }
@@ -105,7 +105,7 @@ function UpdateEvent() {
       <div className="flex justify-between mt-5 mx-10">
         <h1 className="font-medium text-lg">Update Event Details</h1>
         <button
-          onClick={() => navigate("/tiktok")}
+          onClick={() => navigate("/user/tiktok")}
           className="mr-20 px-3 py-1 border border-red-700 text-red-700 bg-red-50 rounded-md hover:bg-gray-100"
         >
           <FontAwesomeIcon icon={faXmark} size="lg" className="text-red-700 px-2" />
@@ -119,60 +119,62 @@ function UpdateEvent() {
           <section className="border border-gray-400 rounded-2xl p-6 space-y-6">
             <h2 className="text-xl font-semibold">Event Details</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {["eventName", "eventDescription", "sessionID", "status", "startDateTime", "endDateTime", "eventLink"].map((field) => (
-                <div key={field}>
-                  <label className="block text-sm font-medium mb-1">
-                    {field === "eventName" && "Event Name"}
-                    {field === "eventDescription" && "Event Description"}
-                    {field === "sessionID" && "Session ID"}
-                    {field === "status" && "Status"}
-                    {field === "startDateTime" && "Start Date & Time"}
-                    {field === "endDateTime" && "End Date & Time"}
-                    {field === "eventLink" && "TikTok Live Event Link"}
-                  </label>
-                  {field === "status" ? (
-                    <select
-                      required
-                      name="status"
-                      value={eventDetails.status}
-                      onChange={handleEventChange}
-                      className="w-full border border-gray-400 rounded-md px-3 py-2"
-                    >
-                      <option value="inactive">Inactive</option>
-                      <option value="active">Active</option>
-                      <option value="about to come">About to come</option>
-                      <option value="suspended">Suspended</option>
-                    </select>
-                  ) : field === "eventLink" ? (
-                    <div className="flex items-center border border-gray-400 rounded-md px-3 py-2">
+              {["eventName", "eventDescription", "sessionID", "status", "startDateTime", "endDateTime", "eventLink"].map(
+                (field) => (
+                  <div key={field}>
+                    <label className="block text-sm font-medium mb-1">
+                      {field === "eventName" && "Event Name"}
+                      {field === "eventDescription" && "Event Description"}
+                      {field === "sessionID" && "Session ID"}
+                      {field === "status" && "Status"}
+                      {field === "startDateTime" && "Start Date & Time"}
+                      {field === "endDateTime" && "End Date & Time"}
+                      {field === "eventLink" && "TikTok Live Event Link"}
+                    </label>
+                    {field === "status" ? (
+                      <select
+                        required
+                        name="status"
+                        value={eventDetails.status}
+                        onChange={handleEventChange}
+                        className="w-full border border-gray-400 rounded-md px-3 py-2"
+                      >
+                        <option value="inactive">Inactive</option>
+                        <option value="active">Active</option>
+                        <option value="about to come">About to come</option>
+                        <option value="suspended">Suspended</option>
+                      </select>
+                    ) : field === "eventLink" ? (
+                      <div className="flex items-center border border-gray-400 rounded-md px-3 py-2">
+                        <input
+                          required
+                          type="text"
+                          name="eventLink"
+                          value={eventDetails.eventLink}
+                          onChange={handleEventChange}
+                          className="flex-grow focus:outline-none"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleCopyLink}
+                          className="ml-2 text-gray-600 hover:text-gray-900"
+                        >
+                          <FontAwesomeIcon icon={faClipboard} />
+                        </button>
+                      </div>
+                    ) : (
                       <input
                         required
-                        type="text"
-                        name="eventLink"
-                        value={eventDetails.eventLink}
+                        type={field.includes("DateTime") ? "datetime-local" : "text"}
+                        name={field}
+                        value={eventDetails[field]}
                         onChange={handleEventChange}
-                        className="flex-grow focus:outline-none"
+                        className="w-full border border-gray-400 rounded-md px-3 py-2"
                       />
-                      <button
-                        type="button"
-                        onClick={handleCopyLink}
-                        className="ml-2 text-gray-600 hover:text-gray-900"
-                      >
-                        <FontAwesomeIcon icon={faClipboard} />
-                      </button>
-                    </div>
-                  ) : (
-                    <input
-                      required
-                      type={field.includes("DateTime") ? "datetime-local" : "text"}
-                      name={field}
-                      value={eventDetails[field]}
-                      onChange={handleEventChange}
-                      className="w-full border border-gray-400 rounded-md px-3 py-2"
-                    />
-                  )}
-                </div>
-              ))}
+                    )}
+                  </div>
+                )
+              )}
             </div>
           </section>
 
@@ -217,6 +219,7 @@ function UpdateEvent() {
 }
 
 export default UpdateEvent;
+
 
 
 

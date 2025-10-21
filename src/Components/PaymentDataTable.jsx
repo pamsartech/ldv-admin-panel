@@ -54,31 +54,21 @@ export default function PaymentDataTable() {
   // ---- GET API Call ----
   useEffect(() => {
     axios
-      .get("https://la-dolce-vita.onrender.com/api/payment/payment-list")
+      .get("http://dev-api.payonlive.com/api/payment/payment-list")
       .then((res) => {
         const paymentsArray = res.data.data || [];
-        console.log("Payment list Response:", res.data);
-
-        // const formatted = paymentsArray.map((item) => ({
-        //   id: item._id,
-        //   amount: item.orderDetails?.amount || "N/A",
-        //   status: item.paymentStatus || "Pending",
-        //   transactionId: item.orderDetails?.transactionID || "N/A",
-        //   orderId: item.orderDetails?.orderID || "N/A",
-        //   email: item.customerDetails?.email || "N/A",
-        //   date: item.createdAt ? new Date(item.createdAt) : new Date(),
-        //   method: item.orderDetails?.paymentMethod || "N/A",
-        // }));
+        console.log("API Response:", res.data);
 
         const formatted = paymentsArray.map((item) => ({
-          id: item.payment_id,
-          amount: item.amount || "N/A",
-          status: item.status || "Pending",
-          transactionId: item.transactionId || "N/A",
-          orderId: item.orderId || "N/A",
-          email: item.email || "N/A",
+          id: item._id,
+          amount: item.orderDetails?.amount || "N/A",
+          status: item.paymentStatus || "Pending",
+          transactionId: item.orderDetails?.transactionID || "N/A",
+          payment_id: item.payment_id?.payment_id || "N/A",
+          orderId: item.orderDetails?.orderID || "N/A",
+          email: item.customerDetails?.email || "N/A",
           date: item.createdAt ? new Date(item.createdAt) : new Date(),
-          method: item.method || "N/A",
+          method: item.orderDetails?.paymentMethod || "N/A",
         }));
 
         setPayments(formatted);
@@ -102,10 +92,10 @@ export default function PaymentDataTable() {
   if (activeTab === "Refunded")
     tabFiltered = payments.filter((p) => p.status === "Refunded");
 
-  // search logic
+   // search logic
   if (search.trim()) {
     const term = search.toLowerCase();
-    tabFiltered = tabFiltered.filter(
+    tabFiltered  = tabFiltered .filter(
       (p) =>
         p.status.toLowerCase().includes(search.toLowerCase()) ||
         p.email.toLowerCase().includes(search.toLowerCase()) ||
@@ -259,7 +249,7 @@ export default function PaymentDataTable() {
       {/* Table */}
       <div className="overflow-x-auto rounded-lg bg-white shadow">
         <table className="min-w-full text-sm">
-          <thead className="border-b">
+          <thead className="border-b text-left">
             <tr>
               <th className="p-3">
                 <input
@@ -300,13 +290,13 @@ export default function PaymentDataTable() {
                       {p.status}
                     </span>
                   </td>
-                  <td className="p-3">{p.transactionId}</td>
+                  <td className="p-3">{p.payment_id}</td>
                   <td className="p-3">{p.orderId}</td>
                   <td className="p-3">{p.email}</td>
                   <td className="p-3">{p.date.toLocaleString()}</td>
                   <td className="p-3">{p.method}</td>
                   <td className="p-3 text-right">
-                    <button onClick={() => navigate(`/view-payment/${p.id}`)}>
+                    <button onClick={() => navigate(`/user/view-payment/${p.id}`)}>
                       <FontAwesomeIcon icon={faAngleRight} />
                     </button>
                   </td>

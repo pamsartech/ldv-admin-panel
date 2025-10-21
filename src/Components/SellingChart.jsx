@@ -1,8 +1,6 @@
 // src/components/SalesDashboard.jsx
-import { useEffect, useState } from "react";
 import {LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer,} from "recharts";
-import axios
- from "axios";
+
  function SellingChart() {
 
   const data = [
@@ -15,26 +13,12 @@ import axios
     { name: "Sat", sales: 18000 },
   ];
 
-  // ✅ State to store best-selling products (dynamic)
-    const [bestSelling, setBestSelling] = useState([]);
-
-    // ✅ Best selling products
-  useEffect(() => {
-    const fetchBestSelling = async () => {
-      try {
-        console.log("📡 Fetching best-selling products...");
-        const res = await axios.get(
-          "https://la-dolce-vita.onrender.com/api/product/best-selling"
-        );
-        console.log("Bst selling products:", res.data);
-        setBestSelling(res.data.data || []);
-      } catch (error) {
-        console.error("❌ Failed to fetch best-selling products:", error);
-      }
-    };
-
-    fetchBestSelling();
-  }, []);
+  const products = [
+    { img: "https://m.media-amazon.com/images/I/813K52JIyYL._UY1100_.jpg", name: "Red Dress", id: "202035", sold: 688 },
+    { img: "https://rukminim2.flixcart.com/image/704/844/xif0q/hand-messenger-bag/7/n/0/exotic610-11-2-hb-610-handbag-exotic-8-5-original-imahc8zcygd8u2nv.jpeg?q=90&crop=false", name: "Black Handbag", id: "202045", sold: 512 },
+    { img: "https://www.forevershoes.in/cdn/shop/files/LSD06481.jpg?v=1727959319", name: "Beige Heels", id: "202055", sold: 450 },
+    { img: "https://assets.ajio.com/medias/sys_master/root/20240809/hNk9/66b5f1f31d763220fa6d0937/-473Wx593H-700274434-silver-MODEL.jpg", name: "Silver Earrings", id: "202075", sold: 391 },
+  ];
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
@@ -61,20 +45,19 @@ import axios
       <div className="p-5 shadow-lg rounded-xl bg-white ">
         <h3 className="text-lg font-medium mb-4">Best-selling Products</h3>
         <ul className="space-y-4">
-          {bestSelling.map((product, idx) => (
+          {products.map((product, idx) => (
             <li key={idx} className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <img 
-                  src={product.productImages?.[0]}
-                  alt={product.productCategory || "Product"}
+                  src={product.img}
                   className=" w-10 h-10 border-1 rounded-lg border-gray-400"
                 />
                 <div>
-                  <p className="font-medium">{product.productCategory}</p>
-                  <p className="text-sm text-gray-500">{product.productCode || 'N/A'}</p>
+                  <p className="font-medium">{product.name}</p>
+                  <p className="text-sm text-gray-500">{product.id}</p>
                 </div>
               </div>
-              <span className="font-medium">{product.salesStats?.totalQuantitySold || 0}</span>
+              <span className="font-medium">{product.sold}</span>
             </li>
           ))}
         </ul>

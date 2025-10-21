@@ -40,6 +40,7 @@ export default function CustomersTable() {
         // format data if needed
         const formatted = customersArray.map((item) => ({
           id: item._id,
+          customerCode: item.customerCode,
           name: item.customerName || "N/A",
           spend: item.totalSpend ? `€${item.totalSpend}` : "€0",
           date: item.createdAt
@@ -205,7 +206,7 @@ export default function CustomersTable() {
             {currentRows.length > 0 ? (
               currentRows.map((customer) => (
                 <tr key={customer.id} className="border-b hover:bg-gray-50">
-                  <td className="py-3 px-3 font-medium">{customer.id}</td>
+                  <td className="py-3 px-3 font-medium">{customer.customerCode}</td>
                   <td className="py-3 px-3">{customer.name}</td>
                   <td className="py-3 px-3">{customer.spend}</td>
                   <td className="py-3 px-3">{customer.date}</td>
@@ -223,7 +224,7 @@ export default function CustomersTable() {
                     </span>
                   </td>
                   <td className="py-2 px-3 text-gray-500 cursor-pointer">
-                    <button onClick={() => navigate(`/view-customer/${customer.id}` , { state: customer })}>
+                    <button onClick={() => navigate(`/user/view-customer/${customer.id}` , { state: customer })}>
                       <FontAwesomeIcon icon={faAngleRight} />
                     </button>
                   </td>

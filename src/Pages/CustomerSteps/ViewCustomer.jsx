@@ -66,7 +66,7 @@ const ViewCustomer = () => {
   useEffect(() => {
     const fetchCustomer = async () => {
       try {
-        const response = await axios.get(`https://la-dolce-vita.onrender.com/api/user/user-details/${customerId}`);
+        const response = await axios.get(`http://dev-api.payonlive.com/api/user/user-details/${customerId}`);
         const data = response.data.data;
 
         // Map API data to component state
@@ -108,13 +108,13 @@ const ViewCustomer = () => {
 
     try {
       setIsDeleting(true);
-      const response = await axios.delete(`https://la-dolce-vita.onrender.com/api/user/delete-customer/${customerId}`, {
+      const response = await axios.delete(`http://dev-api.payonlive.com/api/user/delete-customer/${customerId}`, {
         headers: { "Content-Type": "application/json" },
       });
 
       if (response.status === 200) {
         alert("Customer deleted successfully!");
-        navigate("/Customers");
+        navigate("/user/Customers");
       } else {
         alert(`Failed to delete customer: ${response.data.message || "Unknown error"}`);
       }
@@ -157,11 +157,11 @@ const ViewCustomer = () => {
             <FontAwesomeIcon icon={faTrashCan} className="px-2" /> Delete customer
           </button> */}
 
-          <button onClick={() => navigate(`/update-customer/${customer._id}` , { state: customer })} className="mx-2 px-3 py-1 border rounded-md text-[#114E9D] bg-blue-50 hover:bg-blue-100">
+          <button onClick={() => navigate(`/user/update-customer/${customer._id}` , { state: customer })} className="mx-2 px-3 py-1 border rounded-md text-[#114E9D] bg-blue-50 hover:bg-blue-100">
             <FontAwesomeIcon icon={faArrowRotateLeft} className="px-2" /> Update
           </button>
 
-          <button onClick={() => navigate("/Customers")} className="px-3 py-1 border rounded-md text-white bg-[#02B978] hover:bg-[#04D18C]">
+          <button onClick={() => navigate("/user/Customers")} className="px-3 py-1 border rounded-md text-white bg-[#02B978] hover:bg-[#04D18C]">
             <FontAwesomeIcon icon={faArrowLeft} className="text-white px-2" /> Back to Main View
           </button>
         </div>

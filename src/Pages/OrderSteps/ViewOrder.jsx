@@ -39,9 +39,8 @@ export default function ViewOrder() {
     const fetchOrder = async () => {
       try {
         const response = await axios.get(
-          `https://la-dolce-vita.onrender.com/api/order/order-details/${orderId}`
+          `http://dev-api.payonlive.com/api/order/order-details/${orderId}`
         );
-        console.log('Veiw order page', response.data)
         if (response.data.success && response.data.data) {
           setOrder(response.data.data);
           setOrderStatus(response.data.data.shippingStatus || "Pending");
@@ -71,12 +70,12 @@ const handleDelete = async () => {
   try {
     setIsDeleting(true);
     const response = await axios.delete(
-      `https://la-dolce-vita.onrender.com/api/order/delete-order/${orderId}`
+      `http://dev-api.payonlive.com/api/order/delete-order/${orderId}`
     );
 
     if (response.data.success) {
       alert("Order deleted successfully!");
-      navigate("/Orders");
+      navigate("/user/Orders");
     } else {
       alert(`Failed to delete order: ${response.data.message || "Unknown error"}`);
     }
@@ -108,7 +107,7 @@ const handleDelete = async () => {
           </button>
 
           <button
-            onClick={() => navigate(`/update-order/${orderId}` , { state: { orderData: order } })}
+            onClick={() => navigate(`/user/update-order/${orderId}` , { state: { orderData: order } })}
             className="mx-2 px-3 py-1 border rounded-md text-[#114E9D] bg-blue-50 hover:bg-blue-100"
           >
             <FontAwesomeIcon icon={faArrowRotateLeft} className="px-2" />
@@ -116,7 +115,7 @@ const handleDelete = async () => {
           </button>
 
           <button
-            onClick={() => navigate("/Orders")}
+            onClick={() => navigate("/user/Orders")}
             className="px-3 py-1 border rounded-md text-white bg-[#02B978] hover:bg-[#04D18C]"
           >
             <FontAwesomeIcon icon={faArrowLeft} className="text-white px-2" />

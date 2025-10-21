@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faSearch,
   faAngleRight,
   faCircleCheck,
   faChartLine,
@@ -33,7 +32,6 @@ export default function OrdersDataTable() {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [filterPayment, setFilterPayment] = useState("all");
   const [sortAsc, setSortAsc] = useState(true);
-  const [search, setSearch] = useState("");
   const ordersPerPage = 8;
 
   // avrage order
@@ -49,9 +47,8 @@ export default function OrdersDataTable() {
       setError(null);
       try {
         const response = await axios.get(
-          "https://la-dolce-vita.onrender.com/api/order/order-list"
+          "http://dev-api.payonlive.com/api/order/order-list"
         );
-        console.log("Order table data", response.data);
         // Adjust this based on the actual API shape
         const apiOrders = response.data.orders || response.data.data || [];
         console.log("API Response:", response.data);
@@ -59,6 +56,7 @@ export default function OrdersDataTable() {
           id: o._id || "N/A",
           // customer: o.name || "Unknown",
           customer: o.customerName || o.customer || "Unknown",
+
           product:
             o.orderItems && o.orderItems.length > 0
               ? o.orderItems.map((item) => item.productName).join(", ")
@@ -70,8 +68,10 @@ export default function OrdersDataTable() {
               ? o.orderItems.reduce((sum, item) => sum + (item.total || 0), 0)
               : 0,
           date: o.createdAt || "",
-        }));
+          phoneNumber: o.phoneNumber || o.phoneNumber || "unknown",
+          transactionId : o.transactionId || o.transactionId || "unknown",
 
+        }));
         // const formattedOrders = apiOrders.map((o) => ({
         //   id: o._id || o.id || "N/A",
         //   customer: o.customerName || o.customer || "Unknown",
@@ -97,7 +97,7 @@ export default function OrdersDataTable() {
         const res = await axios.get(
           "https://la-dolce-vita.onrender.com/api/order/orders-average"
         );
-        // console.log("Average API Response:", res.data); // ✅ log backend response
+        console.log("Average API Response:", res.data); // ✅ log backend response
 
         if (res.data.success) {
           setAverageData({
@@ -115,18 +115,6 @@ export default function OrdersDataTable() {
   // Filter + Sort + Tabs
   const filteredOrders = useMemo(() => {
     let result = [...orders];
-
-    if (search.trim()) {
-      const lowerSearch = search.toLowerCase();
-      result = result.filter(
-        (o) =>
-          o.customer.toLowerCase().includes(lowerSearch) ||
-          o.product.toLowerCase().includes(lowerSearch) ||
-          // o.shipping.toLowerCase().includes(lowerSearch) || 
-          o.id.toString().toLowerCase().includes(lowerSearch)
-      );
-    }
-
     if (activeTab === "active") {
       result = result.filter(
         (o) => o.payment === "Pending" || o.shipping === "Shipped"
@@ -145,7 +133,7 @@ export default function OrdersDataTable() {
       return sortAsc ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
     });
     return result;
-  }, [orders, activeTab, filterPayment, sortAsc, search]);
+  }, [orders, activeTab, filterPayment, sortAsc]);
   const totalPages = Math.ceil(filteredOrders.length / ordersPerPage);
   const currentOrders = filteredOrders.slice(
     (currentPage - 1) * ordersPerPage,
@@ -224,26 +212,6 @@ export default function OrdersDataTable() {
           </button>
         </div>
       </div>
-
-      {/* Search functionality */}
-      {/* search bar code */}
-      <div className="flex gap-2 mx-6 relative mt-5">
-        <FontAwesomeIcon
-          icon={faSearch}
-          className="absolute left-3 top-3 text-gray-400"
-        />
-        <input
-          type="text"
-          placeholder="Search"
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setCurrentPage(1);
-          }}
-          className="w-full pl-10 pr-4 py-2 rounded-md border border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-      </div>
-
       {/* Orders Table */}
       <div className="p-6 bg-gray-50 min-h-screen">
         <div className="grid grid-cols-12 gap-4">
@@ -265,9 +233,9 @@ export default function OrdersDataTable() {
               </thead>
               <tbody>
                 {currentOrders.length > 0 ? (
-                  currentOrders.map((order, index) => (
+                  currentOrders.map((order) => (
                     <tr key={order._id} className="border-b hover:bg-gray-50">
-                      <td className="py-3 px-4 font-semibold">{index + 1}</td>
+                      <td className="py-3 px-4 font-medium">{order.id}</td>
                       <td className="py-3 px-4">{order.customer}</td>
                       <td className="py-3 px-4">{order.product}</td>
                       <td className="py-3 px-4">
@@ -397,7 +365,9 @@ export default function OrdersDataTable() {
                 </h2>
                 <button
                   className="underline"
-                  onClick={() => navigate(`/view-order/${selectedOrder.id}`)}
+                  onClick={() =>
+                    navigate(`/user/view-order/${selectedOrder.id}`)
+                  }
                 >
                   View Details
                 </button>
@@ -433,7 +403,7 @@ export default function OrdersDataTable() {
                 </h3>
                 <p>
                   {" "}
-                  <strong>Name:</strong> {selectedOrder.customer} Smith
+                  <strong>Name:</strong> {selectedOrder.customer}{" "}
                 </p>
                 <p>
                   {" "}
@@ -441,8 +411,8 @@ export default function OrdersDataTable() {
                   @gmail.com
                 </p>
                 <p>
-                  {" "}
-                  <strong>Phone:</strong> 9238972921
+                  
+                  <strong>Phone:</strong> {selectedOrder.phoneNumber} 
                 </p>
               </div>
 
@@ -453,78 +423,70 @@ export default function OrdersDataTable() {
                   Payment Info
                 </h3>
                 <p>
-                  {" "}
+                  
                   <strong>Method:</strong> Stripe
                 </p>
                 <p>
-                  {" "}
+                 
                   <strong>Status: </strong> {selectedOrder.payment}
                 </p>
                 <p>
-                  {" "}
-                  <strong>Transaction ID:</strong> 21e71378182221
+                  
+                  <strong>Transaction ID:</strong> {selectedOrder.transactionId} 21e71378182221{" "}
                 </p>
               </div>
 
               <hr className="my-4" />
 
               {/* TikTok Live Ref */}
-              <div className="text-xs text-gray-700 space-y-2">
-                <h3 className="font-bold text-sm text-gray-800">
-                  TikTok Live Ref
-                </h3>
-                <p>
-                  {" "}
-                  <strong>Session name:</strong> Clothing code{" "}
-                </p>
-              </div>
+              {/* <div className="text-xs text-gray-700 space-y-2">
+                <h3 className="font-bold text-sm text-gray-800">TikTok Live Ref</h3>
+                <p> <strong>Session name:</strong>  Clothing code </p>
+              </div> */}
 
-              <hr className="my-4" />
+              {/* <hr className="my-4" /> */}
               {/* Products Sold */}
-              <div>
+              {/* <div>
                 <h3 className="font-bold text-gray-800">Products Sold</h3>
                 <div className="space-y-2 mt-2">
                   {[1, 2, 3].map((_, i) => (
-                    <div
-                      key={i}
-                      className="flex items-center justify-between text-sm"
-                    >
+                    <div key={i} className="flex items-center justify-between text-sm">
                       <div className="flex items-center gap-2">
                         <img
                           src="https://m.media-amazon.com/images/I/81+uJH8pxYL._UY1100_.jpg"
                           alt="Product"
                           className="w-8 h-8 border-1 rounded-lg border-gray-400  object-contain "
                         />
+                        
                       </div>
                       <span className="text-xs ">Denim shirt</span>
                       <span className="text-xs ">€13.53</span>
                     </div>
                   ))}
                 </div>
-              </div>
+              </div> */}
 
-              <hr className="my-4" />
+              {/* <hr className="my-4" /> */}
 
               {/* Totals */}
-              <div className="text-sm text-end  text-gray-700 space-y-1">
+              {/* <div className="text-sm text-end  text-gray-700 space-y-1">
                 <p>
-                  {" "}
+                
                   <strong className="px-1 font-semibold">Subtotal:</strong>{" "}
                   €28.23
                 </p>
                 <p>
-                  {" "}
+               
                   <strong className="px-1 font-semibold">
-                    {" "}
-                    Shipping :{" "}
-                  </strong>{" "}
-                  Free
+                    
+                    Shipping :
+                  </strong>
                 </p>
                 <p>
-                  {" "}
+                 
                   <strong className="px-1 font-semibold">Total:</strong> €28.23
                 </p>
-              </div>
+              </div> */}
             </div>
           )}
         </div>

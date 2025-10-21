@@ -16,6 +16,7 @@ export default function AddProductWizard() {
     price: "",
     productName: "",
     productCode: "",
+    status: "",
     gender: "Men",
     size: "M",
     color: "#B21E1E",
@@ -30,40 +31,48 @@ export default function AddProductWizard() {
 
   // final submit (multipart/form-data) — sends all params + files
   const handleSubmit = async () => {
-    try {
-      const data = new FormData();
+  try {
+    const data = new FormData();
 
-      // append scalar fields
-      data.append("tiktokSessionId", formData.tiktokSessionId || "");
-      data.append("price", formData.price || "");
-      data.append("productName", formData.productName || "");
-      data.append("productCode", formData.productCode || "");
-      data.append("gender", formData.gender || "");
-      data.append("size", formData.size || "");
-      data.append("color", formData.color || "");
-      data.append("stock", formData.stock || "");
-      data.append("category", formData.category || "");
+    // append scalar fields safely
+    data.append("tiktokSessionId", formData.tiktokSessionId || "");
+    data.append("price", formData.price ? Number(formData.price) : 0);
+    data.append("productName", formData.productName || "");
+    data.append("productCode", formData.productCode || "");
+    data.append("status", formData.status || "");
+    data.append("gender", formData.gender || "Men");
+    data.append("size", formData.size || "M");
+    data.append("color", formData.color || "#B21E1E");
+    data.append("stock", formData.stock ? Number(formData.stock) : 0);
+    data.append("category", formData.category || "");
 
-      // images: append each file (backend expects array `images`)
-      if (Array.isArray(formData.images)) {
-        formData.images.forEach((file) => {
-          if (file) data.append("images", file);
-        });
-      }
-
-      // POST - URL  endpoint
-      await axios.post("https://la-dolce-vita.onrender.com/api/product/add-product", data, {
-        // DO NOT set Content-Type; axios will set proper multipart boundary
+    // images: append each file as images[]
+    if (Array.isArray(formData.images)) {
+      formData.images.forEach((file) => {
+        if (file) data.append("images[]", file);
       });
+    }
 
-      // success
-      window.alert("✅ Product created successfully");
-      navigate("/Products");
-    } catch (err) {
+    // POST request
+    const res = await axios.post(
+      "http://dev-api.payonlive.com/api/product/add-product",
+      data
+    );
+
+    window.alert("✅ Product created successfully");
+    navigate("/user/Products");
+
+  } catch (err) {
+    if (err.response) {
+      console.error("Backend error:", err.response.data);
+      window.alert(`❌ Error: ${JSON.stringify(err.response.data)}`);
+    } else {
       console.error("API submit error:", err);
       window.alert("❌ Error submitting product (check console)");
     }
-  };
+  }
+};
+
 
   return (
     <div>

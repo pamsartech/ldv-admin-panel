@@ -14,23 +14,13 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
 
-export default function ProductTable({ selectedProducts, setSelectedProducts }) {
+export default function ProductTable() {
   const navigate = useNavigate();
 
-  // 🔹 API Data
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // image helper function
-  const getImageUrl = (img) => {
-    if (!img) return "/placeholder-image.png"; // fallback image
-    return img.startsWith("http")
-      ? img
-      : `https://la-dolce-vita.onrender.com${img}`;
-  };
-
-  // 🔹 UI State
   const [activeTab, setActiveTab] = useState("all");
   const [selected, setSelected] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -44,15 +34,20 @@ export default function ProductTable({ selectedProducts, setSelectedProducts }) 
 
   const rowsPerPage = 7;
 
-  // 🔹 Fetch Products API
+  const getImageUrl = (img) => {
+    if (!img) return "/placeholder-image.png";
+    return img.startsWith("http")
+      ? img
+      : `https://la-dolce-vita.onrender.com${img}`;
+  };
+
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
         const res = await axios.get(
-          "https://la-dolce-vita.onrender.com/api/product/product-list"
+          "http://dev-api.payonlive.com/api/product/product-list"
         );
-        // console.log(res.data);
         if (res.data && res.data.data) {
           setProducts(res.data.data);
         } else {
@@ -68,44 +63,49 @@ export default function ProductTable({ selectedProducts, setSelectedProducts }) 
     fetchProducts();
   }, []);
 
-  // 🔹 Filter by Tab (status)
+  // ============================
+  // 🔸 Filtering Logic
+  // ============================
   let filteredProducts = [...products];
+
+  // ✅ Filter by tab (status)
   if (activeTab === "active") {
-    filteredProducts = filteredProducts.filter((p) => p.status === "active");
-  } else if (activeTab === "archived") {
-    filteredProducts = filteredProducts.filter((p) => p.status === "archived");
+    filteredProducts = filteredProducts.filter(
+      (p) => p.status?.toLowerCase().trim() === "active"
+    );
+  } else if (activeTab === "inactive") {
+    filteredProducts = filteredProducts.filter(
+      (p) => p.status?.toLowerCase().trim() === "inactive"
+    );
   }
 
-  
-  // search logic
+  // ✅ Search filter
   if (search.trim()) {
     const term = search.toLowerCase();
     filteredProducts = filteredProducts.filter(
       (p) =>
-        (p.productName && p.productName.toLowerCase().includes(term)) ||
-        (p.productCode && p.productCode.toLowerCase().includes(term)) ||
-        (p.category && p.category.toLowerCase().includes(term)) ||
-        (p._id && p._id.toLowerCase().includes(term))
+        p.productName?.toLowerCase().includes(term) ||
+        p.productCode?.toLowerCase().includes(term) ||
+        p.category?.toLowerCase().includes(term) ||
+        p._id?.toLowerCase().includes(term)
     );
   }
 
-  // 🔹 Filter by Category
-  filteredProducts =
-    selectedCategory === "All"
-      ? filteredProducts
-      : filteredProducts.filter((p) => p.category === selectedCategory);
+  // ✅ Category filter
+  if (selectedCategory !== "All") {
+    filteredProducts = filteredProducts.filter(
+      (p) => p.category === selectedCategory
+    );
+  }
 
-  // 🔹 Sort
-  filteredProducts =
-    sortOrder === "asc"
-      ? [...filteredProducts].sort((a, b) =>
-          (a.productName || "").localeCompare(b.productName || "")
-        )
-      : [...filteredProducts].sort((a, b) =>
-          (b.productName || "").localeCompare(a.productName || "")
-        );
+  // ✅ Sorting
+  filteredProducts.sort((a, b) => {
+    const nameA = a.productName?.toLowerCase() || "";
+    const nameB = b.productName?.toLowerCase() || "";
+    return sortOrder === "asc" ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
+  });
 
-  // 🔹 Pagination
+  // ✅ Pagination
   const totalPages = Math.ceil(filteredProducts.length / rowsPerPage);
   const startIndex = (currentPage - 1) * rowsPerPage;
   const currentProducts = filteredProducts.slice(
@@ -113,26 +113,29 @@ export default function ProductTable({ selectedProducts, setSelectedProducts }) 
     startIndex + rowsPerPage
   );
 
-  // 🔹 Select all / row
-   const toggleSelectAll = (e) => {
-    if (e.target.checked)
-      setSelectedProducts(currentProducts.map((p) => p._id));
-    else setSelectedProducts([]);
+  // ✅ Checkbox selection
+  const toggleSelectAll = (e) => {
+    if (e.target.checked) setSelected(currentProducts.map((p) => p._id));
+    else setSelected([]);
   };
+
   const toggleSelect = (id) => {
-    setSelectedProducts((prev) =>
+    setSelected((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
     );
   };
+
   const allSelected =
     currentProducts.length > 0 &&
     currentProducts.every((p) => selected.includes(p._id));
 
+  // ============================
+  // 🔸 UI Rendering
+  // ============================
   return (
     <div>
-      {/* Tabs & Filter/Sort */}
+      {/* Tabs */}
       <div className="flex justify-between items-center border-2 border-gray-300 px-6 mt-5 rounded-md p-2 mx-6">
-        {/* Tabs */}
         <div className="flex gap-6">
           <button
             onClick={() => {
@@ -162,20 +165,20 @@ export default function ProductTable({ selectedProducts, setSelectedProducts }) 
           </button>
           <button
             onClick={() => {
-              setActiveTab("archived");
+              setActiveTab("inactive");
               setCurrentPage(1);
             }}
             className={`flex items-center gap-2 text-sm px-2 pb-1 ${
-              activeTab === "archived"
+              activeTab === "inactive"
                 ? "text-black font-medium border-b-2 border-black"
                 : "text-gray-600 hover:text-black"
             }`}
           >
-            <FontAwesomeIcon icon={faBoxArchive} /> Archived
+            <FontAwesomeIcon icon={faBoxArchive} /> Inactive
           </button>
         </div>
 
-        {/* Filter & Sort */}
+        {/* Sort & Filter */}
         <div className="flex gap-2 relative">
           {/* Filter Dropdown */}
           <div className="relative">
@@ -184,10 +187,7 @@ export default function ProductTable({ selectedProducts, setSelectedProducts }) 
               className="flex items-center gap-2 border border-gray-400 px-3 py-1.5 rounded-md text-sm text-gray-900 hover:bg-gray-100 transition"
             >
               Filter
-              <FontAwesomeIcon
-                icon={faChevronDown}
-                className="ml-1 text-gray-600"
-              />
+              <FontAwesomeIcon icon={faChevronDown} className="ml-1 text-gray-600" />
             </button>
             {showFilter && (
               <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-300 rounded-md shadow-md z-50">
@@ -215,10 +215,7 @@ export default function ProductTable({ selectedProducts, setSelectedProducts }) 
               className="flex items-center gap-2 border border-gray-400 px-3 py-1.5 rounded-md text-sm text-gray-900 hover:bg-gray-100 transition"
             >
               Sort
-              <FontAwesomeIcon
-                icon={faChevronDown}
-                className="ml-1 text-gray-600"
-              />
+              <FontAwesomeIcon icon={faChevronDown} className="ml-1 text-gray-600" />
             </button>
             {showSort && (
               <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-300 rounded-md shadow-md z-50">
@@ -246,7 +243,7 @@ export default function ProductTable({ selectedProducts, setSelectedProducts }) 
         </div>
       </div>
 
-      {/* search bar code */}
+      {/* Search bar */}
       <div className="flex gap-2 mx-6 relative mt-5">
         <FontAwesomeIcon
           icon={faSearch}
@@ -264,7 +261,7 @@ export default function ProductTable({ selectedProducts, setSelectedProducts }) 
         />
       </div>
 
-      {/* Loading / Error */}
+      {/* Table */}
       {loading ? (
         <p className="text-center py-6">Loading products...</p>
       ) : error ? (
@@ -289,6 +286,7 @@ export default function ProductTable({ selectedProducts, setSelectedProducts }) 
                 <th className="p-3">Product Code</th>
                 <th className="p-3">Size</th>
                 <th className="p-3">Color</th>
+                <th className="p-3">Status</th>
                 <th className="p-3 text-center">Actions</th>
               </tr>
             </thead>
@@ -309,12 +307,6 @@ export default function ProductTable({ selectedProducts, setSelectedProducts }) 
                     />
                   </td>
                   <td className="p-3 flex items-center gap-3">
-                    {/* <img
-                      src={`https://la-dolce-vita.onrender.com${item.images[0]}`}
-                      alt={item.productName}
-                      className="w-10 h-10 rounded-md object-cover border"
-                    /> */}
-
                     <img
                       src={getImageUrl(item.images?.[0])}
                       alt={item.productName}
@@ -327,12 +319,22 @@ export default function ProductTable({ selectedProducts, setSelectedProducts }) 
                   <td className="p-3">{item.productCode}</td>
                   <td className="p-3">{item.size}</td>
                   <td className="p-3">{item.color}</td>
+                  <td className="p-3">
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        item.status?.toLowerCase().trim() === "active"
+                          ? "bg-green-100 text-green-600 border border-green-400"
+                          : "bg-red-100 text-red-600 border border-red-400"
+                      }`}
+                    >
+                      {item.status?.toLowerCase().trim() === "active"
+                        ? "Active"
+                        : "Inactive"}
+                    </span>
+                  </td>
                   <td className="p-3 flex gap-4 justify-center">
-                    <button className="text-gray-500 hover:text-gray-700">
-                      {/* <FontAwesomeIcon icon={faTrash} /> */}
-                    </button>
                     <button
-                      onClick={() => navigate(`/view-product/${item._id}`)}
+                      onClick={() => navigate(`/user/view-product/${item._id}`)}
                       className="text-gray-600 hover:text-black"
                     >
                       <FontAwesomeIcon icon={faAngleRight} />

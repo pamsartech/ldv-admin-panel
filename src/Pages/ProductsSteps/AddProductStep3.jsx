@@ -26,7 +26,9 @@ function AddProductStep3({ formData, setFormData, prevStep, handleSubmit }) {
 
   // Index of side image shown in main preview
   const [selectedIndex, setSelectedIndex] = useState(
-    previews.findIndex((p) => p !== null) >= 0 ? previews.findIndex((p) => p !== null) : 0
+    previews.findIndex((p) => p !== null) >= 0
+      ? previews.findIndex((p) => p !== null)
+      : 0
   );
 
   // Clean up object URLs on unmount
@@ -101,14 +103,18 @@ function AddProductStep3({ formData, setFormData, prevStep, handleSubmit }) {
             <div className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-400 text-white">
               1
             </div>
-            <span className="mt-3 text-sm font-bold text-gray-400">Enter Product Info</span>
+            <span className="mt-3 text-sm font-bold text-gray-400">
+              Enter Product Info
+            </span>
           </div>
           <div className="flex-1 pb-5 border-t-3 border-gray-800"></div>
           <div className="flex flex-col items-center text-gray-400 font-semibold">
             <div className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-400 text-white">
               2
             </div>
-            <span className="mt-3 font-bold text-sm text-gray-400">Add variations</span>
+            <span className="mt-3 font-bold text-sm text-gray-400">
+              Add variations
+            </span>
           </div>
           <div className="flex-1 pb-5 border-t-3 border-gray-800"></div>
           <div className="flex flex-col items-center text-gray-400 font-semibold">
@@ -147,61 +153,67 @@ function AddProductStep3({ formData, setFormData, prevStep, handleSubmit }) {
             </div>
 
             {/* Side Uploads */}
-            {/* Side Uploads */}
-<div className="flex flex-col gap-3">
-  {[0, 1, 2, 3].map((index) => (
-    <div key={index} className="relative">
-      <label
-        htmlFor={`sideImageUpload-${index}`}
-        className="w-12 h-12 flex items-center justify-center bg-gray-200 rounded-lg cursor-pointer hover:bg-gray-300 transition overflow-hidden"
-      >
-        {previews[index] ? (
-          <img
-            src={previews[index]}
-            alt={`Upload ${index}`}
-            className="w-full h-full object-cover rounded-lg"
-            onClick={() => handleSelectMain(index)}
-          />
-        ) : (
-          <FontAwesomeIcon icon={faPlus} className="text-gray-600" />
-        )}
-      </label>
-      <input
-        id={`sideImageUpload-${index}`}
-        type="file"
-        accept="image/*"
-        className="hidden"
-        onChange={(e) => handleImageUpload(e, index)}
-        required={index === 0} // ✅ HTML5 required only for the first image
-      />
-      {previews[index] && (
-        <button
-          type="button"
-          onClick={() => handleRemoveImage(index)}
-          className="absolute top-1 right-1 bg-black bg-opacity-50 text-white rounded-full p-1"
-        >
-          <FontAwesomeIcon icon={faTimes} size="sm" />
-        </button>
-      )}
-    </div>
-  ))}
-</div>
-
+            <div className="flex flex-col gap-3">
+              {[0, 1, 2, 3].map((index) => (
+                <div key={index} className="relative">
+                  <label
+                    htmlFor={`sideImageUpload-${index}`}
+                    className="w-12 h-12 flex items-center justify-center bg-gray-200 rounded-lg cursor-pointer hover:bg-gray-300 transition overflow-hidden"
+                  >
+                    {previews[index] ? (
+                      <img
+                        src={previews[index]}
+                        alt={`Upload ${index}`}
+                        className="w-full h-full object-cover rounded-lg"
+                        onClick={() => handleSelectMain(index)}
+                      />
+                    ) : (
+                      <FontAwesomeIcon
+                        icon={faPlus}
+                        className="text-gray-600"
+                      />
+                    )}
+                  </label>
+                  <input
+                    id={`sideImageUpload-${index}`}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => handleImageUpload(e, index)}
+                    required={index === 0} // ✅ HTML5 required only for the first image
+                  />
+                  {previews[index] && (
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveImage(index)}
+                      className="absolute top-1 right-1 bg-black bg-opacity-50 text-white rounded-full p-1"
+                    >
+                      <FontAwesomeIcon icon={faTimes} size="sm" />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
         <h6 className="text-center text-sm font-medium my-4">
-          <FontAwesomeIcon icon={faCircleInfo} /> The size of each image should not be more than 5 MB
+          <FontAwesomeIcon icon={faCircleInfo} /> The size of each image should
+          not be more than 5 MB
         </h6>
 
         {/* navigation */}
         <div className="flex justify-between max-w-lg mx-auto mt-6">
           <button
             type="button"
-            onClick={() => navigate("/Products")}
+            onClick={() => navigate("/user/Products")}
             className="px-3 py-1 border border-red-700 text-red-700 bg-red-50 rounded-md hover:bg-gray-100"
           >
-            <FontAwesomeIcon icon={faXmark} size="lg" className="text-red-700 px-2" />
+            <FontAwesomeIcon
+              icon={faXmark}
+              size="lg"
+              className="text-red-700 px-2"
+            />
             Discard Product
           </button>
 
@@ -227,6 +239,3 @@ function AddProductStep3({ formData, setFormData, prevStep, handleSubmit }) {
 }
 
 export default AddProductStep3;
-
-
-

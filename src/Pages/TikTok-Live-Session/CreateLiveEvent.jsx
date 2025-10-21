@@ -166,7 +166,7 @@ function CreateLiveEvent() {
 
     try {
       const response = await axios.post(
-        "https://la-dolce-vita.onrender.com/api/event/create-live-event",
+        "http://dev-api.payonlive.com/api/event/create-live-event",
         payload
       );
 
@@ -177,7 +177,7 @@ function CreateLiveEvent() {
         setShowPopup(true);
         setTimeout(() => {
           console.log("🚀 Redirecting to /tiktok");
-          navigate("/tiktok");
+          navigate("/user/tiktok");
         }, 1500);
       } else {
         setPopupMessage(response.data.message || "Failed to create event ❌");
@@ -198,7 +198,7 @@ function CreateLiveEvent() {
       <div className="flex justify-between mt-5 mx-10">
         <h1 className="font-medium text-lg">Create New Live Event</h1>
         <button
-          onClick={() => navigate("/tiktok")}
+          onClick={() => navigate("/user/tiktok")}
           className="mr-20 px-3 py-1 border border-red-700 text-red-700 bg-red-50 rounded-md hover:bg-gray-100"
         >
           <FontAwesomeIcon

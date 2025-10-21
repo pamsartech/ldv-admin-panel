@@ -38,7 +38,7 @@ export default function TiktokLiveTable() {
       try {
         setLoading(true);
         const res = await axios.get(
-          "https://la-dolce-vita.onrender.com/api/event/event-list"
+          "http://dev-api.payonlive.com/api/event/event-list"
         );
 
         const eventsArray = res.data.data || [];
@@ -283,7 +283,7 @@ export default function TiktokLiveTable() {
                     <td className="p-3 text-right">
                       <button
                         onClick={() =>
-                          navigate(`/live-event-detail/${item.id}`)
+                          navigate(`/user/live-event-detail/${item.id}`)
                         }
                       >
                         {/* onClick={() => navigate(`/live-event-detail/${eventId}`)} */}

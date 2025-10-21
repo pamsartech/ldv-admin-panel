@@ -63,13 +63,13 @@ const CreateCustomer = () => {
 
   try {
     const res = await axios.post(
-      "https://la-dolce-vita.onrender.com/api/user/create-customer",
+      "http://dev-api.payonlive.com/api/user/create-customer",
       payload
     );
 
     console.log("✅ Customer created:", res.data);
     alert("Customer created successfully!");
-    navigate("/Customers"); // redirect after save
+    navigate("/user/Customers"); // redirect after save
   } catch (err) {
     console.error("❌ Error creating customer:", err.response?.data || err.message);
     alert("Failed to create customer. Please check the console for details.");
@@ -85,7 +85,7 @@ const CreateCustomer = () => {
       <div className="flex justify-between mt-5 mx-10">
         <h1 className="font-medium text-lg">Add New Customer</h1>
         <button
-          onClick={() => navigate("/Customers")}
+          onClick={() => navigate("/user/Customers")}
           className="px-3 py-1 border border-red-700 text-red-700 bg-red-50 rounded-md hover:bg-gray-100"
         >
           <FontAwesomeIcon
