@@ -17,6 +17,12 @@ const ViewProduct = () => {
   const [error, setError] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
 
+  // product status color
+  const statusColors = {
+    Active: "bg-green-100 text-green-700 border border-green-300",
+    Inactive: "bg-red-100 text-red-700 border border-red-300",
+  };
+
   useEffect(() => {
     const fetchProduct = async () => {
       try {
@@ -150,7 +156,6 @@ const ViewProduct = () => {
               ) : (
                 <p>No images available</p>
               )}
-
             </div>
 
             {/* Description placeholder */}
@@ -243,6 +248,25 @@ const ViewProduct = () => {
               <div className="flex justify-between">
                 <span className="text-gray-600 font-semibold">Category</span>
                 <span>{product.category}</span>
+              </div>
+
+              <div className="flex justify-between ">
+                <span className="text-gray-600 font-semibold">Status</span>
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-medium ${
+                    statusColors[
+                      product.status
+                        ? product.status.charAt(0).toUpperCase() +
+                          product.status.slice(1).toLowerCase()
+                        : "Inactive"
+                    ] || "bg-gray-100 text-gray-600 border border-gray-300"
+                  }`}
+                >
+                  {product.status
+                    ? product.status.charAt(0).toUpperCase() +
+                      product.status.slice(1).toLowerCase()
+                    : "Inactive"}
+                </span>
               </div>
             </div>
           </div>

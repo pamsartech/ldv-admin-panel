@@ -52,7 +52,7 @@ function UpdateProduct() {
             price: data.price || "",
             stock: data.stock || "",
             category: data.category || "",
-            status: data.status || "Active", // ✅ Pre-fill status if available
+            status: data.status || "", // ✅ Pre-fill status if available
           });
 
           setSelectedGender(data.gender || "Men");

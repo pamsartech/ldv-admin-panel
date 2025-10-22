@@ -68,6 +68,7 @@ const ViewCustomer = () => {
       try {
         const response = await axios.get(`http://dev-api.payonlive.com/api/user/user-details/${customerId}`);
         const data = response.data.data;
+        console.log(response);
 
         // Map API data to component state
         setCustomer({

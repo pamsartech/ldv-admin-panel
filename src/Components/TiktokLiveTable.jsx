@@ -254,6 +254,7 @@ export default function TiktokLiveTable() {
                 <th className="p-3">Start</th>
                 <th className="p-3">End</th>
                 <th className="p-3">Status</th>
+                <th className="p-3">Action</th>
               </tr>
             </thead>
             <tbody>
@@ -280,7 +281,7 @@ export default function TiktokLiveTable() {
                         {item.status}
                       </span>
                     </td>
-                    <td className="p-3 text-right">
+                    <td className="p-3 text-left">
                       <button
                         onClick={() =>
                           navigate(`/user/live-event-detail/${item.id}`)

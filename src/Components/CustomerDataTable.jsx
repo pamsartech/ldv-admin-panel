@@ -40,14 +40,14 @@ export default function CustomersTable() {
         // format data if needed
         const formatted = customersArray.map((item) => ({
           id: item._id,
-          customerCode: item.customerCode,
-          name: item.customerName || "N/A",
-          spend: item.totalSpend ? `€${item.totalSpend}` : "€0",
-          date: item.createdAt
-            ? new Date(item.createdAt).toLocaleDateString()
+          // customerCode: item.customerCode,
+          name: item.name || "N/A",
+          spend: item.totalSpent ? `€${item.totalSpent}` : "€0",
+          date: item.dateJoined
+            ? new Date(item.dateJoined).toLocaleDateString()
             : "N/A",
           email: item.email || "N/A",
-          orders: item.orders || 0,
+          orders: item.totalOrders || 0,
           status: item.status || "Deactive",
         }));
 
@@ -206,7 +206,7 @@ export default function CustomersTable() {
             {currentRows.length > 0 ? (
               currentRows.map((customer) => (
                 <tr key={customer.id} className="border-b hover:bg-gray-50">
-                  <td className="py-3 px-3 font-medium">{customer.customerCode}</td>
+                  <td className="py-3 px-3 font-medium">{customer.id}</td>
                   <td className="py-3 px-3">{customer.name}</td>
                   <td className="py-3 px-3">{customer.spend}</td>
                   <td className="py-3 px-3">{customer.date}</td>

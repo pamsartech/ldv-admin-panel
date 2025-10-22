@@ -64,18 +64,35 @@ export default function ProductTable() {
   }, []);
 
   // ============================
-  // 🔸 Filtering Logic
+  // 🔸 Filtering Logic (Fixed)
   // ============================
   let filteredProducts = [...products];
 
-  // ✅ Filter by tab (status)
-  if (activeTab === "active") {
+  // Normalize all possible status values
+  const normalizeStatus = (status) => {
+    if (!status) return "unknown";
+    const s = status.toString().toLowerCase().trim();
+    if (["active", "1", "true", "enabled"].includes(s)) return "active";
+    if (["inactive", "0", "false", "disabled"].includes(s)) return "inactive";
+    return s;
+  };
+
+  const capitalizeStatus = (status) => {
+    if (!status) return "Unknown";
+    const lower = status.toString().toLowerCase().trim();
+    return lower.charAt(0).toUpperCase() + lower.slice(1);
+  };
+
+  // product status color
+  const statusColors = {
+    Active: "bg-green-100 text-green-700 border border-green-300",
+    Inactive: "bg-red-100 text-red-700 border border-red-300",
+  };
+
+  // ✅ Status-based filter
+  if (activeTab !== "all") {
     filteredProducts = filteredProducts.filter(
-      (p) => p.status?.toLowerCase().trim() === "active"
-    );
-  } else if (activeTab === "inactive") {
-    filteredProducts = filteredProducts.filter(
-      (p) => p.status?.toLowerCase().trim() === "inactive"
+      (p) => normalizeStatus(p.status) === activeTab
     );
   }
 
@@ -94,7 +111,7 @@ export default function ProductTable() {
   // ✅ Category filter
   if (selectedCategory !== "All") {
     filteredProducts = filteredProducts.filter(
-      (p) => p.category === selectedCategory
+      (p) => p.category?.toLowerCase() === selectedCategory.toLowerCase()
     );
   }
 
@@ -102,7 +119,9 @@ export default function ProductTable() {
   filteredProducts.sort((a, b) => {
     const nameA = a.productName?.toLowerCase() || "";
     const nameB = b.productName?.toLowerCase() || "";
-    return sortOrder === "asc" ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
+    return sortOrder === "asc"
+      ? nameA.localeCompare(nameB)
+      : nameB.localeCompare(nameA);
   });
 
   // ✅ Pagination
@@ -187,7 +206,10 @@ export default function ProductTable() {
               className="flex items-center gap-2 border border-gray-400 px-3 py-1.5 rounded-md text-sm text-gray-900 hover:bg-gray-100 transition"
             >
               Filter
-              <FontAwesomeIcon icon={faChevronDown} className="ml-1 text-gray-600" />
+              <FontAwesomeIcon
+                icon={faChevronDown}
+                className="ml-1 text-gray-600"
+              />
             </button>
             {showFilter && (
               <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-300 rounded-md shadow-md z-50">
@@ -215,7 +237,10 @@ export default function ProductTable() {
               className="flex items-center gap-2 border border-gray-400 px-3 py-1.5 rounded-md text-sm text-gray-900 hover:bg-gray-100 transition"
             >
               Sort
-              <FontAwesomeIcon icon={faChevronDown} className="ml-1 text-gray-600" />
+              <FontAwesomeIcon
+                icon={faChevronDown}
+                className="ml-1 text-gray-600"
+              />
             </button>
             {showSort && (
               <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-300 rounded-md shadow-md z-50">
@@ -269,7 +294,7 @@ export default function ProductTable() {
       ) : (
         <div className="overflow-x-auto border-gray-400 rounded-lg shadow bg-white mx-6 mt-5">
           <table className="w-full text-sm text-left text-gray-700">
-            <thead className="bg-gray-50 text-gray-600 uppercase text-xs border-b">
+            <thead className="bg-gray-50 text-gray-600   border-b">
               <tr>
                 <th className="p-3">
                   <input
@@ -321,15 +346,12 @@ export default function ProductTable() {
                   <td className="p-3">{item.color}</td>
                   <td className="p-3">
                     <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        item.status?.toLowerCase().trim() === "active"
-                          ? "bg-green-100 text-green-600 border border-green-400"
-                          : "bg-red-100 text-red-600 border border-red-400"
+                      className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        statusColors[capitalizeStatus(item.status)] ||
+                        "bg-gray-100 text-gray-600"
                       }`}
                     >
-                      {item.status?.toLowerCase().trim() === "active"
-                        ? "Active"
-                        : "Inactive"}
+                      {capitalizeStatus(item.status)}
                     </span>
                   </td>
                   <td className="p-3 flex gap-4 justify-center">

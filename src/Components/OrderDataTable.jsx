@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
+import { faSearch,
   faAngleRight,
   faCircleCheck,
   faChartLine,
@@ -32,6 +32,7 @@ export default function OrdersDataTable() {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [filterPayment, setFilterPayment] = useState("all");
   const [sortAsc, setSortAsc] = useState(true);
+   const [search, setSearch] = useState("");
   const ordersPerPage = 8;
 
   // avrage order
@@ -69,7 +70,7 @@ export default function OrdersDataTable() {
               : 0,
           date: o.createdAt || "",
           phoneNumber: o.phoneNumber || o.phoneNumber || "unknown",
-          transactionId : o.transactionId || o.transactionId || "unknown",
+          transactionId : o.payment_id || o.payment_Id || "unknown",
 
         }));
         // const formattedOrders = apiOrders.map((o) => ({
@@ -115,6 +116,18 @@ export default function OrdersDataTable() {
   // Filter + Sort + Tabs
   const filteredOrders = useMemo(() => {
     let result = [...orders];
+
+    if (search.trim()) {
+      const lowerSearch = search.toLowerCase();
+      result = result.filter(
+        (o) =>
+          o.customer.toLowerCase().includes(lowerSearch) ||
+          o.product.toLowerCase().includes(lowerSearch) ||
+          // o.shipping.toLowerCase().includes(lowerSearch) || 
+          o.id.toString().toLowerCase().includes(lowerSearch)
+      );
+    }
+
     if (activeTab === "active") {
       result = result.filter(
         (o) => o.payment === "Pending" || o.shipping === "Shipped"
@@ -212,6 +225,25 @@ export default function OrdersDataTable() {
           </button>
         </div>
       </div>
+
+        {/* search bar code */}
+      <div className="flex gap-2 mx-6 relative mt-5">
+        <FontAwesomeIcon
+          icon={faSearch}
+          className="absolute left-3 top-3 text-gray-400"
+        />
+        <input
+          type="text"
+          placeholder="Search"
+          value={search}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setCurrentPage(1);
+          }}
+          className="w-full pl-10 pr-4 py-2 rounded-md border border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+
       {/* Orders Table */}
       <div className="p-6 bg-gray-50 min-h-screen">
         <div className="grid grid-cols-12 gap-4">
@@ -432,7 +464,7 @@ export default function OrdersDataTable() {
                 </p>
                 <p>
                   
-                  <strong>Transaction ID:</strong> {selectedOrder.transactionId} 21e71378182221{" "}
+                  <strong>Transaction ID:</strong> {selectedOrder.transactionId}
                 </p>
               </div>
 

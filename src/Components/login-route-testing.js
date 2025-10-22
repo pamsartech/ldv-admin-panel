@@ -289,11 +289,10 @@ export default App;
 
 
 
-/ App.jsx
-import { BrowserRouter as Router, Routes, Route, Navigate, Outlet, useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+// this is routes backup code with logic integrated
+import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from "react-router-dom";
 
-// Pages
+// 📄 Pages
 import Login from "./Pages/Login";
 import ResetPassword from "./Pages/ResetPassword";
 import Dashboard from "./Pages/Dashboard";
@@ -304,41 +303,40 @@ import Payments from "./Pages/Payments";
 import TikTokLive from "./Pages/TikTokLive";
 import Setting from "./Pages/Setting";
 
-// Components
+// 🧭 Components
 import Sidebar from "./Components/Sidebar";
 
-// Product Steps
+// 🧾 Product Steps
 import ViewProduct from "./Pages/ProductsSteps/ViewProduct";
 import AddProductWizard from "./Pages/ProductsSteps/AddProductWizard";
 import UpdateProduct from "./Pages/ProductsSteps/UpdateProduct";
 
-// Order Steps
+// 🛍️ Order Steps
 import CreateOrder from "./Pages/OrderSteps/CreateOrder";
 import ViewOrder from "./Pages/OrderSteps/ViewOrder";
 import UpdateOrder from "./Pages/OrderSteps/UpdateOrder";
 
-// Customer Steps
+// 👤 Customer Steps
 import CreateCustomer from "./Pages/CustomerSteps/CreateCustomer";
 import ViewCustomer from "./Pages/CustomerSteps/ViewCustomer";
 import UpdateCustomer from "./Pages/CustomerSteps/UpdateCustomer";
 
-// Payment Steps
+// 💳 Payment Steps
 import CreatePayment from "./Pages/PaymentSteps/CreatePayment";
 import ViewPayment from "./Pages/PaymentSteps/ViewPayment";
 import UpdatePayment from "./Pages/PaymentSteps/UpdatePayment";
 
-// TikTok Live Session
+// 📡 TikTok Live Session
 import CreateLiveEvent from "./Pages/TikTok-Live-Session/CreateLiveEvent";
 import EventDetail from "./Pages/TikTok-Live-Session/EventDetail";
 import UpdateEvent from "./Pages/TikTok-Live-Session/UpdateEvent";
 
-/* ---------------- Protected Route ---------------- */
-function ProtectedRoute({ isAuthenticated }) {
-  return isAuthenticated ? <Outlet /> : <Navigate to="/" replace />;
-}
+/* ---------------- Protected Layout ---------------- */
+function ProtectedLayout() {
+  const isAuth = localStorage.getItem("isAuthenticated") === "true";
 
-/* ---------------- Dashboard Layout ---------------- */
-function DashboardLayout() {
+  if (!isAuth) return <Navigate to="/" replace />;
+
   return (
     <div className="flex">
       <Sidebar />
@@ -351,24 +349,19 @@ function DashboardLayout() {
 
 /* ---------------- Main App ---------------- */
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  // Check authentication on mount
-  useEffect(() => {
-    const storedAuth = localStorage.getItem("isAuthenticated") === "true";
-    setIsAuthenticated(storedAuth);
-  }, []);
-
-  // Handle login success
-  const handleLoginSuccess = () => {
+  // ✅ Handle login success
+  const handleLoginSuccess = (token, user) => {
+    localStorage.setItem("token", token);
+    localStorage.setItem("user", JSON.stringify(user));
     localStorage.setItem("isAuthenticated", "true");
-    setIsAuthenticated(true);
   };
 
-  // Handle logout (optional helper)
+  // Optional logout helper
   const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
     localStorage.removeItem("isAuthenticated");
-    setIsAuthenticated(false);
+    window.location.href = "/"; // force redirect to login
   };
 
   return (
@@ -378,43 +371,41 @@ function App() {
         <Route path="/" element={<Login onLoginSuccess={handleLoginSuccess} />} />
         <Route path="/user/reset-password" element={<ResetPassword />} />
 
-        {/* ---------- Protected Routes ---------- */}
-        <Route element={<ProtectedRoute isAuthenticated={isAuthenticated} />}>
-          <Route element={<DashboardLayout />}>
-            {/* Main Dashboard Routes */}
-            <Route path="/user/dashboard" element={<Dashboard />} />
-            <Route path="/user/products" element={<Products />} />
-            <Route path="/user/orders" element={<Orders />} />
-            <Route path="/user/customers" element={<Customers />} />
-            <Route path="/user/payments" element={<Payments />} />
-            <Route path="/user/tiktok" element={<TikTokLive />} />
-            <Route path="/user/setting" element={<Setting />} />
+        {/* ---------- Protected Routes (With Sidebar Layout) ---------- */}
+        <Route element={<ProtectedLayout />}>
+          {/* Main Dashboard */}
+          <Route path="/user/dashboard" element={<Dashboard />} />
+          <Route path="/user/products" element={<Products />} />
+          <Route path="/user/orders" element={<Orders />} />
+          <Route path="/user/customers" element={<Customers />} />
+          <Route path="/user/payments" element={<Payments />} />
+          <Route path="/user/tiktok" element={<TikTokLive />} />
+          <Route path="/user/setting" element={<Setting />} />
 
-            {/* Product Sub Routes */}
-            <Route path="/user/view-product/:productId" element={<ViewProduct />} />
-            <Route path="/user/add-product" element={<AddProductWizard />} />
-            <Route path="/user/update-product/:productId" element={<UpdateProduct />} />
+          {/* Product Sub Routes */}
+          <Route path="/user/view-product/:productId" element={<ViewProduct />} />
+          <Route path="/user/add-product" element={<AddProductWizard />} />
+          <Route path="/user/update-product/:productId" element={<UpdateProduct />} />
 
-            {/* Order Sub Routes */}
-            <Route path="/user/create-order" element={<CreateOrder />} />
-            <Route path="/user/view-order/:orderId" element={<ViewOrder />} />
-            <Route path="/user/update-order/:id" element={<UpdateOrder />} />
+          {/* Order Sub Routes */}
+          <Route path="/user/create-order" element={<CreateOrder />} />
+          <Route path="/user/view-order/:orderId" element={<ViewOrder />} />
+          <Route path="/user/update-order/:id" element={<UpdateOrder />} />
 
-            {/* Customer Sub Routes */}
-            <Route path="/user/create-customer" element={<CreateCustomer />} />
-            <Route path="/user/view-customer/:customerId" element={<ViewCustomer />} />
-            <Route path="/user/update-customer/:customerId" element={<UpdateCustomer />} />
+          {/* Customer Sub Routes */}
+          <Route path="/user/create-customer" element={<CreateCustomer />} />
+          <Route path="/user/view-customer/:customerId" element={<ViewCustomer />} />
+          <Route path="/user/update-customer/:customerId" element={<UpdateCustomer />} />
 
-            {/* Payment Sub Routes */}
-            <Route path="/user/create-payment" element={<CreatePayment />} />
-            <Route path="/user/view-payment/:paymentId" element={<ViewPayment />} />
-            <Route path="/user/update-payment/:paymentId" element={<UpdatePayment />} />
+          {/* Payment Sub Routes */}
+          <Route path="/user/create-payment" element={<CreatePayment />} />
+          <Route path="/user/view-payment/:paymentId" element={<ViewPayment />} />
+          <Route path="/user/update-payment/:paymentId" element={<UpdatePayment />} />
 
-            {/* TikTok Live Sub Routes */}
-            <Route path="/user/create-live-event" element={<CreateLiveEvent />} />
-            <Route path="/user/live-event-detail/:eventId" element={<EventDetail />} />
-            <Route path="/user/update-event/:eventId" element={<UpdateEvent />} />
-          </Route>
+          {/* TikTok Live Sub Routes */}
+          <Route path="/user/create-live-event" element={<CreateLiveEvent />} />
+          <Route path="/user/live-event-detail/:eventId" element={<EventDetail />} />
+          <Route path="/user/update-event/:eventId" element={<UpdateEvent />} />
         </Route>
 
         {/* ---------- Fallback ---------- */}
@@ -425,6 +416,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
