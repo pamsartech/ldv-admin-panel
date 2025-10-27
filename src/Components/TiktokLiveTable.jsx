@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { data, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -11,11 +11,11 @@ import {
   faChartLine,
   faChevronDown,
 } from "@fortawesome/free-solid-svg-icons";
+import { Skeleton } from "@mui/material"; // ✅ Import Skeleton
 
 export default function TiktokLiveTable() {
   const navigate = useNavigate();
 
-  // State
   const [liveData, setLiveData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -38,13 +38,12 @@ export default function TiktokLiveTable() {
       try {
         setLoading(true);
         const res = await axios.get(
-          "https://la-dolce-vita.onrender.com/api/event/event-list"
+          "http://dev-api.payonlive.com/api/event/event-list"
         );
 
         const eventsArray = res.data.data || [];
         console.log("API Response:", res.data);
 
-        // Map the API response to your table format
         const formatted = eventsArray.map((item) => ({
           id: item._id,
           name: item.eventDetails?.eventName || "N/A",
@@ -55,7 +54,6 @@ export default function TiktokLiveTable() {
           end: item.eventDetails?.endDateTime
             ? new Date(item.eventDetails.endDateTime).toLocaleString()
             : "N/A",
-          // status: item.eventDetails?.status.toUpperCase(0,1) || "Inactive",
           status: item.eventDetails?.status
             ? item.eventDetails.status.charAt(0).toUpperCase() +
               item.eventDetails.status.slice(1).toLowerCase()
@@ -74,15 +72,13 @@ export default function TiktokLiveTable() {
     fetchData();
   }, []);
 
-  if (loading) return <p className="p-6">Loading live events...</p>;
   if (error) return <p className="p-6 text-red-500">{error}</p>;
 
-  // ---- Filtering Logic ----
+  // ---- Filtering & Sorting Logic (unchanged) ----
   let tabFilteredData = liveData;
   if (activeTab === "active")
-    tabFilteredData = liveData.filter((e) => e.status === "Active")
+    tabFilteredData = liveData.filter((e) => e.status === "Active");
 
-    // ✅ Search logic (fixed)
   if (search.trim()) {
     tabFilteredData = tabFilteredData.filter(
       (c) =>
@@ -97,8 +93,6 @@ export default function TiktokLiveTable() {
       ? tabFilteredData.filter((e) => e.status === selectedStatus)
       : tabFilteredData;
 
-
-  // ---- Sorting Logic ----
   const sortedData = [...filteredData].sort((a, b) =>
     sortAsc ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name)
   );
@@ -108,7 +102,6 @@ export default function TiktokLiveTable() {
   const indexOfFirst = indexOfLast - itemsPerPage;
   const currentData = sortedData.slice(indexOfFirst, indexOfLast);
 
-  // ---- Select Logic ----
   const handleSelectAll = () => {
     if (selectAll) setSelectedRows([]);
     else setSelectedRows(currentData.map((item) => item.id));
@@ -142,8 +135,37 @@ export default function TiktokLiveTable() {
     setCurrentPage(1);
   };
 
+  // ---- Skeleton Row Generator ----
+  const skeletonRows = Array.from({ length: itemsPerPage }).map((_, i) => (
+    <tr key={i} className="border-b">
+      <td className="p-3">
+        <Skeleton variant="rounded" width={80} height={35} />
+      </td>
+      <td className="p-3">
+        <Skeleton variant="text" width={80} height={35} />
+      </td>
+      <td className="p-3">
+        <Skeleton variant="text" width={80} height={35}  />
+      </td>
+      <td className="p-3">
+        <Skeleton variant="text" width={80} height={35} />
+      </td>
+      <td className="p-3">
+        <Skeleton variant="text" width={80} height={35} />
+      </td>
+      <td className="p-3">
+        <Skeleton variant="text" width={80} height={35} />
+      </td>
+      <td className="p-3">
+        <Skeleton variant="text" width={80} height={35} />
+      </td>
+    </tr>
+  ));
+
   return (
     <div>
+      {/* Tabs, Filter, Search (unchanged) */}
+
       {/* Tabs & Filter */}
       <div className="flex justify-between items-center border-2 border-gray-300 px-6 mt-5 rounded-md p-2 mx-6 relative">
         {/* Tabs */}
@@ -178,6 +200,8 @@ export default function TiktokLiveTable() {
             Active
           </button>
         </div>
+
+
 
         {/* Filter & Sort */}
         <div className="flex gap-2 relative">
@@ -218,6 +242,8 @@ export default function TiktokLiveTable() {
         </div>
       </div>
 
+
+
       {/* search bar code */}
       <div className="flex gap-2 mx-6 relative mt-5">
         <FontAwesomeIcon
@@ -247,6 +273,7 @@ export default function TiktokLiveTable() {
                     type="checkbox"
                     checked={selectAll}
                     onChange={handleSelectAll}
+                    disabled={loading} // disable during loading
                   />
                 </th>
                 <th className="p-3">Event Name</th>
@@ -254,57 +281,60 @@ export default function TiktokLiveTable() {
                 <th className="p-3">Start</th>
                 <th className="p-3">End</th>
                 <th className="p-3">Status</th>
+                <th className="p-3">Action</th>
               </tr>
             </thead>
             <tbody>
-              {currentData.length > 0 ? (
-                currentData.map((item) => (
-                  <tr key={item.id} className="border-b hover:bg-gray-50">
-                    <td className="p-3">
-                      <input
-                        type="checkbox"
-                        checked={selectedRows.includes(item.id)}
-                        onChange={() => handleSelectRow(item.id)}
-                      />
-                    </td>
-                    <td className="p-3">{item.name}</td>
-                    <td className="p-3">{item.sessionID}</td>
-                    <td className="p-3">{item.start}</td>
-                    <td className="p-3">{item.end}</td>
-                    <td className="p-3">
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusStyle(
-                          item.status
-                        )}`}
-                      >
-                        {item.status}
-                      </span>
-                    </td>
-                    <td className="p-3 text-right">
-                      <button
-                        onClick={() =>
-                          navigate(`/live-event-detail/${item.id}`)
-                        }
-                      >
-                        {/* onClick={() => navigate(`/live-event-detail/${eventId}`)} */}
-                        {/* onClick={() => navigate("/live-event-detail")} */}
-                        <FontAwesomeIcon icon={faAngleRight} />
-                      </button>
+              {loading
+                ? skeletonRows
+                : currentData.length > 0
+                ? currentData.map((item) => (
+                    <tr key={item.id} className="border-b hover:bg-gray-50">
+                      <td className="p-3">
+                        <input
+                          type="checkbox"
+                          checked={selectedRows.includes(item.id)}
+                          onChange={() => handleSelectRow(item.id)}
+                        />
+                      </td>
+                      <td className="p-3">{item.name}</td>
+                      <td className="p-3">{item.sessionID}</td>
+                      <td className="p-3">{item.start}</td>
+                      <td className="p-3">{item.end}</td>
+                      <td className="p-3">
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusStyle(
+                            item.status
+                          )}`}
+                        >
+                          {item.status}
+                        </span>
+                      </td>
+                      <td className="p-3 text-left">
+                        <button
+                          onClick={() =>
+                            navigate(`/user/live-event-detail/${item.id}`)
+                          }
+                        >
+                          <FontAwesomeIcon icon={faAngleRight} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                : (
+                  <tr>
+                    <td colSpan="7" className="p-6 text-center text-gray-500">
+                      No events found for selected filter.
                     </td>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="7" className="p-6 text-center text-gray-500">
-                    No events found for selected filter.
-                  </td>
-                </tr>
-              )}
+                )}
             </tbody>
           </table>
         </div>
 
-        {/* Pagination */}
+        
+        
+{/* Pagination */}
         <div className="flex justify-center items-center space-x-2 mt-4">
           <button
             className="px-3 py-1 border rounded disabled:opacity-50"

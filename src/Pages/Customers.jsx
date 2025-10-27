@@ -211,7 +211,7 @@ function Customers() {
           )}
 
           <button
-            onClick={() => navigate("/create-customer")}
+            onClick={() => navigate("/user/create-customer")}
             className="flex items-center gap-2 bg-[#02B978] text-white px-4 py-1.5 rounded-md text-sm hover:bg-[#04D18C] transition"
           >
             <FontAwesomeIcon icon={faPlus} className="text-white" />

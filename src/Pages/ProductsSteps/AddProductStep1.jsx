@@ -2,7 +2,7 @@
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../Components/Navbar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowRight, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faArrowRight, faXmark ,faCheck } from "@fortawesome/free-solid-svg-icons";
 
 function AddProductStep1({ formData, setFormData, nextStep }) {
   const navigate = useNavigate();
@@ -26,12 +26,12 @@ function AddProductStep1({ formData, setFormData, nextStep }) {
       </h1>
 
       <div className="max-w-lg mx-auto mt-2 bg-white p-6 shadow rounded">
-        {/* Progress indicator unchanged */}
 
+        {/* Progress indicator unchanged */}
           <div className="flex justify-center items-center gap-4 mb-10">
           <div className="flex flex-col items-center text-black font-semibold">
             <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[#02B978] text-white border border-[#02B978]">
-              1
+             1
             </div>
             <span className="mt-3 text-sm font-bold text-[#02B978] ">Enter Product Info</span>
           </div>
@@ -112,13 +112,31 @@ function AddProductStep1({ formData, setFormData, nextStep }) {
                 className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm"
               />
             </div>
+            
+
+         {/* ✅ Status Dropdown */}
+          <div className=" col-span-2"> 
+            <label className=" text-sm font-medium mb-1">Status</label>
+            <select
+              required
+              name="status"
+              value={formData.status || ""}
+              onChange={handleChange}
+              className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm bg-white"
+            >
+              <option value="">Select Status</option>
+              <option value="active">active</option>
+              <option value="inactive">inactive</option>
+            </select>
+          </div>
+             
           </div>
 
           {/* navigation buttons */}
           <div className="flex justify-between mt-6">
             <button
               type="button"
-              onClick={() => navigate("/Products")}
+              onClick={() => navigate("/user/Products")}
               className="px-3 py-1 border border-red-700 text-red-700 bg-red-50 rounded-md hover:bg-gray-100"
             >
               <FontAwesomeIcon

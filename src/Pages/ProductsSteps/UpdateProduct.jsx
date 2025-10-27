@@ -1,7 +1,8 @@
-import React, { useState , useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { SketchPicker } from "react-color";
 import Navbar from "../../Components/Navbar";
+import { useAlert } from "../../Components/AlertContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowLeft,
@@ -9,56 +10,54 @@ import {
   faXmark,
   faPlus,
   faTimes,
-  faUpload,
 } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
 
-function UpdateProduct() {
+// 🧩 Material UI imports
+import Skeleton from "@mui/material/Skeleton";
+import Stack from "@mui/material/Stack";
 
-   const { productId } = useParams();
+function UpdateProduct() {
+  const { productId } = useParams();
   const navigate = useNavigate();
+  const { showAlert } = useAlert();
+  const [btnLoading , setBtnLoading] = useState(false);
 
   const [loading, setLoading] = useState(true);
-
   const [selectedGender, setSelectedGender] = useState("Men");
   const [selectedSize, setSelectedSize] = useState("M");
-  const [colors, setColors] = useState([]);
-  const [selectedColor, setSelectedColor] = useState("");
+  const [selectedColor, setSelectedColor] = useState("#FF0000");
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [images, setImages] = useState([]);
 
   const [productDetails, setProductDetails] = useState({
-    tiktokSession: "",
-    price: "",
-    name: "",
+    productName: "",
     productCode: "",
+    price: "",
     stock: "",
     category: "",
+    status: "",
   });
 
-  // ✅ Fetch product details when page loads
+  // ✅ Fetch product details
   useEffect(() => {
     const fetchProduct = async () => {
       try {
         const res = await axios.get(
-          `https://la-dolce-vita.onrender.com/api/product/product-details/${productId}`
+          `http://dev-api.payonlive.com/api/product/product-details/${productId}`
         );
         if (res.data.success) {
           const data = res.data.data;
-
-          // Pre-fill states
           setProductDetails({
-            tiktokSession: data.tiktokSession || "",
-            price: data.price || "",
-            name: data.productName || "",
+            productName: data.productName || "",
             productCode: data.productCode || "",
+            price: data.price || "",
             stock: data.stock || "",
             category: data.category || "",
+            status: data.status || "",
           });
-
           setSelectedGender(data.gender || "Men");
           setSelectedSize(data.size || "M");
-          setColors(data.colors || ["#FF0000", "#2563EB"]);
           setSelectedColor(data.color || "#FF0000");
           setImages(data.images || []);
         }
@@ -68,7 +67,6 @@ function UpdateProduct() {
         setLoading(false);
       }
     };
-
     fetchProduct();
   }, [productId]);
 
@@ -78,16 +76,12 @@ function UpdateProduct() {
   };
 
   const handleColorChange = (color) => setSelectedColor(color.hex);
-
-  const handleColorCommit = (color) => {
-    const newColor = color.hex;
-    if (!colors.includes(newColor)) setColors((prev) => [...prev, newColor]);
-    setSelectedColor(newColor);
-  };
+  const handleColorCommit = (color) => setSelectedColor(color.hex);
 
   const handleImageUpload = (event, index) => {
     const file = event.target.files[0];
     if (!file) return;
+
     const newImage = URL.createObjectURL(file);
     setImages((prev) => {
       const updated = [...prev];
@@ -102,35 +96,60 @@ function UpdateProduct() {
 
   const handleUpdate = async (e) => {
     e.preventDefault();
-    try {
-      const payload = {
-        ...productDetails,
-        gender: selectedGender,
-        size: selectedSize,
-        colors,
-        selectedColor,
-        images,
-      };
+    setBtnLoading(true);
 
-      await axios.put(
-        `https://la-dolce-vita.onrender.com/api/product/update-product/${productId}`,
-        payload
+    const payload = {
+      productName: productDetails.productName,
+      productCode: productDetails.productCode,
+      price: Number(productDetails.price),
+      status: productDetails.status,
+      gender: selectedGender,
+      color: selectedColor,
+      size: selectedSize,
+      stock: Number(productDetails.stock),
+      category: productDetails.category,
+      images: images,
+    };
+
+    try {
+      const response = await axios.put(
+        `http://dev-api.payonlive.com/api/product/update-product/${productId}`,
+        payload,
+        { headers: { "Content-Type": "application/json" } }
       );
 
-      alert("Product updated successfully!");
-      navigate("/Products");
+      if (response.data.success) {
+        showAlert("Product updated successfully!", "success", () =>
+          navigate("/user/products")
+        );
+      } else {
+        showAlert("Failed to update product.", "error");
+      }
     } catch (error) {
       console.error("Error updating product:", error);
-      alert("Failed to update product. Please try again.");
+      alert(error?.response?.data?.message || "⚠️ Failed to update product.");
     }
   };
 
-  if (loading) {
-    return <p className="text-center mt-10">Loading product details...</p>;
-  }
+  // 🧩 Skeleton Loader (replaces plain loading text)
+  if (loading)
+    return (
+      <div>
+        <Navbar heading="Payment Management" />
+        <div className="max-w-6xl mx-auto mt-10 bg-white rounded-lg shadow-sm p-6">
+          <Stack spacing={3}>
+            <Skeleton variant="text" width={220} height={35} animation="wave" />
+            <Skeleton variant="rectangular" height={80} animation="wave" />
+            <Skeleton variant="rectangular" height={300} animation="wave" />
+            <Skeleton variant="rectangular" height={180} animation="wave" />
+            <Skeleton variant="text" width={180} height={35} animation="wave" />
+            <Skeleton variant="rectangular" height={250} animation="wave" />
+            <Skeleton variant="rectangular" height={120} animation="wave" />
+          </Stack>
+        </div>
+      </div>
+    );
 
-
-  
   return (
     <div>
       <Navbar heading="Payment Management" />
@@ -139,7 +158,7 @@ function UpdateProduct() {
       <div className="flex justify-between mt-5 mx-10">
         <h1 className="font-medium text-lg">Update Product Details</h1>
         <button
-          onClick={() => navigate("/Products")}
+          onClick={() => navigate("/user/Products")}
           className="px-3 py-1 border rounded-md text-white bg-[#02B978] hover:bg-[#04D18C]"
         >
           <FontAwesomeIcon icon={faArrowLeft} size="lg" className="px-2" />
@@ -153,18 +172,6 @@ function UpdateProduct() {
           <section className="border border-gray-300 rounded-xl shadow-sm p-7 bg-gray-50">
             <div className="grid grid-cols-1 gap-6">
               <div>
-                <label className="block text-sm font-medium mb-1">TikTok session</label>
-                <input
-                  required
-                  type="text"
-                  name="tiktokSession"
-                  value={productDetails.tiktokSession}
-                  onChange={handleChange}
-                  placeholder="Clothing code 2025"
-                  className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm"
-                />
-              </div>
-              <div>
                 <label className="block text-sm font-medium mb-1">Price</label>
                 <input
                   required
@@ -176,20 +183,24 @@ function UpdateProduct() {
                   className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm"
                 />
               </div>
+
               <div>
                 <label className="block text-sm font-medium mb-1">Name</label>
                 <input
                   required
                   type="text"
-                  name="name"
-                  value={productDetails.name}
+                  name="productName"
+                  value={productDetails.productName}
                   onChange={handleChange}
-                  placeholder="Denim shirt 202045"
+                  placeholder="Product Name"
                   className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm"
                 />
               </div>
+
               <div>
-                <label className="block text-sm font-medium mb-1">Product Code</label>
+                <label className="block text-sm font-medium mb-1">
+                  Product Code
+                </label>
                 <input
                   required
                   type="text"
@@ -199,6 +210,22 @@ function UpdateProduct() {
                   placeholder="3211"
                   className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm"
                 />
+              </div>
+
+              {/* Status Dropdown */}
+              <div>
+                <label className="block text-sm font-medium mb-1">Status</label>
+                <select
+                  required
+                  name="status"
+                  value={productDetails.status}
+                  onChange={handleChange}
+                  className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm bg-white"
+                >
+                  <option value="">Select Status</option>
+                  <option value="active">active</option>
+                  <option value="inactive">inactive</option>
+                </select>
               </div>
             </div>
           </section>
@@ -214,7 +241,11 @@ function UpdateProduct() {
                   className="flex flex-col items-center justify-center border-2 border-gray-300 rounded-xl h-64 cursor-pointer bg-white hover:bg-gray-50 overflow-hidden"
                 >
                   {images[0] ? (
-                    <img src={images[0]} alt="Main Upload" className="h-full w-full object-cover rounded-lg" />
+                    <img
+                      src={images[0]}
+                      alt="Main Upload"
+                      className="h-full w-full object-cover rounded-lg"
+                    />
                   ) : (
                     <span className="text-gray-500">Add Main Image</span>
                   )}
@@ -243,12 +274,19 @@ function UpdateProduct() {
                   <div key={index} className="relative">
                     <label
                       htmlFor={`sideImageUpload-${index}`}
-                      className="w-20 h-20 flex items-center justify-center bg-gray-200 rounded-lg cursor-pointer hover:bg-gray-300 overflow-hidden"
+                      className="w-15 h-15 flex items-center justify-center bg-gray-200 rounded-lg cursor-pointer hover:bg-gray-300 overflow-hidden"
                     >
                       {images[index] ? (
-                        <img src={images[index]} alt={`Upload ${index}`} className="w-full h-full object-cover rounded-lg" />
+                        <img
+                          src={images[index]}
+                          alt={`Upload ${index}`}
+                          className="w-full h-full object-cover rounded-lg"
+                        />
                       ) : (
-                        <FontAwesomeIcon icon={faPlus} className="text-gray-600" />
+                        <FontAwesomeIcon
+                          icon={faPlus}
+                          className="text-gray-600"
+                        />
                       )}
                     </label>
                     <input
@@ -277,7 +315,7 @@ function UpdateProduct() {
         {/* Color / Size / Stock */}
         <section className="p-6 border border-gray-300 rounded-2xl shadow-md bg-gray-50 mx-10 mt-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-            {/* Left Column */}
+            {/* Left */}
             <div className="space-y-6">
               {/* Gender */}
               <div>
@@ -300,20 +338,15 @@ function UpdateProduct() {
                 </div>
               </div>
 
-              {/* Colors */}
+              {/* Color Picker */}
               <div>
-                <h3 className="font-semibold text-gray-800 mb-2">Colours</h3>
+                <h3 className="font-semibold text-gray-800 mb-2">Colour</h3>
                 <div className="flex gap-3 items-center flex-wrap">
-                  {colors.map((color, idx) => (
-                    <div
-                      key={idx}
-                      className={`w-8 h-8 rounded-full border cursor-pointer ${
-                        selectedColor === color ? "ring-2 ring-purple-600 scale-110" : ""
-                      }`}
-                      style={{ backgroundColor: color }}
-                      onClick={() => setSelectedColor(color)}
-                    ></div>
-                  ))}
+                  <div
+                    className={`w-8 h-8 rounded-full border cursor-pointer ring-2 ring-purple-600 scale-110`}
+                    style={{ backgroundColor: selectedColor }}
+                    onClick={() => setShowColorPicker(!showColorPicker)}
+                  ></div>
                   <button
                     type="button"
                     onClick={() => setShowColorPicker(!showColorPicker)}
@@ -324,7 +357,11 @@ function UpdateProduct() {
                 </div>
                 {showColorPicker && (
                   <div className="mt-3">
-                    <SketchPicker color={selectedColor} onChange={handleColorChange} onChangeComplete={handleColorCommit} />
+                    <SketchPicker
+                      color={selectedColor}
+                      onChange={handleColorChange}
+                      onChangeComplete={handleColorCommit}
+                    />
                   </div>
                 )}
               </div>
@@ -349,20 +386,9 @@ function UpdateProduct() {
                   ))}
                 </div>
               </div>
-
-              {/* Size Guide */}
-              <div>
-                <label
-                  htmlFor="sizeGuideUpload"
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg border-gray-400 border cursor-pointer hover:bg-gray-100"
-                >
-                  <FontAwesomeIcon icon={faUpload} /> Add Size Guide Chart
-                </label>
-                <input id="sizeGuideUpload" type="file" accept=".png,.jpg,.jpeg,.pdf" className="hidden" />
-              </div>
             </div>
 
-            {/* Right Column */}
+            {/* Right */}
             <div className="space-y-6">
               <div>
                 <h3 className="font-semibold text-gray-800 mb-2">Stock</h3>
@@ -385,42 +411,50 @@ function UpdateProduct() {
                   onChange={handleChange}
                   className="w-full bg-gray-50 border border-gray-400 rounded-lg px-3 py-2"
                 >
-                  <option>Jacket</option>
-                  <option>Shoes</option>
-                  <option>T-shirt</option>
+                  <option value="">Select Category</option>
+                  <option value="Jacket">Jacket</option>
+                  <option value="Shoes">Shoes</option>
+                  <option value="T-shirt">T-shirt</option>
                 </select>
-              </div>
-
-              <div className="flex gap-3">
-                <button type="button" className="px-6 py-2 rounded-full bg-[#6750A4] text-white">
-                  Add Category
-                </button>
-                <button type="button" className="px-4 py-2 rounded-full bg-[#6750A4] text-white">
-                  Create Category
-                </button>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Navigation Buttons */}
+        {/* Footer */}
         <hr className="text-gray-400 mx-10 mt-8" />
         <div className="flex justify-between max-w-5xl mx-auto my-10">
+
+          <div className="mt-4">
           <button
             type="button"
-            onClick={() => navigate("/Products")}
-            className="px-3 py-1 border border-red-700 text-red-700 bg-red-50 rounded-md hover:bg-gray-100"
+            onClick={() => navigate("/user/Products")}
+            className="px-3 py-2 border border-red-700 text-red-700 bg-red-50 rounded-md hover:bg-gray-100"
           >
             <FontAwesomeIcon icon={faXmark} size="lg" className="px-2" />
             Discard Product
-          </button>
+          </button></div>
 
-          <button
+          {/* <button
             type="submit"
             className="px-4 py-2 bg-[#114E9D] text-white rounded-lg hover:bg-blue-500"
           >
             Update Product
-          </button>
+          </button> */}
+
+           <div className=" mt-4">
+            <button
+              type="submit"
+              disabled={btnLoading}
+              className="bg-[#114E9D] text-white px-6 py-2 rounded-lg hover:bg-blue-500 flex items-center gap-2"
+            >
+              {btnLoading && (
+                <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+              )}
+              {btnLoading ? "Updating..." : "Update Product"}
+            </button>
+          </div>
+
         </div>
       </form>
     </div>
@@ -428,3 +462,7 @@ function UpdateProduct() {
 }
 
 export default UpdateProduct;
+
+
+
+

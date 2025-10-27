@@ -4,11 +4,14 @@ import Navbar from "../../Components/Navbar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faTrash, faXmark } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
+import { useAlert } from "../../Components/AlertContext";
 
 const UpdateOrder = () => {
   const navigate = useNavigate();
+  const { showAlert } = useAlert();
   const location = useLocation();
   const existingOrder = location.state?.orderData;
+  const[loading , setLoading] = useState(false);
 
   // if (!existingOrder) {
   //   // If no data passed, redirect back
@@ -61,13 +64,14 @@ const UpdateOrder = () => {
 
   const handleUpdate = async (e) => {
   e.preventDefault();
+  setLoading(true);
 
   try {
     // Include _id in payload just in case backend needs it
     const payload = { ...orderData, orderItems, _id: existingOrder._id };
 
     const response = await axios.put(
-      `https://la-dolce-vita.onrender.com/api/order/update-order/${existingOrder._id}`,
+      `http://dev-api.payonlive.com/api/order/update-order/${existingOrder._id}`,
       payload,
       {
         // Add headers if backend expects auth
@@ -79,14 +83,17 @@ const UpdateOrder = () => {
     );
 
     if (response.status === 200 && response.data.success) {
-      alert(response.data.message || "Order updated successfully!");
-      navigate("/Orders");
+      // alert(response.data.message || "Order updated successfully!");
+      showAlert("Order update successfully!", "success");
+      navigate("/user/Orders");
     } else {
-      alert(response.data.message || "Failed to update order. Please try again.");
+      showAlert("Failed to update order. Please try again.", "error");
+      // alert(response.data.message || "Failed to update order. Please try again.");
     }
   } catch (err) {
     console.error("❌ Error updating order:", err);
-    alert("❌ Error updating order:");
+    showAlert("Server error. Please try again.", "error");
+    // alert("❌ Error updating order:");
   }
 };
 
@@ -110,7 +117,7 @@ const UpdateOrder = () => {
       <div className="flex justify-between mt-5 mx-10">
         <h1 className="font-medium text-lg">Update Order</h1>
         <button
-          onClick={() => navigate("/Orders")}
+          onClick={() => navigate("/user/Orders")}
           className="px-3 py-1 border border-red-700 text-red-700 bg-red-50 rounded-md hover:bg-gray-100"
         >
           <FontAwesomeIcon icon={faXmark} size="lg" className="text-red-700 px-2" />
@@ -208,9 +215,12 @@ const UpdateOrder = () => {
                   className="w-full rounded-xl border border-gray-300 px-2 py-2 text-sm"
                 >
                   <option value="">Select product</option>
+                  <option>Travel bag</option>
+                  <option>clothes</option>
+                  <option>boots</option>
                   <option>Asus</option>
-                  <option>Adidas Backpack</option>
-                  <option>Nike Air Max 2024</option>
+                  <option >Adidas shoes</option>
+                
                 </select>
               </div>
               <div className="md:col-span-1 text-center">
@@ -258,8 +268,10 @@ const UpdateOrder = () => {
               className="w-full rounded-lg border border-gray-400 px-3 py-2 text-sm"
             >
               <option value="">Select Payment method</option>
-              <option>Stripe</option>
+              <option>Credit Card</option>
               <option>Paypal</option>
+              <option>Bank Transfer</option>
+              <option>UPI</option>
             </select>
           </div>
           <div>
@@ -323,11 +335,23 @@ const UpdateOrder = () => {
         </section>
 
         <hr className="text-gray-500" />
-        <div className="flex justify-end">
+        {/* <div className="flex justify-end">
           <button type="submit" className="bg-[#114E9D] text-white font-semibold rounded-lg px-5 py-2 text-sm hover:bg-blue-500">
             Update Order
           </button>
-        </div>
+        </div> */}
+         <div className="flex justify-end mt-4">
+            <button
+              type="submit"
+              disabled={loading}
+              className="bg-[#114E9D] text-white px-6 py-2 rounded-lg hover:bg-blue-500 flex items-center gap-2"
+            >
+              {loading && (
+                <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+              )}
+              {loading ? "Updating..." : "Update Order"}
+            </button>
+          </div>
       </form>
     </div>
   );

@@ -195,7 +195,7 @@ function Orders() {
 
           {/* Add Product Button */}
           <button
-            onClick={() => navigate("/create-order")}
+            onClick={() => navigate("/user/create-order")}
             className="flex items-center gap-2 bg-[#02B978] text-white px-4 py-1.5 rounded-md text-sm hover:bg-[#04D18C] transition"
           >
             <FontAwesomeIcon icon={faPlus} className="text-white" />
@@ -226,3 +226,4 @@ function Orders() {
 }
 
 export default Orders;
+

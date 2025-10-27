@@ -22,7 +22,7 @@ function TikTokLive() {
         <div className="flex items-center gap-2">
           {/* Add Product Button */}
           <button
-            onClick={() => navigate("/create-live-event")}
+            onClick={() => navigate("/user/create-live-event")}
             className="flex items-center gap-2 bg-[#02B978] text-white px-4 py-1.5 rounded-md text-sm hover:bg-[#04D18C] transition" >
             <FontAwesomeIcon icon={faPlus} className="text-white" />
             Create Live Event

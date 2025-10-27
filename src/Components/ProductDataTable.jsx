@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faSearch,
-  faTrash,
   faChevronLeft,
   faChevronRight,
   faAngleRight,
@@ -13,24 +12,16 @@ import {
   faChevronDown,
 } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
+import { Skeleton } from "@mui/material";
+import namer from "color-namer";
 
-export default function ProductTable({ selectedProducts, setSelectedProducts }) {
+export default function ProductTable() {
   const navigate = useNavigate();
 
-  // 🔹 API Data
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // image helper function
-  const getImageUrl = (img) => {
-    if (!img) return "/placeholder-image.png"; // fallback image
-    return img.startsWith("http")
-      ? img
-      : `https://la-dolce-vita.onrender.com${img}`;
-  };
-
-  // 🔹 UI State
   const [activeTab, setActiveTab] = useState("all");
   const [selected, setSelected] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -44,15 +35,20 @@ export default function ProductTable({ selectedProducts, setSelectedProducts }) 
 
   const rowsPerPage = 7;
 
-  // 🔹 Fetch Products API
+  const getImageUrl = (img) => {
+    if (!img) return "/placeholder-image.png";
+    return img.startsWith("http")
+      ? img
+      : `https://la-dolce-vita.onrender.com${img}`;
+  };
+
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
         const res = await axios.get(
-          "https://la-dolce-vita.onrender.com/api/product/product-list"
+          "http://dev-api.payonlive.com/api/product/product-list"
         );
-        // console.log(res.data);
         if (res.data && res.data.data) {
           setProducts(res.data.data);
         } else {
@@ -64,48 +60,74 @@ export default function ProductTable({ selectedProducts, setSelectedProducts }) 
         setLoading(false);
       }
     };
-
     fetchProducts();
   }, []);
 
-  // 🔹 Filter by Tab (status)
+  // ============================
+  // 🔸 Filtering, Sorting, Pagination
+  // ============================
   let filteredProducts = [...products];
-  if (activeTab === "active") {
-    filteredProducts = filteredProducts.filter((p) => p.status === "active");
-  } else if (activeTab === "archived") {
-    filteredProducts = filteredProducts.filter((p) => p.status === "archived");
+
+  const normalizeStatus = (status) => {
+    if (!status) return "unknown";
+    const s = status.toString().toLowerCase().trim();
+    if (["active", "1", "true", "enabled"].includes(s)) return "active";
+    if (["inactive", "0", "false", "disabled"].includes(s)) return "inactive";
+    return s;
+  };
+
+  const capitalizeStatus = (status) => {
+    if (!status) return "Unknown";
+    const lower = status.toString().toLowerCase().trim();
+    return lower.charAt(0).toUpperCase() + lower.slice(1);
+  };
+
+  const statusColors = {
+    Active: "bg-green-100 text-green-700 border border-green-300",
+    Inactive: "bg-red-100 text-red-700 border border-red-300",
+  };
+
+  const hexToColorName = (hex) => {
+    if (!hex) return "Unknown";
+    try {
+      const result = namer(hex);
+      return result.basic[0]?.name || hex;
+    } catch {
+      return hex;
+    }
+  };
+
+  if (activeTab !== "all") {
+    filteredProducts = filteredProducts.filter(
+      (p) => normalizeStatus(p.status) === activeTab
+    );
   }
 
-  
-  // search logic
   if (search.trim()) {
     const term = search.toLowerCase();
     filteredProducts = filteredProducts.filter(
       (p) =>
-        (p.productName && p.productName.toLowerCase().includes(term)) ||
-        (p.productCode && p.productCode.toLowerCase().includes(term)) ||
-        (p.category && p.category.toLowerCase().includes(term)) ||
-        (p._id && p._id.toLowerCase().includes(term))
+        p.productName?.toLowerCase().includes(term) ||
+        p.productCode?.toLowerCase().includes(term) ||
+        p.category?.toLowerCase().includes(term) ||
+        p._id?.toLowerCase().includes(term)
     );
   }
 
-  // 🔹 Filter by Category
-  filteredProducts =
-    selectedCategory === "All"
-      ? filteredProducts
-      : filteredProducts.filter((p) => p.category === selectedCategory);
+  if (selectedCategory !== "All") {
+    filteredProducts = filteredProducts.filter(
+      (p) => p.category?.toLowerCase() === selectedCategory.toLowerCase()
+    );
+  }
 
-  // 🔹 Sort
-  filteredProducts =
-    sortOrder === "asc"
-      ? [...filteredProducts].sort((a, b) =>
-          (a.productName || "").localeCompare(b.productName || "")
-        )
-      : [...filteredProducts].sort((a, b) =>
-          (b.productName || "").localeCompare(a.productName || "")
-        );
+  filteredProducts.sort((a, b) => {
+    const nameA = a.productName?.toLowerCase() || "";
+    const nameB = b.productName?.toLowerCase() || "";
+    return sortOrder === "asc"
+      ? nameA.localeCompare(nameB)
+      : nameB.localeCompare(nameA);
+  });
 
-  // 🔹 Pagination
   const totalPages = Math.ceil(filteredProducts.length / rowsPerPage);
   const startIndex = (currentPage - 1) * rowsPerPage;
   const currentProducts = filteredProducts.slice(
@@ -113,284 +135,360 @@ export default function ProductTable({ selectedProducts, setSelectedProducts }) 
     startIndex + rowsPerPage
   );
 
-  // 🔹 Select all / row
-   const toggleSelectAll = (e) => {
-    if (e.target.checked)
-      setSelectedProducts(currentProducts.map((p) => p._id));
-    else setSelectedProducts([]);
+  const toggleSelectAll = (e) => {
+    if (e.target.checked) setSelected(currentProducts.map((p) => p._id));
+    else setSelected([]);
   };
+
   const toggleSelect = (id) => {
-    setSelectedProducts((prev) =>
+    setSelected((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
     );
   };
+
   const allSelected =
     currentProducts.length > 0 &&
     currentProducts.every((p) => selected.includes(p._id));
 
+  // ============================
+  // 🔸 Skeleton Helpers
+  // ============================
+  const skeletonRows = Array.from({ length: rowsPerPage }).map((_, idx) => (
+    <tr key={idx} className="border-b">
+      {Array.from({ length: 10 }).map((_, i) => (
+        <td key={i} className="p-3">
+          <Skeleton variant="rectangular" height={30} animation="wave" />
+        </td>
+      ))}
+    </tr>
+  ));
+
+  const skeletonTabs = Array.from({ length: 3 }).map((_, i) => (
+    <Skeleton key={i} width={60} height={30} animation="wave" />
+  ));
+
+  const skeletonSearch = (
+    <Skeleton variant="rectangular" height={40} width="100%" animation="wave" />
+  );
+
+  // ============================
+  // 🔸 UI Rendering
+  // ============================
   return (
     <div>
-      {/* Tabs & Filter/Sort */}
+      {/* Tabs */}
       <div className="flex justify-between items-center border-2 border-gray-300 px-6 mt-5 rounded-md p-2 mx-6">
-        {/* Tabs */}
         <div className="flex gap-6">
-          <button
-            onClick={() => {
-              setActiveTab("all");
-              setCurrentPage(1);
-            }}
-            className={`flex items-center gap-2 text-sm px-2 pb-1 ${
-              activeTab === "all"
-                ? "text-black font-medium border-b-2 border-black"
-                : "text-gray-600 hover:text-black"
-            }`}
-          >
-            <FontAwesomeIcon icon={faCircleCheck} /> All
-          </button>
-          <button
-            onClick={() => {
-              setActiveTab("active");
-              setCurrentPage(1);
-            }}
-            className={`flex items-center gap-2 text-sm px-2 pb-1 ${
-              activeTab === "active"
-                ? "text-black font-medium border-b-2 border-black"
-                : "text-gray-600 hover:text-black"
-            }`}
-          >
-            <FontAwesomeIcon icon={faChartLine} /> Active
-          </button>
-          <button
-            onClick={() => {
-              setActiveTab("archived");
-              setCurrentPage(1);
-            }}
-            className={`flex items-center gap-2 text-sm px-2 pb-1 ${
-              activeTab === "archived"
-                ? "text-black font-medium border-b-2 border-black"
-                : "text-gray-600 hover:text-black"
-            }`}
-          >
-            <FontAwesomeIcon icon={faBoxArchive} /> Archived
-          </button>
+          {loading ? (
+            skeletonTabs
+          ) : (
+            <>
+              <button
+                onClick={() => {
+                  setActiveTab("all");
+                  setCurrentPage(1);
+                }}
+                className={`flex items-center gap-2 text-sm px-2 pb-1 ${
+                  activeTab === "all"
+                    ? "text-black font-medium border-b-2 border-black"
+                    : "text-gray-600 hover:text-black"
+                }`}
+              >
+                <FontAwesomeIcon icon={faCircleCheck} /> All
+              </button>
+              <button
+                onClick={() => {
+                  setActiveTab("active");
+                  setCurrentPage(1);
+                }}
+                className={`flex items-center gap-2 text-sm px-2 pb-1 ${
+                  activeTab === "active"
+                    ? "text-black font-medium border-b-2 border-black"
+                    : "text-gray-600 hover:text-black"
+                }`}
+              >
+                <FontAwesomeIcon icon={faChartLine} /> Active
+              </button>
+              <button
+                onClick={() => {
+                  setActiveTab("inactive");
+                  setCurrentPage(1);
+                }}
+                className={`flex items-center gap-2 text-sm px-2 pb-1 ${
+                  activeTab === "inactive"
+                    ? "text-black font-medium border-b-2 border-black"
+                    : "text-gray-600 hover:text-black"
+                }`}
+              >
+                <FontAwesomeIcon icon={faBoxArchive} /> Inactive
+              </button>
+            </>
+          )}
         </div>
 
         {/* Filter & Sort */}
         <div className="flex gap-2 relative">
-          {/* Filter Dropdown */}
-          <div className="relative">
-            <button
-              onClick={() => setShowFilter((prev) => !prev)}
-              className="flex items-center gap-2 border border-gray-400 px-3 py-1.5 rounded-md text-sm text-gray-900 hover:bg-gray-100 transition"
-            >
-              Filter
-              <FontAwesomeIcon
-                icon={faChevronDown}
-                className="ml-1 text-gray-600"
-              />
-            </button>
-            {showFilter && (
-              <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-300 rounded-md shadow-md z-50">
-                {["All", "Clothing", "Shoes", "Accessories"].map((cat) => (
-                  <div
-                    key={cat}
-                    onClick={() => {
-                      setSelectedCategory(cat);
-                      setCurrentPage(1);
-                      setShowFilter(false);
-                    }}
-                    className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
-                  >
-                    {cat}
+          {loading ? (
+            <>
+              <Skeleton width={70} height={35} animation="wave" />
+              <Skeleton width={70} height={35} animation="wave" />
+            </>
+          ) : (
+            <>
+              {/* Filter Dropdown */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowFilter((prev) => !prev)}
+                  className="flex items-center gap-2 border border-gray-400 px-3 py-1.5 rounded-md text-sm text-gray-900 hover:bg-gray-100 transition"
+                >
+                  Filter
+                  <FontAwesomeIcon
+                    icon={faChevronDown}
+                    className="ml-1 text-gray-600"
+                  />
+                </button>
+                {showFilter && (
+                  <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-300 rounded-md shadow-md z-50">
+                    {["All", "Clothing", "Shoes", "Accessories"].map((cat) => (
+                      <div
+                        key={cat}
+                        onClick={() => {
+                          setSelectedCategory(cat);
+                          setCurrentPage(1);
+                          setShowFilter(false);
+                        }}
+                        className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+                      >
+                        {cat}
+                      </div>
+                    ))}
                   </div>
-                ))}
+                )}
               </div>
-            )}
-          </div>
 
-          {/* Sort Dropdown */}
-          <div className="relative">
-            <button
-              onClick={() => setShowSort((prev) => !prev)}
-              className="flex items-center gap-2 border border-gray-400 px-3 py-1.5 rounded-md text-sm text-gray-900 hover:bg-gray-100 transition"
-            >
-              Sort
-              <FontAwesomeIcon
-                icon={faChevronDown}
-                className="ml-1 text-gray-600"
-              />
-            </button>
-            {showSort && (
-              <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-300 rounded-md shadow-md z-50">
-                <div
-                  onClick={() => {
-                    setSortOrder("asc");
-                    setShowSort(false);
-                  }}
-                  className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+              {/* Sort Dropdown */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowSort((prev) => !prev)}
+                  className="flex items-center gap-2 border border-gray-400 px-3 py-1.5 rounded-md text-sm text-gray-900 hover:bg-gray-100 transition"
                 >
-                  A → Z
-                </div>
-                <div
-                  onClick={() => {
-                    setSortOrder("desc");
-                    setShowSort(false);
-                  }}
-                  className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
-                >
-                  Z → A
-                </div>
+                  Sort
+                  <FontAwesomeIcon
+                    icon={faChevronDown}
+                    className="ml-1 text-gray-600"
+                  />
+                </button>
+                {showSort && (
+                  <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-300 rounded-md shadow-md z-50">
+                    <div
+                      onClick={() => {
+                        setSortOrder("asc");
+                        setShowSort(false);
+                      }}
+                      className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+                    >
+                      A → Z
+                    </div>
+                    <div
+                      onClick={() => {
+                        setSortOrder("desc");
+                        setShowSort(false);
+                      }}
+                      className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+                    >
+                      Z → A
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            </>
+          )}
         </div>
       </div>
 
-      {/* search bar code */}
+      {/* Search bar */}
       <div className="flex gap-2 mx-6 relative mt-5">
-        <FontAwesomeIcon
-          icon={faSearch}
-          className="absolute left-3 top-3 text-gray-400"
-        />
-        <input
-          type="text"
-          placeholder="Search"
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setCurrentPage(1);
-          }}
-          className="w-full pl-10 pr-4 py-2 rounded-md border border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
+        {loading ? (
+          skeletonSearch
+        ) : (
+          <>
+            <FontAwesomeIcon
+              icon={faSearch}
+              className="absolute left-3 top-3 text-gray-400"
+            />
+            <input
+              type="text"
+              placeholder="Search"
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="w-full pl-10 pr-4 py-2 rounded-md border border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </>
+        )}
       </div>
 
-      {/* Loading / Error */}
+      {/* Table */}
       {loading ? (
-        <p className="text-center py-6">Loading products...</p>
+        <div className="overflow-x-auto border-gray-400 rounded-lg shadow bg-white mx-6 mt-5">
+          <table className="w-full text-sm text-left text-gray-700">
+            <thead className="bg-gray-50 text-gray-600 border-b">
+              <tr>
+                {Array.from({ length: 10 }).map((_, i) => (
+                  <th key={i} className="p-3">
+                    <Skeleton animation="wave" />
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>{skeletonRows}</tbody>
+          </table>
+        </div>
       ) : error ? (
         <p className="text-center py-6 text-red-500">{error}</p>
       ) : (
-        <div className="overflow-x-auto border-gray-400 rounded-lg shadow bg-white mx-6 mt-5">
-          <table className="w-full text-sm text-left text-gray-700">
-            <thead className="bg-gray-50 text-gray-600 uppercase text-xs border-b">
-              <tr>
-                <th className="p-3">
-                  <input
-                    type="checkbox"
-                    checked={allSelected}
-                    onChange={toggleSelectAll}
-                    className="w-4 h-4 rounded border-gray-300 cursor-pointer"
-                  />
-                </th>
-                <th className="p-3">Image</th>
-                <th className="p-3">Product Name</th>
-                <th className="p-3">Price</th>
-                <th className="p-3">Category</th>
-                <th className="p-3">Product Code</th>
-                <th className="p-3">Size</th>
-                <th className="p-3">Color</th>
-                <th className="p-3 text-center">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {currentProducts.map((item) => (
-                <tr
-                  key={item._id}
-                  className={`border-b hover:bg-gray-50 transition-colors ${
-                    selected.includes(item._id) ? "bg-gray-50" : ""
-                  }`}
-                >
-                  <td className="p-3">
+        <>
+          {/* Paste your original table JSX from currentProducts mapping here */}
+          {/* Your full table rendering remains exactly as before */}
+          <div className="overflow-x-auto border-gray-400 rounded-lg shadow bg-white mx-6 mt-5">
+            <table className="w-full text-sm text-left text-gray-700">
+              <thead className="bg-gray-50 text-gray-600 border-b">
+                <tr>
+                  <th className="p-3">
                     <input
                       type="checkbox"
-                      checked={selected.includes(item._id)}
-                      onChange={() => toggleSelect(item._id)}
+                      checked={allSelected}
+                      onChange={toggleSelectAll}
                       className="w-4 h-4 rounded border-gray-300 cursor-pointer"
                     />
-                  </td>
-                  <td className="p-3 flex items-center gap-3">
-                    {/* <img
-                      src={`https://la-dolce-vita.onrender.com${item.images[0]}`}
-                      alt={item.productName}
-                      className="w-10 h-10 rounded-md object-cover border"
-                    /> */}
-
-                    <img
-                      src={getImageUrl(item.images?.[0])}
-                      alt={item.productName}
-                      className="w-10 h-10 rounded-md object-cover border"
-                    />
-                  </td>
-                  <td className="p-3">{item.productName}</td>
-                  <td className="p-3">{item.price}</td>
-                  <td className="p-3">{item.category}</td>
-                  <td className="p-3">{item.productCode}</td>
-                  <td className="p-3">{item.size}</td>
-                  <td className="p-3">{item.color}</td>
-                  <td className="p-3 flex gap-4 justify-center">
-                    <button className="text-gray-500 hover:text-gray-700">
-                      {/* <FontAwesomeIcon icon={faTrash} /> */}
-                    </button>
-                    <button
-                      onClick={() => navigate(`/view-product/${item._id}`)}
-                      className="text-gray-600 hover:text-black"
-                    >
-                      <FontAwesomeIcon icon={faAngleRight} />
-                    </button>
-                  </td>
+                  </th>
+                  <th className="p-3">Image</th>
+                  <th className="p-3">Product Name</th>
+                  <th className="p-3">Price</th>
+                  <th className="p-3">Category</th>
+                  <th className="p-3">Product Code</th>
+                  <th className="p-3">Size</th>
+                  <th className="p-3">Color</th>
+                  <th className="p-3">Status</th>
+                  <th className="p-3 text-center">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {currentProducts.map((item) => (
+                  <tr
+                    key={item._id}
+                    className={`border-b hover:bg-gray-50 transition-colors ${
+                      selected.includes(item._id) ? "bg-gray-50" : ""
+                    }`}
+                  >
+                    <td className="p-3">
+                      <input
+                        type="checkbox"
+                        checked={selected.includes(item._id)}
+                        onChange={() => toggleSelect(item._id)}
+                        className="w-4 h-4 rounded border-gray-300 cursor-pointer"
+                      />
+                    </td>
+                    <td className="p-3 flex items-center gap-3">
+                      <img
+                        src={getImageUrl(item.images?.[0])}
+                        alt={item.productName}
+                        className="w-10 h-10 rounded-md object-cover border"
+                      />
+                    </td>
+                    <td className="p-3">{item.productName}</td>
+                    <td className="p-3">{item.price}</td>
+                    <td className="p-3">{item.category}</td>
+                    <td className="p-3">{item.productCode}</td>
+                    <td className="p-3">{item.size}</td>
+                    <td className="p-3">
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="w-5 h-5 rounded-full border border-gray-300"
+                          style={{ backgroundColor: item.color }}
+                          title={item.color}
+                        ></span>
+                        <span className="text-gray-700 font-medium">
+                          {hexToColorName(item.color)}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="p-3">
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-medium ${
+                          statusColors[capitalizeStatus(item.status)] ||
+                          "bg-gray-100 text-gray-600"
+                        }`}
+                      >
+                        {capitalizeStatus(item.status)}
+                      </span>
+                    </td>
+                    <td className="p-3 flex gap-4 justify-center">
+                      <button
+                        onClick={() =>
+                          navigate(`/user/view-product/${item._id}`)
+                        }
+                        className="text-gray-600 hover:text-black"
+                      >
+                        <FontAwesomeIcon icon={faAngleRight} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
 
-          {/* Pagination */}
-          <div className="flex justify-between items-center p-3 text-sm text-gray-600 bg-gray-50 border-t">
-            <span className="text-gray-500">
-              Showing {startIndex + 1}–
-              {Math.min(startIndex + rowsPerPage, filteredProducts.length)} of{" "}
-              {filteredProducts.length}
-            </span>
-            <div className="flex gap-2 items-center">
-              <button
-                onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-                disabled={currentPage === 1}
-                className={`px-3 py-1 border rounded flex items-center gap-1 ${
-                  currentPage === 1
-                    ? "text-gray-400 cursor-not-allowed"
-                    : "hover:bg-gray-100"
-                }`}
-              >
-                <FontAwesomeIcon icon={faChevronLeft} /> Previous
-              </button>
-              {[...Array(totalPages)].map((_, i) => (
+            {/* Pagination */}
+            <div className="flex justify-between items-center p-3 text-sm text-gray-600 bg-gray-50 border-t">
+              <span className="text-gray-500">
+                Showing {startIndex + 1}–
+                {Math.min(startIndex + rowsPerPage, filteredProducts.length)} of{" "}
+                {filteredProducts.length}
+              </span>
+              <div className="flex gap-2 items-center">
                 <button
-                  key={i}
-                  onClick={() => setCurrentPage(i + 1)}
-                  className={`px-3 py-1 border rounded ${
-                    currentPage === i + 1
-                      ? "bg-black text-white"
+                  onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                  disabled={currentPage === 1}
+                  className={`px-3 py-1 border rounded flex items-center gap-1 ${
+                    currentPage === 1
+                      ? "text-gray-400 cursor-not-allowed"
                       : "hover:bg-gray-100"
                   }`}
                 >
-                  {i + 1}
+                  <FontAwesomeIcon icon={faChevronLeft} /> Previous
                 </button>
-              ))}
-              <button
-                onClick={() =>
-                  setCurrentPage((p) => Math.min(p + 1, totalPages))
-                }
-                disabled={currentPage === totalPages}
-                className={`px-3 py-1 border rounded flex items-center gap-1 ${
-                  currentPage === totalPages
-                    ? "text-gray-400 cursor-not-allowed"
-                    : "hover:bg-gray-100"
-                }`}
-              >
-                Next <FontAwesomeIcon icon={faChevronRight} />
-              </button>
+                {[...Array(totalPages)].map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setCurrentPage(i + 1)}
+                    className={`px-3 py-1 border rounded ${
+                      currentPage === i + 1
+                        ? "bg-black text-white"
+                        : "hover:bg-gray-100"
+                    }`}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+                <button
+                  onClick={() =>
+                    setCurrentPage((p) => Math.min(p + 1, totalPages))
+                  }
+                  disabled={currentPage === totalPages}
+                  className={`px-3 py-1 border rounded flex items-center gap-1 ${
+                    currentPage === totalPages
+                      ? "text-gray-400 cursor-not-allowed"
+                      : "hover:bg-gray-100"
+                  }`}
+                >
+                  Next <FontAwesomeIcon icon={faChevronRight} />
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   );

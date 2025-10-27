@@ -10,15 +10,17 @@ import {
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
+import { useAlert } from "../../Components/AlertContext";
 
 export default function CreatePayment() {
   const navigate = useNavigate();
+  const { showAlert } = useAlert();
 
   // 🔹 State for customer details
-  const [customerName, setCustomerName] = useState("");
-  const [customerID, setCustomerID] = useState("");
-  const [email, setEmail] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
+  // const [customerName, setCustomerName] = useState("");
+  // const [customerID, setCustomerID] = useState("");
+  // const [email, setEmail] = useState("");
+  // const [phoneNumber, setPhoneNumber] = useState("");
 
   // 🔹 State for order details
   const [orderID, setOrderID] = useState("");
@@ -36,18 +38,23 @@ export default function CreatePayment() {
 
     const payload = {
 
-    customerName,
-    customerID, 
-    email,
-    phoneNumber,
+    // customerName,
+    // customerID, 
+    // email,
+    // phoneNumber,
     orderID,
     transactionID,
-    amount: parseFloat(amount.replace(/[^0-9.]/g, "")),
+    // amount: parseFloat(amount.replace(/[^0-9.]/g, "")),
+    amount: parseFloat(amount.replace(/[^0-9.]/g, "")), 
     paymentMethod, 
     paymentStatus,
     deliveryStatus,
-    date: new Date(date).getTime(),
+    // date: new Date(date).getTime(),
+    date: new Date(date).toISOString(),
     notes,
+
+    
+     
 
       // customerName,
       // customerID,
@@ -67,15 +74,17 @@ export default function CreatePayment() {
 
     try {
       const res = await axios.post(
-        "https://la-dolce-vita.onrender.com/api/payment/create-payment",
-        payload
-      );
+        "http://dev-api.payonlive.com/api/payment/create-payment", payload , {
+           headers: { "Content-Type": "application/json" },
+        } );
       console.log("✅ Payment created:", res.data);
-      alert("Payment created successfully!");
-      navigate("/Payments");
+      showAlert("Payment created successfully!", "success");
+      // alert("Payment created successfully!");
+      navigate("/user/Payments");
     } catch (err) {
       console.error("❌ Error creating payment:", err);
-      alert("Failed to create payment.");
+      // alert("Failed to create payment.");
+      showAlert("Failed to create payment. Please try again.", "error");
     }
   };
 
@@ -90,7 +99,7 @@ export default function CreatePayment() {
         <h1 className=" font-medium  text-lg">Create Payment</h1>
 
         <button
-          onClick={() => navigate("/Payments")}
+          onClick={() => navigate("/user/Payments")}
           className=" px-3 py-1 mr-50 border rounded-md text-white bg-[#02B978] hover:bg-[#04D18C]"
         >
           <FontAwesomeIcon
@@ -104,7 +113,7 @@ export default function CreatePayment() {
 
       <form onSubmit={handleSubmit} className="p-6 max-w-5xl mx-5 space-y-6">
         {/* Customer Details */}
-        <div className="border border-gray-400 rounded-2xl p-6">
+        {/* <div className="border border-gray-400 rounded-2xl p-6">
           <h2 className="text-lg font-medium mb-4">Customer Details</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -160,7 +169,9 @@ export default function CreatePayment() {
               />
             </div>
           </div>
-        </div>
+        </div> */}
+
+
         {/* Order Details */}
         <div className="border border-gray-400 rounded-2xl p-6">
           <h2 className="text-lg font-medium mb-4">Order Details</h2>
@@ -310,6 +321,7 @@ export default function CreatePayment() {
           </button>
         </div>
       </form>
+
     </div>
   );
 }

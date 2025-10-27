@@ -12,6 +12,8 @@ import {
   faChevronRight,
   faTimes,
 } from "@fortawesome/free-solid-svg-icons";
+import { Skeleton } from "@mui/material";
+
 const statusColors = {
   Pending: "bg-yellow-100 text-yellow-700 border border-yellow-300",
   Paid: "bg-green-100 text-green-700 border border-green-300",
@@ -23,6 +25,7 @@ const statusColors = {
   Dispatched: "bg-purple-100 text-purple-700 border border-purple-300",
   "Out for delivery": "bg-orange-100 text-orange-700 border border-orange-300",
 };
+
 export default function OrdersDataTable() {
   const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
@@ -36,28 +39,23 @@ export default function OrdersDataTable() {
   const [search, setSearch] = useState("");
   const ordersPerPage = 8;
 
-  // avrage order
   const [averageData, setAverageData] = useState({
     averageOrder: 0,
     deliveryRate: "0%",
   });
 
-  // Fetch orders from API
+  // Fetch orders + average data
   useEffect(() => {
     const fetchOrders = async () => {
       setLoading(true);
       setError(null);
       try {
         const response = await axios.get(
-          "https://la-dolce-vita.onrender.com/api/order/order-list"
+          "http://dev-api.payonlive.com/api/order/order-list"
         );
-        console.log("Order table data", response.data);
-        // Adjust this based on the actual API shape
         const apiOrders = response.data.orders || response.data.data || [];
-        console.log("API Response:", response.data);
         const formattedOrders = apiOrders.map((o) => ({
           id: o._id || "N/A",
-          // customer: o.name || "Unknown",
           customer: o.customerName || o.customer || "Unknown",
           product:
             o.orderItems && o.orderItems.length > 0
@@ -70,35 +68,23 @@ export default function OrdersDataTable() {
               ? o.orderItems.reduce((sum, item) => sum + (item.total || 0), 0)
               : 0,
           date: o.createdAt || "",
+          phoneNumber: o.phoneNumber || "unknown",
+          transactionId: o.payment_id || o.payment_Id || "unknown",
         }));
-
-        // const formattedOrders = apiOrders.map((o) => ({
-        //   id: o._id || o.id || "N/A",
-        //   customer: o.customerName || o.customer || "Unknown",
-        //   product: o.items?.[0]?.productName || o.product || "N/A",
-        //   payment: o.paymentStatus || o.payment || "Pending",
-        //   shipping: o.shippingStatus || o.shipping || "Processing",
-        //   amount: o.amount || "0.00",
-        //   date: o.date || o.createdAt || "",
-        // }));
         setOrders(formattedOrders);
       } catch (err) {
-        console.error("Error fetching orders:", err);
+        console.error(err);
         setError("Failed to fetch orders.");
       } finally {
         setLoading(false);
       }
     };
-    fetchOrders();
 
-    // fetch average data
     const fetchAverageData = async () => {
       try {
         const res = await axios.get(
           "https://la-dolce-vita.onrender.com/api/order/orders-average"
         );
-        // console.log("Average API Response:", res.data); // ✅ log backend response
-
         if (res.data.success) {
           setAverageData({
             averageOrder: res.data.averages.lastDay,
@@ -106,27 +92,26 @@ export default function OrdersDataTable() {
           });
         }
       } catch (err) {
-        console.error("Error fetching average data:", err);
+        console.error(err);
       }
     };
 
+    fetchOrders();
     fetchAverageData();
   }, []);
+
   // Filter + Sort + Tabs
   const filteredOrders = useMemo(() => {
     let result = [...orders];
-
     if (search.trim()) {
       const lowerSearch = search.toLowerCase();
       result = result.filter(
         (o) =>
           o.customer.toLowerCase().includes(lowerSearch) ||
           o.product.toLowerCase().includes(lowerSearch) ||
-          // o.shipping.toLowerCase().includes(lowerSearch) || 
           o.id.toString().toLowerCase().includes(lowerSearch)
       );
     }
-
     if (activeTab === "active") {
       result = result.filter(
         (o) => o.payment === "Pending" || o.shipping === "Shipped"
@@ -146,20 +131,51 @@ export default function OrdersDataTable() {
     });
     return result;
   }, [orders, activeTab, filterPayment, sortAsc, search]);
+
   const totalPages = Math.ceil(filteredOrders.length / ordersPerPage);
   const currentOrders = filteredOrders.slice(
     (currentPage - 1) * ordersPerPage,
     currentPage * ordersPerPage
   );
-  if (loading) {
-    return <p className="text-center mt-6 text-gray-600">Loading orders...</p>;
-  }
-  if (error) {
-    return <p className="text-center mt-6 text-red-600">{error}</p>;
-  }
+
+  // Skeletons
+  const skeletonRows = Array.from({ length: ordersPerPage }).map((_, idx) => (
+    <tr key={idx} className="border-b">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <td key={i} className="py-3 px-4">
+          <Skeleton animation="wave" />
+        </td>
+      ))}
+    </tr>
+  ));
+
+  const skeletonCard = (
+    <div className="bg-white rounded-lg shadow p-6 border">
+      <Skeleton animation="wave" variant="text" width="50%" height={30} />
+      <div className="flex gap-4 mt-4">
+        <Skeleton animation="wave" variant="rectangular" width={50} height={30} />
+        <Skeleton animation="wave" variant="rectangular" width={50} height={30} />
+        <Skeleton animation="wave" variant="rectangular" width={50} height={30} />
+      </div>
+    </div>
+  );
+
+  const skeletonRightPanel = (
+    <div className="col-span-3 bg-white rounded-lg shadow p-6">
+      <Skeleton animation="wave" variant="text" width="40%" height={25} />
+      <div className="space-y-2 mt-4">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <Skeleton key={i} animation="wave" variant="text" width="80%" />
+        ))}
+      </div>
+    </div>
+  );
+
+  if (error) return <p className="text-center mt-6 text-red-600">{error}</p>;
+
   return (
     <div>
-      {/* Tabs + Filters */}
+      {/* Tabs + Filters + Search */}
       <div className="flex justify-between items-center border-2 border-gray-300 px-6 mt-5 rounded-md p-2 mx-6">
         <div className="flex gap-6">
           <button
@@ -225,7 +241,6 @@ export default function OrdersDataTable() {
         </div>
       </div>
 
-      {/* Search functionality */}
       {/* search bar code */}
       <div className="flex gap-2 mx-6 relative mt-5">
         <FontAwesomeIcon
@@ -244,7 +259,7 @@ export default function OrdersDataTable() {
         />
       </div>
 
-      {/* Orders Table */}
+      {/* Orders Table + Right Panel */}
       <div className="p-6 bg-gray-50 min-h-screen">
         <div className="grid grid-cols-12 gap-4">
           <div
@@ -264,10 +279,12 @@ export default function OrdersDataTable() {
                 </tr>
               </thead>
               <tbody>
-                {currentOrders.length > 0 ? (
-                  currentOrders.map((order, index) => (
-                    <tr key={order._id} className="border-b hover:bg-gray-50">
-                      <td className="py-3 px-4 font-semibold">{index + 1}</td>
+                {loading ? (
+                  skeletonRows
+                ) : currentOrders.length > 0 ? (
+                  currentOrders.map((order) => (
+                    <tr key={order.id} className="border-b hover:bg-gray-50">
+                      <td className="py-3 px-4 font-medium">{order.id}</td>
                       <td className="py-3 px-4">{order.customer}</td>
                       <td className="py-3 px-4">{order.product}</td>
                       <td className="py-3 px-4">
@@ -310,6 +327,7 @@ export default function OrdersDataTable() {
                 )}
               </tbody>
             </table>
+
             {/* Pagination */}
             <div className="flex justify-between items-center mt-4">
               <button
@@ -342,191 +360,135 @@ export default function OrdersDataTable() {
                 Next <FontAwesomeIcon icon={faChevronRight} />
               </button>
             </div>
+
+            {/* Bottom Cards */}
             <div className="grid grid-cols-2 lg:w-3xl gap-6 mt-16 mx-auto">
-              {/* TikTok Live Event Card */}
-              <div className="bg-white rounded-lg shadow p-6 border">
-                <h3 className="font-semibold text-gray-800">
-                  TikTok Live Event
-                </h3>
-                <div className="flex gap-8 mt-6 text-sm font-medium text-gray-700">
-                  <button className="hover:text-black">Day</button>
-                  <button className="hover:text-black">Week</button>
-                  <button className="hover:text-black">Month</button>
-                </div>
-              </div>
+              {loading ? (
+                <>
+                  {skeletonCard}
+                  {skeletonCard}
+                </>
+              ) : (
+                <>
+                  <div className="bg-white rounded-lg shadow p-6 border">
+                    <h3 className="font-semibold text-gray-800">
+                      TikTok Live Event
+                    </h3>
+                    <div className="flex gap-8 mt-6 text-sm font-medium text-gray-700">
+                      <button className="hover:text-black">Day</button>
+                      <button className="hover:text-black">Week</button>
+                      <button className="hover:text-black">Month</button>
+                    </div>
+                  </div>
 
-              {/* Average Order Value Card */}
-              <div className="bg-white rounded-lg shadow p-6 border flex items-center justify-between">
-                {/* Left Section */}
-                <div>
-                  <h3 className="font-semibold text-sm text-gray-800 mb-2">
-                    Average Order value
-                  </h3>
-                  <p className="text-2xl font-bold mt-2">
-                    €{averageData.averageOrder}
-                  </p>
-                  <p className="text-gray-600 text-sm mt-2">
-                    Average Order value
-                  </p>
-                </div>
+                  <div className="bg-white rounded-lg shadow p-6 border flex items-center justify-between">
+                    <div>
+                      <h3 className="font-semibold text-sm text-gray-800 mb-2">
+                        Average Order value
+                      </h3>
+                      <p className="text-2xl font-bold mt-2">
+                        €{averageData.averageOrder}
+                      </p>
+                      <p className="text-gray-600 text-sm mt-2">
+                        Average Order value
+                      </p>
+                    </div>
 
-                {/* Divider */}
-                <div className="w-px bg-gray-300 h-16 mx-6"></div>
+                    <div className="w-px bg-gray-300 h-16 mx-6"></div>
 
-                {/* Right Section */}
-                <div className="text-sm text-gray-700">
-                  <p className="font-medium">Delivery status</p>
-                  <p className="mt-8">
-                    Delivered :{" "}
-                    <span className="font-semibold">
-                      {averageData.deliveryRate}
-                    </span>
-                  </p>
-                </div>
-              </div>
+                    <div className="text-sm text-gray-700">
+                      <p className="font-medium">Delivery status</p>
+                      <p className="mt-8">
+                        Delivered :{" "}
+                        <span className="font-semibold">
+                          {averageData.deliveryRate}
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
-          {/* Right Panel  */}
-          {selectedOrder && (
-            // order info
-            <div className="col-span-3 bg-white rounded-lg shadow p-6 transition-all duration-300">
-              {/* this is view details button */}
-              <div className="flex justify-between items-center border-b pb-3">
-                <h2 className="text-md font-medium">
-                  Order {selectedOrder.id}
-                </h2>
-                <button
-                  className="underline"
-                  onClick={() => navigate(`/view-order/${selectedOrder.id}`)}
-                >
-                  View Details
-                </button>
-                <button
-                  onClick={() => setSelectedOrder(null)}
-                  className="text-gray-500 hover:text-black"
-                >
-                  <FontAwesomeIcon icon={faTimes} />
-                </button>
-              </div>
-              {/* Order Info */}
-              <div className="mt-4 text-xs text-gray-700 space-y-2 ">
-                <p>
-                  <strong>Order ID:</strong> {selectedOrder.id}
-                </p>
-                <p>
-                  <strong>Date:</strong> {selectedOrder.date || "20/08/2025"}{" "}
-                </p>
-                <p>
-                  <strong>Order amount:</strong> €{" "}
-                  {selectedOrder.amount || "28.23"}{" "}
-                </p>
-                <p>
-                  <strong>Status:</strong> {selectedOrder.payment}
-                </p>
-              </div>
-              <hr className="my-4" />
 
-              {/* Customer Info */}
-              <div className="text-xs text-gray-700 space-y-2">
-                <h3 className="font-bold text-sm text-gray-800">
-                  Customer Info
-                </h3>
-                <p>
-                  {" "}
-                  <strong>Name:</strong> {selectedOrder.customer} Smith
-                </p>
-                <p>
-                  {" "}
-                  <strong>Email:</strong> {selectedOrder.customer.toLowerCase()}
-                  @gmail.com
-                </p>
-                <p>
-                  {" "}
-                  <strong>Phone:</strong> 9238972921
-                </p>
-              </div>
-
-              <hr className="my-4" />
-              {/* Payment Info */}
-              <div className="text-xs text-gray-700 space-y-2">
-                <h3 className="font-bold text-sm text-gray-800">
-                  Payment Info
-                </h3>
-                <p>
-                  {" "}
-                  <strong>Method:</strong> Stripe
-                </p>
-                <p>
-                  {" "}
-                  <strong>Status: </strong> {selectedOrder.payment}
-                </p>
-                <p>
-                  {" "}
-                  <strong>Transaction ID:</strong> 21e71378182221
-                </p>
-              </div>
-
-              <hr className="my-4" />
-
-              {/* TikTok Live Ref */}
-              <div className="text-xs text-gray-700 space-y-2">
-                <h3 className="font-bold text-sm text-gray-800">
-                  TikTok Live Ref
-                </h3>
-                <p>
-                  {" "}
-                  <strong>Session name:</strong> Clothing code{" "}
-                </p>
-              </div>
-
-              <hr className="my-4" />
-              {/* Products Sold */}
-              <div>
-                <h3 className="font-bold text-gray-800">Products Sold</h3>
-                <div className="space-y-2 mt-2">
-                  {[1, 2, 3].map((_, i) => (
-                    <div
-                      key={i}
-                      className="flex items-center justify-between text-sm"
+          {/* Right panel */}
+          {loading
+            ? skeletonRightPanel
+            : selectedOrder && (
+                <div className="col-span-3 bg-white rounded-lg shadow p-6 transition-all duration-300">
+                  {/* Selected Order info panel */}
+                  <div className="flex justify-between items-center border-b pb-3">
+                    <h2 className="text-md font-medium">
+                      Order {selectedOrder.id}
+                    </h2>
+                    <button
+                      className="underline"
+                      onClick={() =>
+                        navigate(`/user/view-order/${selectedOrder.id}`)
+                      }
                     >
-                      <div className="flex items-center gap-2">
-                        <img
-                          src="https://m.media-amazon.com/images/I/81+uJH8pxYL._UY1100_.jpg"
-                          alt="Product"
-                          className="w-8 h-8 border-1 rounded-lg border-gray-400  object-contain "
-                        />
-                      </div>
-                      <span className="text-xs ">Denim shirt</span>
-                      <span className="text-xs ">€13.53</span>
-                    </div>
-                  ))}
+                      View Details
+                    </button>
+                    <button
+                      onClick={() => setSelectedOrder(null)}
+                      className="text-gray-500 hover:text-black"
+                    >
+                      <FontAwesomeIcon icon={faTimes} />
+                    </button>
+                  </div>
+
+                  <div className="mt-4 text-xs text-gray-700 space-y-2">
+                    <p>
+                      <strong>Order ID:</strong> {selectedOrder.id}
+                    </p>
+                    <p>
+                      <strong>Date:</strong> {selectedOrder.date || "20/08/2025"}
+                    </p>
+                    <p>
+                      <strong>Order amount:</strong> € {selectedOrder.amount || "28.23"}
+                    </p>
+                    <p>
+                      <strong>Status:</strong> {selectedOrder.payment}
+                    </p>
+                  </div>
+
+                  <hr className="my-4" />
+
+                  <div className="text-xs text-gray-700 space-y-2">
+                    <h3 className="font-bold text-sm text-gray-800">
+                      Customer Info
+                    </h3>
+                    <p>
+                      <strong>Name:</strong> {selectedOrder.customer}{" "}
+                    </p>
+                    <p>
+                      <strong>Email:</strong>{" "}
+                      {selectedOrder.customer.toLowerCase()}@gmail.com
+                    </p>
+                    <p>
+                      <strong>Phone:</strong> {selectedOrder.phoneNumber}
+                    </p>
+                  </div>
+
+                  <hr className="my-4" />
+
+                  <div className="text-xs text-gray-700 space-y-2">
+                    <h3 className="font-bold text-sm text-gray-800">
+                      Payment Info
+                    </h3>
+                    <p>
+                      <strong>Method:</strong> Stripe
+                    </p>
+                    <p>
+                      <strong>Status: </strong> {selectedOrder.payment}
+                    </p>
+                    <p>
+                      <strong>Transaction ID:</strong>{" "}
+                      {selectedOrder.transactionId}
+                    </p>
+                  </div>
                 </div>
-              </div>
-
-              <hr className="my-4" />
-
-              {/* Totals */}
-              <div className="text-sm text-end  text-gray-700 space-y-1">
-                <p>
-                  {" "}
-                  <strong className="px-1 font-semibold">Subtotal:</strong>{" "}
-                  €28.23
-                </p>
-                <p>
-                  {" "}
-                  <strong className="px-1 font-semibold">
-                    {" "}
-                    Shipping :{" "}
-                  </strong>{" "}
-                  Free
-                </p>
-                <p>
-                  {" "}
-                  <strong className="px-1 font-semibold">Total:</strong> €28.23
-                </p>
-              </div>
-            </div>
-          )}
+              )}
         </div>
       </div>
     </div>

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import Navbar from "../Components/Navbar";
-import TopButton from "../Components/TopButton";
+
 import DataTable from "../Components/ProductDataTable";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -24,7 +24,7 @@ function Products() {
     const fetchBestSelling = async () => {
       try {
         const res = await axios.get(
-          "https://la-dolce-vita.onrender.com/api/product/best-selling"
+          "http://dev-api.payonlive.com/api/product/best-selling"
         );
         setBestSelling(res.data.data || []);
       } catch (error) {
@@ -39,7 +39,7 @@ function Products() {
     const fetchRecentProducts = async () => {
       try {
         const res = await axios.get(
-          "https://la-dolce-vita.onrender.com/api/product/latest-products"
+          "http://dev-api.payonlive.com/api/product/latest-products"
         );
         setRecentProducts(res.data.data || []);
       } catch (error) {
@@ -76,7 +76,7 @@ function Products() {
 
       // Refresh recently added products
       const recentRes = await axios.get(
-        "https://la-dolce-vita.onrender.com/api/product/latest-products"
+        "http://dev-api.payonlive.com/api/product/latest-products"
       );
       setRecentProducts(recentRes.data.data || []);
     } catch (error) {
@@ -113,7 +113,7 @@ function Products() {
 
           {/* Add Product */}
           <button
-            onClick={() => navigate("/add-product")}
+            onClick={() => navigate("/user/add-product")}
             className="flex items-center gap-2 bg-[#02B978] text-white px-4 py-1.5 rounded-md text-sm hover:bg-[#04D18C] transition"
           >
             <FontAwesomeIcon icon={faPlus} className="text-white" />
