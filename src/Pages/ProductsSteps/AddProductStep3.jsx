@@ -14,6 +14,7 @@ import {
 
 function AddProductStep3({ formData, setFormData, prevStep, handleSubmit }) {
   const navigate = useNavigate();
+  
 
   // Side image previews (4 slots)
   const [previews, setPreviews] = useState(
@@ -100,23 +101,31 @@ function AddProductStep3({ formData, setFormData, prevStep, handleSubmit }) {
         {/* progress indicator */}
         <div className="flex justify-center items-center mt-5 gap-4 mb-5">
           <div className="flex flex-col items-center text-black font-semibold">
-            <div className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-400 text-white">
-              1
+            <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[#02B978] text-white">
+              <FontAwesomeIcon
+                icon={faCheck}
+                size="lg"
+                className="text-white px-3 "
+              />
             </div>
             <span className="mt-3 text-sm font-bold text-gray-400">
               Enter Product Info
             </span>
           </div>
-          <div className="flex-1 pb-5 border-t-3 border-gray-800"></div>
+          <div className="flex-1 pb-5 border-t-3 border-[#02B978]"></div>
           <div className="flex flex-col items-center text-gray-400 font-semibold">
-            <div className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-400 text-white">
-              2
+            <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[#02B978] text-white">
+              <FontAwesomeIcon
+                icon={faCheck}
+                size="lg"
+                className="text-white px-3 "
+              />
             </div>
-            <span className="mt-3 font-bold text-sm text-gray-400">
+            <span className="mt-3 font-bold text-sm text-[#02B978]">
               Add variations
             </span>
           </div>
-          <div className="flex-1 pb-5 border-t-3 border-gray-800"></div>
+          <div className="flex-1 pb-5 border-t-3 border-[#02B978]"></div>
           <div className="flex flex-col items-center text-gray-400 font-semibold">
             <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[#02B978] text-white border border-gray-300">
               3
@@ -231,6 +240,7 @@ function AddProductStep3({ formData, setFormData, prevStep, handleSubmit }) {
           >
             Submit <FontAwesomeIcon icon={faCheck} />
           </button>
+
         </div>
       </form>
       {/* FORM END */}

@@ -4,9 +4,12 @@ import Navbar from "../../Components/Navbar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
+import { useAlert } from "../../Components/AlertContext";
 
 const CreateCustomer = () => {
   const navigate = useNavigate();
+  const { showAlert } = useAlert();
+   const [loading, setLoading] = useState(false);
 
   // 🟢 State for basic info & address
   const [formData, setFormData] = useState({
@@ -42,6 +45,7 @@ const CreateCustomer = () => {
   // submit handler
   const handleSubmit = async (e) => {
   e.preventDefault();
+  setLoading(true);
 
   // Construct payload matching backend API
   const payload = {
@@ -68,11 +72,12 @@ const CreateCustomer = () => {
     );
 
     console.log("✅ Customer created:", res.data);
-    alert("Customer created successfully!");
+    showAlert("Customer created successfully!", "success");
     navigate("/user/Customers"); // redirect after save
   } catch (err) {
     console.error("❌ Error creating customer:", err.response?.data || err.message);
-    alert("Failed to create customer. Please check the console for details.");
+      showAlert("Failed to create customer. Please try again.", "error");
+    // alert("Failed to create customer. Please check the console for details.");
   }
 };
 
@@ -423,14 +428,26 @@ const CreateCustomer = () => {
 
         {/* Save Button */}
         <hr className="text-gray-400" />
-        <div className="flex justify-end">
+        {/* <div className="flex justify-end">
           <button
             type="submit"
             className="bg-green-600 text-white font-semibold rounded-lg px-5 py-2 text-sm hover:bg-green-700"
           >
             Save
           </button>
-        </div>
+        </div> */}
+         <div className="flex justify-end mt-4">
+            <button
+              type="submit"
+              disabled={loading}
+              className="bg-[#02B978] text-white px-6 py-2 rounded-lg hover:bg-[#04D18C] flex items-center gap-2"
+            >
+              {loading && (
+                <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+              )}
+              {loading ? "Saving..." : "Save"}
+            </button>
+          </div>
       </form>
     </div>
   );

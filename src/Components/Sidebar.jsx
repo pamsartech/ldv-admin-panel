@@ -23,7 +23,7 @@ function Sidebar() {
           <FontAwesomeIcon icon={isOpen ? faBars : faBars} size="lg" />
            {isOpen && <img className=" mx-auto w-18 h-12" src="/icons/logo dv.svg" alt="logo" /> }  
         </div>
-{/* <span className="px-5 text-lg font-bold">La Dolce Vita</span>  */}
+
       </button>
 
       {/* Links */}

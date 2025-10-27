@@ -8,26 +8,40 @@ import {
   faTrashCan,
 } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
+import { useAlert } from "../../Components/AlertContext";
+
+// 🧩 Material UI
+import Skeleton from "@mui/material/Skeleton";
+import Stack from "@mui/material/Stack";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
+import DialogTitle from "@mui/material/DialogTitle";
+import Button from "@mui/material/Button";
 
 const ViewProduct = () => {
   const navigate = useNavigate();
-  const { productId } = useParams(); // expecting product ID from route
+  const { productId } = useParams();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
+  const [openConfirm, setOpenConfirm] = useState(false); // 🔹 MUI confirm dialog
 
-  // product status color
+  const { showAlert } = useAlert(); // ✅ useAlert context
+
   const statusColors = {
     Active: "bg-green-100 text-green-700 border border-green-300",
     Inactive: "bg-red-100 text-red-700 border border-red-300",
   };
 
+  // 🧩 Fetch product details
   useEffect(() => {
     const fetchProduct = async () => {
       try {
         const res = await axios.get(
-          `http://dev-api.payonlive.com/api/product/product-details/${productId}` // <-- update API endpoint
+          `http://dev-api.payonlive.com/api/product/product-details/${productId}`
         );
         if (res.data.success) {
           setProduct(res.data.data);
@@ -41,29 +55,12 @@ const ViewProduct = () => {
         setLoading(false);
       }
     };
-
     fetchProduct();
   }, [productId]);
 
-  if (loading) {
-    return <p className="text-center mt-10">Loading product...</p>;
-  }
-
-  if (error) {
-    return <p className="text-center text-red-500 mt-10">{error}</p>;
-  }
-
-  if (!product) {
-    return <p className="text-center mt-10">No product found</p>;
-  }
-
-  // Delete product
+  // 🧩 Delete product logic
+ 
   const handleDelete = async () => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this product?"
-    );
-    if (!confirmDelete) return;
-
     try {
       setIsDeleting(true);
       const response = await axios.delete(
@@ -71,33 +68,54 @@ const ViewProduct = () => {
       );
 
       if (response.data.success) {
-        alert("Product deleted successfully!");
+        showAlert("Product deleted successfully!", "success");
         navigate("/user/Products");
       } else {
-        alert(
-          `Failed to delete product: ${
-            response.data.message || "Unknown error"
-          }`
-        );
+        showAlert(response.data.message || "Failed to delete product", "error");
       }
     } catch (err) {
-      alert(`Error: ${err.response?.data?.message || err.message}`);
+      showAlert(err.response?.data?.message || err.message, "error");
     } finally {
       setIsDeleting(false);
+      setOpenConfirm(false); // close confirmation dialog
     }
   };
+
+  // 🧩 MUI Skeleton loader
+  if (loading)
+    return (
+      <div>
+        <Navbar heading="Product Management" />
+        <div className="max-w-5xl mx-auto mt-10 bg-white rounded-lg shadow-sm p-6">
+          <Stack spacing={3}>
+            <Skeleton variant="text" width={200} height={35} animation="wave" />
+            <Skeleton variant="rectangular" height={80} animation="wave" />
+            <Skeleton variant="rectangular" height={60} animation="wave" />
+            <Skeleton variant="text" width={180} height={35} animation="wave" />
+            <Skeleton variant="rectangular" height={100} animation="wave" />
+            <Skeleton variant="rectangular" height={120} animation="wave" />
+            <Skeleton variant="rectangular" height={80} animation="wave" />
+          </Stack>
+        </div>
+      </div>
+    );
+
+  if (error) return <p className="text-center text-red-500 mt-10">{error}</p>;
+  if (!product) return <p className="text-center mt-10">No product found</p>;
 
   return (
     <div>
       <Navbar heading="Product Management" />
 
-      {/* discard button */}
+      {/* Top controls */}
       <div className="flex justify-between mt-5 mx-10">
         <h1 className="font-medium text-lg">Product details</h1>
 
         <div>
+          {/* 🔹 Delete Button triggers confirmation dialog */}
+       
           <button
-            onClick={handleDelete}
+            onClick={() => setOpenConfirm(true)}
             disabled={isDeleting}
             className={`px-3 py-1 border rounded-md ${
               isDeleting
@@ -108,6 +126,8 @@ const ViewProduct = () => {
             <FontAwesomeIcon icon={faTrashCan} className="px-2" />
             {isDeleting ? "Deleting..." : "Delete product"}
           </button>
+        
+
 
           <button
             onClick={() => navigate(`/user/update-product/${product._id}`)}
@@ -127,6 +147,7 @@ const ViewProduct = () => {
         </div>
       </div>
 
+      {/* Product details layout */}
       <div className="max-w-5xl mx-10 my-8 font-sans">
         <div className="rounded-2xl border border-gray-300 bg-[#fdfcf9] p-6 md:p-8 flex flex-col md:flex-row gap-10">
           {/* Left column */}
@@ -140,7 +161,6 @@ const ViewProduct = () => {
             <div className="flex gap-4 mb-6">
               {product.images && product.images.length > 0 ? (
                 product.images.map((img, i) => {
-                  // Full URL if needed
                   const imageUrl = img.startsWith("http")
                     ? img
                     : `https://la-dolce-vita.onrender.com${img}`;
@@ -158,7 +178,7 @@ const ViewProduct = () => {
               )}
             </div>
 
-            {/* Description placeholder */}
+            {/* Description */}
             <div className="mt-10">
               <h3 className="text-sm font-semibold mb-2">
                 Product description
@@ -181,19 +201,9 @@ const ViewProduct = () => {
               </div>
             </div>
 
-            {/* Colours */}
-            {/* <div>
-              <span className="block text-sm font-semibold mb-2">Colour</span>
-              <div className="flex gap-3">
-                <span className="px-3 py-1 rounded-lg border border-gray-300">
-                  {product.color}
-                </span>
-              </div>
-            </div> */}
-
-            {/* Colors */}
+            {/* Color */}
             <div className="mt-3">
-              <span className="text-sm font-semibold mb-2 ">Color:</span>
+              <span className="text-sm font-semibold mb-2">Color:</span>
               <div className="mt-2 flex flex-wrap gap-4">
                 {Array.isArray(product.color) ? (
                   product.color.map((c, i) => (
@@ -226,10 +236,9 @@ const ViewProduct = () => {
               </div>
             </div>
 
-            {/* Divider */}
             <div className="border-t border-gray-300"></div>
 
-            {/* Product Details */}
+            {/* Product details */}
             <div className="space-y-3 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-600 font-semibold">
@@ -243,14 +252,13 @@ const ViewProduct = () => {
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600 font-semibold">Price</span>
-                <span className="font-bold"> € {product.price}</span>
+                <span className="font-bold">€ {product.price}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600 font-semibold">Category</span>
                 <span>{product.category}</span>
               </div>
-
-              <div className="flex justify-between ">
+              <div className="flex justify-between">
                 <span className="text-gray-600 font-semibold">Status</span>
                 <span
                   className={`px-3 py-1 rounded-full text-xs font-medium ${
@@ -272,8 +280,40 @@ const ViewProduct = () => {
           </div>
         </div>
       </div>
+
+      {/* 🔹 MUI Confirmation Dialog */}
+      <Dialog
+        open={openConfirm}
+        onClose={() => setOpenConfirm(false)}
+        aria-labelledby="confirm-delete-title"
+        aria-describedby="confirm-delete-description"
+      >
+        <DialogTitle id="confirm-delete-title">
+          {"Confirm Product Deletion"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="confirm-delete-description">
+            Are you sure you want to permanently delete this product? This action
+            cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenConfirm(false)} color="primary">
+            Cancel
+          </Button>
+          <Button
+            onClick={handleDelete}
+            color="error"
+            variant="contained"
+            disabled={isDeleting}
+          >
+            {isDeleting ? "Deleting..." : "Delete"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };
 
 export default ViewProduct;
+

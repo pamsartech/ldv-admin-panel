@@ -4,19 +4,23 @@ import Navbar from "../../Components/Navbar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faTrash, faXmark } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
+import { useAlert } from "../../Components/AlertContext";
 
 const CreateOrder = () => {
   const navigate = useNavigate();
-
+  const { showAlert } = useAlert();
+  
   // 🔹 State for customer info
   const [customerName, setCustomerName] = useState("");
   const [email, setEmail] = useState("");
   const [phoneNumber, setphoneNumber] = useState("");
   const [address, setAddress] = useState("");
+  const [loading, setLoading] = useState(false);
+  
 
   // 🔹 State for order items
   const [orderItems, setOrderItems] = useState([
-    { productName: "", quantity: 3, price: 28.23 },
+    { productName: "", quantity: 1, price: 28.23 },
   ]);
 
   // 🔹 State for payment & shipping
@@ -101,6 +105,8 @@ const CreateOrder = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    setLoading(true);
+
     if (!validate()) return;
 
     const payload = {
@@ -125,20 +131,26 @@ const CreateOrder = () => {
       );
       console.log("✅ Order created:", res.data);
       if (res.data?.success || res.status === 200) {
-        setPopupMessage("Order created successfully!");
-        setShowPopup(true);
-        setTimeout(() => {
-          console.log("Redirecting to /Orders");
-          navigate("/user/Orders");
-        }, 1500);
+        showAlert("Order created successfully!", "success");
+        navigate("/user/Orders");
+        //  showAlert("Event created successfully!", "success", () => {
+        //   navigate("/user/tiktok");
+        // setPopupMessage("Order created successfully!");
+        // setShowPopup(true);
+        // setTimeout(() => {
+        //   console.log("Redirecting to /Orders");
+        //   navigate("/user/Orders");
+        // }, 1500);
       } else {
-        setPopupMessage(res.data.message || "Failed to create order ❌");
-        setShowPopup(true);
+        showAlert("Failed to create order. Please try again.", "error");
+        // setPopupMessage(res.data.message || "Failed to create order ❌");
+        // setShowPopup(true);
       }
     } catch (err) {
       console.error("Sever Error  while creating order:", err);
-      setPopupMessage("Server error — please try again.");
-      setShowPopup(true);
+      showAlert("Server error. Please try again.", "error");
+      // setPopupMessage("Server error — please try again.");
+      // setShowPopup(true);
     }
   };
 
@@ -320,6 +332,8 @@ const CreateOrder = () => {
                   <option>Travel bag</option>
                   <option>clothes</option>
                   <option>boots</option>
+                  <option>Asus</option>
+                  <option >Adidas shoes</option>
                 </select>
                 {errors[`product_${idx}`] && (
                   <p className="text-red-500 text-sm">
@@ -511,23 +525,37 @@ const CreateOrder = () => {
         </section>
 
         {/* Submit Button */}
-        <div className="flex justify-end">
+        {/* <div className="flex justify-end">
           <button
             type="submit"
             className="bg-green-600 text-white font-semibold rounded-lg px-5 py-2 text-sm hover:bg-green-700"
           >
             Submit Order
           </button>
-        </div>
+        </div> */}
+
+         <div className="flex justify-end mt-4">
+            <button
+              type="submit"
+              disabled={loading}
+              className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2"
+            >
+              {loading && (
+                <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+              )}
+              {loading ? "Submitting..." : "Submit Order"}
+            </button>
+          </div>
+
       </form>
        {/* ✅ Popup */}
-      {showPopup && (
+      {/* {showPopup && (
         <div className="fixed top-5 left-1/2 transform -translate-x-1/2 z-50">
           <div className="bg-white text-black font-bold px-8 py-10 rounded-xl shadow-xl min-w-[300px] text-center">
             {popupMessage}
           </div>
         </div>
-      )}
+      )} */}
     </div>
   );
 };

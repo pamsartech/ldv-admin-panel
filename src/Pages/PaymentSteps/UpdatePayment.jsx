@@ -4,11 +4,13 @@ import Navbar from "../../Components/Navbar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faCreditCard, faXmark, faClock } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
+import { useAlert } from "../../Components/AlertContext";
 
 export default function UpdatePayment() {
    const navigate = useNavigate();
   const { paymentId } = useParams();
   const location = useLocation();
+  const { showAlert } = useAlert();
 
   const [paymentData, setPaymentData] = useState({
     customerName: "",
@@ -70,6 +72,7 @@ export default function UpdatePayment() {
           });
         } catch (error) {
           console.error("Error fetching payment:", error);
+          console.log(paymentData);
           alert("Failed to load payment details.");
         } finally {
           setLoading(false);
@@ -110,11 +113,13 @@ export default function UpdatePayment() {
         `http://dev-api.payonlive.com/api/payment/update-payment/${paymentId}`,
         payload
       );
-      alert("Payment updated successfully!");
+      showAlert("Payment update successfully!", "success");
+      // alert("Payment updated successfully!");
       navigate("/user/Payments");
     } catch (error) {
       console.error("Error updating payment:", error);
-      alert("Failed to update payment. Please try again.");
+       showAlert("Failed to update payment. Please try again.", "error");
+      // alert("Failed to update payment. Please try again.");
     }
   };
 

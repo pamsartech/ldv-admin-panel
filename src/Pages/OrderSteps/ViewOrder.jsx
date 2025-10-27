@@ -18,17 +18,19 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
 
+// 🧩 Material UI Skeleton
+import Skeleton from "@mui/material/Skeleton";
+import Stack from "@mui/material/Stack";
+
 export default function ViewOrder() {
   const navigate = useNavigate();
-  const { orderId } = useParams(); // Dynamic orderId
+  const { orderId } = useParams();
 
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [orderStatus, setOrderStatus] = useState("Pending");
-
- 
 
   // Fetch order details
   useEffect(() => {
@@ -61,8 +63,40 @@ export default function ViewOrder() {
     fetchOrder();
   }, [orderId]);
 
-  if (loading)
-    return <p className="text-center mt-10">Loading order details...</p>;
+  // 🦴 Skeleton Loader UI
+  if (loading) {
+    return (
+      <div>
+        <Navbar heading="Order Management" />
+        <div className="max-w-6xl mx-auto mt-10 bg-white rounded-lg shadow-sm p-6">
+          <div className="lg:flex gap-6">
+            {/* LEFT COLUMN SKELETON */}
+            <div className="w-full lg:w-1/2 space-y-5">
+              <Stack spacing={2}>
+                <Skeleton variant="text" width={200} height={30} animation="wave" />
+                <Skeleton variant="rectangular" height={100} animation="wave" />
+                <Skeleton variant="text" width={160} height={25} animation="wave" />
+                <Skeleton variant="rectangular" height={120} animation="wave" />
+                <Skeleton variant="rectangular" height={150} animation="wave" />
+              </Stack>
+            </div>
+
+            {/* RIGHT COLUMN SKELETON */}
+            <div className="w-full lg:w-1/2 space-y-5">
+              <Stack spacing={2}>
+                <Skeleton variant="text" width={180} height={30} animation="wave" />
+                <Skeleton variant="rectangular" height={100} animation="wave" />
+                <Skeleton variant="text" width={150} height={25} animation="wave" />
+                <Skeleton variant="rectangular" height={200} animation="wave" />
+                <Skeleton variant="rectangular" height={180} animation="wave" />
+              </Stack>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (error)
     return <p className="text-center mt-10 text-red-500">Error: {error}</p>;
   if (!order) return null;
@@ -95,14 +129,15 @@ export default function ViewOrder() {
     }
   };
 
+  // ✅ Main UI after data loads
   return (
     <div>
       <Navbar heading="Order Management" />
 
-      {/* Top buttons */}
+      {/* Top Buttons */}
       <div className="flex justify-between mt-5 mx-10">
         <h1 className="font-medium text-lg">My Orders</h1>
-        <div className="">
+        <div>
           <button
             onClick={handleDelete}
             disabled={isDeleting}
@@ -163,7 +198,7 @@ export default function ViewOrder() {
 
                 <div className="flex justify-between items-center">
                   <span>Status</span>
-                  <span> {orderStatus}</span>
+                  <span>{orderStatus}</span>
                 </div>
               </div>
             </section>
@@ -322,7 +357,7 @@ export default function ViewOrder() {
               </div>
             </section>
 
-            {/* Activity timeline */}
+            {/* Activity */}
             <section className="p-6 mx-10">
               <h3 className="font-medium mb-4">Activity</h3>
               <div className="relative">

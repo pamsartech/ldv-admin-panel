@@ -4,12 +4,15 @@ import Navbar from "../../Components/Navbar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
+import { useAlert } from "../../Components/AlertContext";
 
 const UpdateCustomer = () => {
   const navigate = useNavigate();
   const { customerId } = useParams();
-  // console.log("Customer ID from params:", customerId);
+  const { showAlert } = useAlert();
   const location = useLocation();
+  
+  const [btnLoading, setBtnLoading] = useState(false)
 
   const existingData = location.state || {};
 
@@ -107,7 +110,7 @@ const UpdateCustomer = () => {
   // --- Handle Form Submit ---
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    setBtnLoading(true);
     // Construct payload matching backend structure
     const payload = {
       customerName: formData.customerName,
@@ -134,14 +137,14 @@ const UpdateCustomer = () => {
       );
 
       console.log("✅ Customer updated:", res.data);
-      alert("Customer updated successfully!");
+      showAlert("Customer update successfully!", "success");
       navigate("/user/Customers");
     } catch (err) {
       console.error(
         "❌ Error updating customer:",
         err.response?.data || err.message
       );
-      alert("Failed to update customer. Please check console for details.");
+      showAlert("Failed to update customer. Please try again.", "error");
     }
   };
 
@@ -385,14 +388,28 @@ const UpdateCustomer = () => {
 
         {/* Submit */}
         <hr className="text-gray-400" />
-        <div className="flex justify-end">
+        {/* <div className="flex justify-end">
           <button
             type="submit"
             className="bg-[#114E9D] text-white font-semibold rounded-lg px-5 py-2 text-sm hover:bg-blue-500"
           >
             Update Customer
           </button>
-        </div>
+        </div> */}
+         
+          <div className="flex justify-end mt-4">
+            <button
+              type="submit"
+              disabled={btnLoading}
+              className="bg-[#114E9D] text-white px-6 py-2 rounded-lg hover:bg-blue-500 flex items-center gap-2"
+            >
+              {btnLoading && (
+                <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+              )}
+              {btnLoading ? "Updating..." : "Update Customer"}
+            </button>
+          </div>
+
       </form>
     </div>
   );

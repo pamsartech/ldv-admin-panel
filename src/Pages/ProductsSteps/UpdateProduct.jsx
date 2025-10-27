@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { SketchPicker } from "react-color";
 import Navbar from "../../Components/Navbar";
-import { useAlert } from "../../Components/AlertContext"; // Make sure path is correct
+import { useAlert } from "../../Components/AlertContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowLeft,
@@ -10,17 +10,20 @@ import {
   faXmark,
   faPlus,
   faTimes,
-  faUpload,
 } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
+
+// 🧩 Material UI imports
+import Skeleton from "@mui/material/Skeleton";
+import Stack from "@mui/material/Stack";
 
 function UpdateProduct() {
   const { productId } = useParams();
   const navigate = useNavigate();
   const { showAlert } = useAlert();
+  const [btnLoading , setBtnLoading] = useState(false);
 
   const [loading, setLoading] = useState(true);
-
   const [selectedGender, setSelectedGender] = useState("Men");
   const [selectedSize, setSelectedSize] = useState("M");
   const [selectedColor, setSelectedColor] = useState("#FF0000");
@@ -33,10 +36,10 @@ function UpdateProduct() {
     price: "",
     stock: "",
     category: "",
-    status: "", // ✅ Added status field
+    status: "",
   });
 
-  // ✅ Fetch product details on mount
+  // ✅ Fetch product details
   useEffect(() => {
     const fetchProduct = async () => {
       try {
@@ -45,16 +48,14 @@ function UpdateProduct() {
         );
         if (res.data.success) {
           const data = res.data.data;
-
           setProductDetails({
             productName: data.productName || "",
             productCode: data.productCode || "",
             price: data.price || "",
             stock: data.stock || "",
             category: data.category || "",
-            status: data.status || "", // ✅ Pre-fill status if available
+            status: data.status || "",
           });
-
           setSelectedGender(data.gender || "Men");
           setSelectedSize(data.size || "M");
           setSelectedColor(data.color || "#FF0000");
@@ -66,21 +67,17 @@ function UpdateProduct() {
         setLoading(false);
       }
     };
-
     fetchProduct();
   }, [productId]);
 
-  // ✅ Handle form field changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setProductDetails((prev) => ({ ...prev, [name]: value }));
   };
 
-  // ✅ Handle color picker
   const handleColorChange = (color) => setSelectedColor(color.hex);
   const handleColorCommit = (color) => setSelectedColor(color.hex);
 
-  // ✅ Image handling (preview only, no actual upload)
   const handleImageUpload = (event, index) => {
     const file = event.target.files[0];
     if (!file) return;
@@ -97,15 +94,15 @@ function UpdateProduct() {
     setImages((prev) => prev.filter((_, i) => i !== index));
   };
 
-  // ✅ Update product API call
   const handleUpdate = async (e) => {
     e.preventDefault();
+    setBtnLoading(true);
 
     const payload = {
       productName: productDetails.productName,
       productCode: productDetails.productCode,
       price: Number(productDetails.price),
-      status: productDetails.status, // ✅ Added to payload
+      status: productDetails.status,
       gender: selectedGender,
       color: selectedColor,
       size: selectedSize,
@@ -116,19 +113,16 @@ function UpdateProduct() {
 
     try {
       const response = await axios.put(
-        `https://la-dolce-vita.onrender.com/api/product/update-product/${productId}`,
+        `http://dev-api.payonlive.com/api/product/update-product/${productId}`,
         payload,
-        {
-          headers: { "Content-Type": "application/json" },
-        }
+        { headers: { "Content-Type": "application/json" } }
       );
 
       if (response.data.success) {
-        showAlert("Product updated successfully!", "success", () => {
-          navigate("/user/products"); // navigate after clicking OK
-        });
+        showAlert("Product updated successfully!", "success", () =>
+          navigate("/user/products")
+        );
       } else {
-        // alert(response.data.message || "❌ Failed to update product.");
         showAlert("Failed to update product.", "error");
       }
     } catch (error) {
@@ -137,9 +131,24 @@ function UpdateProduct() {
     }
   };
 
-  if (loading) {
-    return <p className="text-center mt-10">Loading product details...</p>;
-  }
+  // 🧩 Skeleton Loader (replaces plain loading text)
+  if (loading)
+    return (
+      <div>
+        <Navbar heading="Payment Management" />
+        <div className="max-w-6xl mx-auto mt-10 bg-white rounded-lg shadow-sm p-6">
+          <Stack spacing={3}>
+            <Skeleton variant="text" width={220} height={35} animation="wave" />
+            <Skeleton variant="rectangular" height={80} animation="wave" />
+            <Skeleton variant="rectangular" height={300} animation="wave" />
+            <Skeleton variant="rectangular" height={180} animation="wave" />
+            <Skeleton variant="text" width={180} height={35} animation="wave" />
+            <Skeleton variant="rectangular" height={250} animation="wave" />
+            <Skeleton variant="rectangular" height={120} animation="wave" />
+          </Stack>
+        </div>
+      </div>
+    );
 
   return (
     <div>
@@ -160,7 +169,7 @@ function UpdateProduct() {
       <form onSubmit={handleUpdate}>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mx-10 mt-10">
           {/* Basic Info */}
-            <section className="border border-gray-300 rounded-xl shadow-sm p-7 bg-gray-50">
+          <section className="border border-gray-300 rounded-xl shadow-sm p-7 bg-gray-50">
             <div className="grid grid-cols-1 gap-6">
               <div>
                 <label className="block text-sm font-medium mb-1">Price</label>
@@ -174,6 +183,7 @@ function UpdateProduct() {
                   className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm"
                 />
               </div>
+
               <div>
                 <label className="block text-sm font-medium mb-1">Name</label>
                 <input
@@ -186,8 +196,11 @@ function UpdateProduct() {
                   className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm"
                 />
               </div>
+
               <div>
-                <label className="block text-sm font-medium mb-1">Product Code</label>
+                <label className="block text-sm font-medium mb-1">
+                  Product Code
+                </label>
                 <input
                   required
                   type="text"
@@ -199,7 +212,7 @@ function UpdateProduct() {
                 />
               </div>
 
-              {/* ✅ Status Dropdown */}
+              {/* Status Dropdown */}
               <div>
                 <label className="block text-sm font-medium mb-1">Status</label>
                 <select
@@ -210,8 +223,8 @@ function UpdateProduct() {
                   className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm bg-white"
                 >
                   <option value="">Select Status</option>
-                  <option value="Active">Active</option>
-                  <option value="Inactive">Inactive</option>
+                  <option value="active">active</option>
+                  <option value="inactive">inactive</option>
                 </select>
               </div>
             </div>
@@ -270,7 +283,10 @@ function UpdateProduct() {
                           className="w-full h-full object-cover rounded-lg"
                         />
                       ) : (
-                        <FontAwesomeIcon icon={faPlus} className="text-gray-600" />
+                        <FontAwesomeIcon
+                          icon={faPlus}
+                          className="text-gray-600"
+                        />
                       )}
                     </label>
                     <input
@@ -299,7 +315,7 @@ function UpdateProduct() {
         {/* Color / Size / Stock */}
         <section className="p-6 border border-gray-300 rounded-2xl shadow-md bg-gray-50 mx-10 mt-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-            {/* Left Column */}
+            {/* Left */}
             <div className="space-y-6">
               {/* Gender */}
               <div>
@@ -372,7 +388,7 @@ function UpdateProduct() {
               </div>
             </div>
 
-            {/* Right Column */}
+            {/* Right */}
             <div className="space-y-6">
               <div>
                 <h3 className="font-semibold text-gray-800 mb-2">Stock</h3>
@@ -405,24 +421,40 @@ function UpdateProduct() {
           </div>
         </section>
 
-        {/* Navigation Buttons */}
+        {/* Footer */}
         <hr className="text-gray-400 mx-10 mt-8" />
         <div className="flex justify-between max-w-5xl mx-auto my-10">
+
+          <div className="mt-4">
           <button
             type="button"
             onClick={() => navigate("/user/Products")}
-            className="px-3 py-1 border border-red-700 text-red-700 bg-red-50 rounded-md hover:bg-gray-100"
+            className="px-3 py-2 border border-red-700 text-red-700 bg-red-50 rounded-md hover:bg-gray-100"
           >
             <FontAwesomeIcon icon={faXmark} size="lg" className="px-2" />
             Discard Product
-          </button>
+          </button></div>
 
-          <button
+          {/* <button
             type="submit"
             className="px-4 py-2 bg-[#114E9D] text-white rounded-lg hover:bg-blue-500"
           >
             Update Product
-          </button>
+          </button> */}
+
+           <div className=" mt-4">
+            <button
+              type="submit"
+              disabled={btnLoading}
+              className="bg-[#114E9D] text-white px-6 py-2 rounded-lg hover:bg-blue-500 flex items-center gap-2"
+            >
+              {btnLoading && (
+                <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+              )}
+              {btnLoading ? "Updating..." : "Update Product"}
+            </button>
+          </div>
+
         </div>
       </form>
     </div>
@@ -430,5 +462,7 @@ function UpdateProduct() {
 }
 
 export default UpdateProduct;
+
+
 
 

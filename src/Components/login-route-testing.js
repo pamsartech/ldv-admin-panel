@@ -505,3 +505,97 @@ export const AlertProvider = ({ children }) => {
 
 export const useAlert = () => useContext(AlertContext);
 
+
+
+
+
+
+
+// navbar code 
+import { useState } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faBell, faChevronDown } from "@fortawesome/free-solid-svg-icons";
+import { useNavigate } from "react-router-dom";
+
+function Navbar(props) {
+  const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
+
+  // 🔐 Logout handler
+  const handleLogout = () => {
+    // Remove token and any stored user info
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+
+    // Close dropdown
+    setIsOpen(false);
+
+    // Redirect to login
+    navigate("/login");
+  };
+
+  return (
+    <div>
+      <nav className="w-full bg-white border-b border-gray-400 px-6 py-3 flex items-center justify-between">
+        {/* Left Section */}
+        <div>
+          <h1 className="text-lg font-semibold text-gray-900">
+            {props.heading}
+          </h1>
+        </div>
+
+        {/* Right Section */}
+        <div className="flex items-center space-x-6">
+          {/* Notification Icon */}
+          <button className="text-gray-600 hover:text-gray-800">
+            <FontAwesomeIcon icon={faBell} size="lg" />
+          </button>
+
+          {/* Profile Section */}
+          <div className="relative">
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className="flex items-center space-x-2 focus:outline-none"
+            >
+              <img
+                src="https://png.pngtree.com/png-clipart/20231019/original/pngtree-user-profile-avatar-png-image_13369991.png"
+                alt="User"
+                className="w-8 h-8 rounded-full"
+              />
+              <span className="font-medium text-sm">Louis G</span>
+              <FontAwesomeIcon icon={faChevronDown} className="text-gray-500" />
+            </button>
+
+            {/* Dropdown Menu */}
+            {isOpen && (
+              <div className="absolute right-0 mt-2 w-40 bg-gray-100 border border-gray-400 rounded-lg shadow-lg py-2 z-50">
+                <button
+                  onClick={() => setIsOpen(false)}
+                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                >
+                  Profile
+                </button>
+
+                <button
+                  onClick={() => setIsOpen(false)}
+                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                >
+                  Settings
+                </button>
+
+                <button
+                  onClick={handleLogout}
+                  className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                >
+                  Logout
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </nav>
+    </div>
+  );
+}
+
+export default Navbar;

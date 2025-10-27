@@ -3,11 +3,10 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { SketchPicker } from "react-color";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
+import { faCheck,
   faArrowLeft,
   faArrowRight,
   faPlus,
-  faUpload,
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 import Navbar from "../../Components/Navbar";
@@ -15,34 +14,44 @@ import Navbar from "../../Components/Navbar";
 function AddProductStep2({ formData, setFormData, prevStep, nextStep }) {
   const navigate = useNavigate();
 
+  // States
   const [selectedGender, setSelectedGender] = useState(formData.gender || "Men");
   const [selectedSize, setSelectedSize] = useState(formData.size || "M");
   const [colors, setColors] = useState(["#FF0000", "#2563EB", "#8B5CF6", "#6B7280"]);
   const [selectedColor, setSelectedColor] = useState(formData.color || "#B21E1E");
   const [showColorPicker, setShowColorPicker] = useState(false);
 
-  // keep central state in sync
+  // New enable/disable toggles
+  const [enableGender, setEnableGender] = useState(true);
+  const [enableColor, setEnableColor] = useState(true);
+  const [enableSize, setEnableSize] = useState(true);
+
+  // Sync with formData based on enable/disable
   useEffect(() => {
-    setFormData((prev) => ({ ...prev, gender: selectedGender }));
-  }, [selectedGender, setFormData]);
+    setFormData((prev) => ({
+      ...prev,
+      gender: enableGender ? selectedGender : "N/A",
+    }));
+  }, [enableGender, selectedGender, setFormData]);
 
   useEffect(() => {
-    setFormData((prev) => ({ ...prev, size: selectedSize }));
-  }, [selectedSize, setFormData]);
+    setFormData((prev) => ({
+      ...prev,
+      color: enableColor ? selectedColor : "N/A",
+    }));
+  }, [enableColor, selectedColor, setFormData]);
 
   useEffect(() => {
-    setFormData((prev) => ({ ...prev, color: selectedColor }));
-  }, [selectedColor, setFormData]);
+    setFormData((prev) => ({
+      ...prev,
+      size: enableSize ? selectedSize : "N/A",
+    }));
+  }, [enableSize, selectedSize, setFormData]);
 
   const handleColorCommit = (color) => {
     const newColor = color.hex;
     if (!colors.includes(newColor)) setColors((p) => [...p, newColor]);
     setSelectedColor(newColor);
-  };
-
-  const handleSizeGuideUpload = (e) => {
-    const f = e.target.files?.[0];
-    if (f) setFormData((prev) => ({ ...prev, sizeGuideFile: f }));
   };
 
   return (
@@ -51,15 +60,22 @@ function AddProductStep2({ formData, setFormData, prevStep, nextStep }) {
 
       <h1 className="mt-5 text-start mx-5 font-medium text-lg">Product Creation</h1>
 
-      <div className="max-w-lg mx-auto mt-10 bg-white p-6">
+         <div className="max-w-lg mx-auto mt-10 bg-white p-6">
         {/* Step indicator */}
         <div className="flex justify-center items-center mt-5 gap-4 mb-5">
           <div className="flex flex-col items-center text-black font-semibold">
-            <div className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-400 text-white ">1</div>
-            <span className="mt-3 text-sm font-bold text-gray-400 ">Enter Product Info</span>
+            <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[#02B978] text-white ">
+              
+              <FontAwesomeIcon
+                icon={faCheck}
+                size="lg"
+                className="text-white px-3 "
+              />
+              </div>
+            <span className="mt-3 text-sm font-bold text-[#02B978] ">Enter Product Info</span>
           </div>
 
-          <div className="flex-1 pb-5 border-t-3 border-gray-800"></div>
+          <div className="flex-1 pb-5 border-t-3 border-[#02B978]"></div>
 
           <div className="flex flex-col items-center text-gray-400 font-semibold">
             <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[#02B978] text-white ">
@@ -77,115 +93,129 @@ function AddProductStep2({ formData, setFormData, prevStep, nextStep }) {
         </div>
       </div>
 
-      {/* Form wrapper for HTML5 validation */}
+      {/* Form wrapper */}
       <form
-        className=" w-3xl mx-auto  p-6 border border-gray-300 rounded-2xl shadow-md bg-white"
+        className="max-w-5xl mx-auto mt-10 p-6 border border-gray-300 rounded-2xl shadow-md bg-white"
         onSubmit={(e) => {
-          e.preventDefault(); // prevent reload
-          nextStep(); // only called if validation passes
+          e.preventDefault();
+          nextStep();
         }}
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
           <div className="space-y-6">
-            {/* Gender (hidden required input to enforce validation) */}
+            {/* Gender */}
             <div>
-              <h3 className="font-semibold text-gray-800 mb-2">Gender</h3>
+              <div className="flex  mb-2">
+                <h3 className="font-semibold text-gray-800">Gender</h3>
+                <label className="flex items-center gap-2 mx-5 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={enableGender}
+                    onChange={(e) => setEnableGender(e.target.checked)}
+                    className="cursor-pointer"
+                  />
+                  Enable selection
+                </label>
+              </div>
               <div className="flex gap-3">
                 {["Men", "Women", "Unisex"].map((gender) => (
                   <button
                     type="button"
                     key={gender}
-                    onClick={() => setSelectedGender(gender)}
+                    disabled={!enableGender}
+                    onClick={() => enableGender && setSelectedGender(gender)}
                     className={`px-4 py-2 rounded-lg border transition ${
-                      selectedGender === gender
+                      selectedGender === gender && enableGender
                         ? "bg-[#6750A4] text-white "
                         : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
-                    }`}
+                    } ${!enableGender ? "opacity-50 cursor-not-allowed" : ""}`}
                   >
                     {gender}
                   </button>
                 ))}
               </div>
-              <input type="hidden" name="gender" value={selectedGender} required />
             </div>
 
-            {/* Colours */}
-            <div>
-              <h3 className="font-semibold text-gray-800 mb-2">Colours</h3>
-              <div>
-                <div className="flex gap-3 items-center flex-wrap">
-                  {colors.map((color, idx) => (
-                    <div
-                      key={idx}
-                      className={`w-8 h-8 rounded-full border cursor-pointer transition-all ${
-                        selectedColor === color ? "ring-2 ring-purple-600 scale-110" : ""
-                      }`}
-                      style={{ backgroundColor: color }}
-                      onClick={() => setSelectedColor(color)}
-                    />
-                  ))}
-
-                  <button
-                    type="button"
-                    onClick={() => setShowColorPicker((s) => !s)}
-                    className="w-8 h-8 rounded-full border flex items-center justify-center text-gray-600 hover:bg-gray-100 transition"
-                  >
-                    <FontAwesomeIcon icon={faPlus} />
-                  </button>
-                </div>
-
-                {showColorPicker && (
-                  <div className="mt-3">
-                    <SketchPicker
-                      color={selectedColor}
-                      onChange={(c) => setSelectedColor(c.hex)}
-                      onChangeComplete={handleColorCommit}
-                    />
-                  </div>
-                )}
+            {/* Colors */}
+            <div className="mt-5">
+              <div className="flex  mb-2">
+                <h3 className="font-semibold text-gray-800">Colors</h3>
+                <label className="flex items-center mx-5 gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={enableColor}
+                    onChange={(e) => setEnableColor(e.target.checked)}
+                    className="cursor-pointer"
+                  />
+                  Enable selection
+                </label>
               </div>
-              <input type="hidden" name="color" value={selectedColor} required />
+              <div className="flex gap-3 items-center flex-wrap">
+                {colors.map((color, idx) => (
+                  <div
+                    key={idx}
+                    className={`w-6 h-6 rounded-full border cursor-pointer transition-all ${
+                      selectedColor === color && enableColor ? "ring-2 ring-purple-600 scale-110" : ""
+                    } ${!enableColor ? "opacity-50 cursor-not-allowed" : ""}`}
+                    style={{ backgroundColor: color }}
+                    onClick={() => enableColor && setSelectedColor(color)}
+                  />
+                ))}
+                <button
+                  type="button"
+                  disabled={!enableColor}
+                  onClick={() => enableColor && setShowColorPicker((s) => !s)}
+                  className={`w-8 h-8 rounded-full border flex items-center justify-center text-gray-600 transition ${
+                    !enableColor ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-100"
+                  }`}
+                >
+                  <FontAwesomeIcon icon={faPlus} />
+                </button>
+              </div>
+
+              {enableColor && showColorPicker && (
+                <div className="mt-3">
+                  <SketchPicker
+                    color={selectedColor}
+                    onChange={(c) => setSelectedColor(c.hex)}
+                    onChangeComplete={handleColorCommit}
+                  />
+                </div>
+              )}
             </div>
 
             {/* Size */}
-            <div>
-              <h3 className="font-semibold text-gray-800 mb-2">Size</h3>
+            <div className="mt-8">
+              <div className="flex  mb-2">
+                <h3 className="font-semibold text-gray-800">Size</h3>
+                <label className="flex items-center mx-9 gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={enableSize}
+                    onChange={(e) => setEnableSize(e.target.checked)}
+                    className=" cursor-pointer "
+                  />
+                  Enable selection
+                </label>
+              </div>
               <div className="flex gap-3">
                 {["XS", "S", "M", "L", "XL"].map((size) => (
                   <button
                     type="button"
                     key={size}
-                    onClick={() => setSelectedSize(size)}
+                    disabled={!enableSize}
+                    onClick={() => enableSize && setSelectedSize(size)}
                     className={`px-4 py-2 rounded-lg border transition ${
-                      selectedSize === size ? "bg-[#6750A4] text-white " : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
-                    }`}
+                      selectedSize === size && enableSize
+                        ? "bg-[#6750A4] text-white "
+                        : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
+                    } ${!enableSize ? "opacity-50 cursor-not-allowed" : ""}`}
                   >
                     {size}
                   </button>
                 ))}
               </div>
-              <input type="hidden" name="size" value={selectedSize} required />
             </div>
-
-            {/* Size Chart Upload (optional, so no required) */}
-            {/* <div>
-              <label
-                htmlFor="sizeGuideUpload"
-                className="flex items-center gap-2 px-4 py-2 rounded-lg border font-medium cursor-pointer hover:bg-gray-100 transition"
-              >
-                <FontAwesomeIcon icon={faUpload} /> Add product Size guide Chart
-              </label>
-              <input
-                id="sizeGuideUpload"
-                type="file"
-                accept=".png,.jpg,.jpeg,.pdf"
-                className="hidden"
-                onChange={handleSizeGuideUpload}
-              />
-              {formData.sizeGuideFile && (
-                <div className="mt-2 text-sm text-gray-600">{formData.sizeGuideFile.name}</div>
-              )}
-            </div> */}
           </div>
 
           {/* Right column */}
@@ -230,11 +260,11 @@ function AddProductStep2({ formData, setFormData, prevStep, nextStep }) {
         </div>
 
         {/* Navigation */}
-        <div className="flex justify-between max-w-lg mx-auto mt-10 ">
+        <div className="flex justify-between w-full mx-auto mt-10">
           <button
             type="button"
             onClick={() => navigate("/user/Products")}
-            className=" px-3 py-1 border border-red-700 text-red-700 bg-red-50 rounded-md hover:bg-gray-100"
+            className="px-3 py-1 border border-red-700 text-red-700 bg-red-50 rounded-md hover:bg-gray-100"
           >
             <FontAwesomeIcon icon={faXmark} size="lg" className="text-red-700 px-2" />
             Discard Product
@@ -260,5 +290,6 @@ function AddProductStep2({ formData, setFormData, prevStep, nextStep }) {
 }
 
 export default AddProductStep2;
+
 
 

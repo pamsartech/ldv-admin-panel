@@ -5,9 +5,11 @@ import axios from "axios";
 import AddProductStep1 from "./AddProductStep1";
 import AddProductStep2 from "./AddProductStep2";
 import AddProductStep3 from "./AddProductStep3";
+import { useAlert } from "../../Components/AlertContext";
 
 export default function AddProductWizard() {
   const navigate = useNavigate();
+  const { showAlert } = useAlert();
   const [currentStep, setCurrentStep] = useState(1);
 
   // centralised form data (files kept as File objects)
@@ -30,48 +32,93 @@ export default function AddProductWizard() {
   const goToStep = (n) => setCurrentStep(n);
 
   // final submit (multipart/form-data) — sends all params + files
-  const handleSubmit = async () => {
+//   const handleSubmit = async () => {
+//   try {
+//     const data = new FormData();
+
+//     // append scalar fields safely
+//     data.append("tiktokSessionId", formData.tiktokSessionId || "");
+//     data.append("price", formData.price ? Number(formData.price) : 0);
+//     data.append("productName", formData.productName || "");
+//     data.append("productCode", formData.productCode || "");
+//     data.append("status", formData.status || "");
+//     data.append("gender", formData.gender || "Men");
+//     data.append("size", formData.size || "M");
+//     data.append("color", formData.color || "#B21E1E");
+//     data.append("stock", formData.stock ? Number(formData.stock) : 0);
+//     data.append("category", formData.category || "");
+
+//     // images: append each file as images[]
+//     if (Array.isArray(formData.images)) {
+//       formData.images.forEach((file) => {
+//         if (file) data.append("images[]", file);
+//       });
+//     }
+
+//     // POST request
+//     const res = await axios.post(
+//       "https://la-dolce-vita.onrender.com/api/product/add-product",
+//       data
+//     );
+
+//     window.alert("✅ Product created successfully");
+//     navigate("/user/Products");
+
+//   } catch (err) {
+//     if (err.response) {
+//       console.error("Backend error:", err.response.data);
+//       window.alert(`❌ Error: ${JSON.stringify(err.response.data)}`);
+//     } else {
+//       console.error("API submit error:", err);
+//       window.alert("❌ Error submitting product (check console)");
+//     }
+//   }
+// };
+
+const handleSubmit = async () => {
   try {
     const data = new FormData();
+    
 
-    // append scalar fields safely
-    data.append("tiktokSessionId", formData.tiktokSessionId || "");
-    data.append("price", formData.price ? Number(formData.price) : 0);
+    // append all text fields
     data.append("productName", formData.productName || "");
     data.append("productCode", formData.productCode || "");
-    data.append("status", formData.status || "");
+    data.append("price", formData.price || "");
+    data.append("tiktokSessionId", formData.tiktokSessionId || "");
     data.append("gender", formData.gender || "Men");
-    data.append("size", formData.size || "M");
-    data.append("color", formData.color || "#B21E1E");
-    data.append("stock", formData.stock ? Number(formData.stock) : 0);
+    data.append("color", formData.color || "");
+    data.append("size", formData.size || "");
+    data.append("stock", formData.stock || "");
     data.append("category", formData.category || "");
+    data.append("status", formData.status || "");
 
-    // images: append each file as images[]
+    // append images (without [])
     if (Array.isArray(formData.images)) {
       formData.images.forEach((file) => {
-        if (file) data.append("images[]", file);
+        if (file) data.append("images", file);
       });
     }
 
-    // POST request
+    // post request
+    console.log(data);
     const res = await axios.post(
-      "http://dev-api.payonlive.com/api/product/add-product",
-      data
+      "https://la-dolce-vita.onrender.com/api/product/add-product",
+      data,
+      {
+        withCredentials: true, // only if cookies/session used
+      }
     );
 
-    window.alert("✅ Product created successfully");
+    showAlert("Product created successfully!", "success");
     navigate("/user/Products");
-
-  } catch (err) {
-    if (err.response) {
-      console.error("Backend error:", err.response.data);
-      window.alert(`❌ Error: ${JSON.stringify(err.response.data)}`);
-    } else {
-      console.error("API submit error:", err);
-      window.alert("❌ Error submitting product (check console)");
-    }
+  } 
+  catch (err) {
+    console.error("Backend error:", err.response?.data || err.message);
+    // window.alert(`❌ Error: ${JSON.stringify(err.response?.data || err.message)}`);
+    showAlert("Failed to create Product. Please try again.", "error");
   }
 };
+
 
 
   return (

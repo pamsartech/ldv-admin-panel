@@ -1,0 +1,68 @@
+name: Frontend CI/CD
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+  deploy_prod:
+    runs-on: ubuntu-latest
+    environment: production
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Deploy to production
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          command_timeout: 30m
+          script: |
+            set -e
+            cd /var/www/ldv/prod/ldv-admin-panel
+            git fetch origin main
+            git reset --hard origin/main
+            npm ci
+            npm run build
+
+  deploy_dev:
+    runs-on: ubuntu-latest
+    environment: development
+    needs: build
+    if: github.ref == 'refs/heads/dev'
+    steps:
+      - name: Deploy to development
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          command_timeout: 30m
+          script: |
+            set -e
+            cd /var/www/ldv/dev/ldv-admin-panel
+            git fetch origin dev
+            git reset --hard origin/dev
+            npm ci
+            npm run build

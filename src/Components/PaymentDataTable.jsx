@@ -8,28 +8,19 @@ import {
   faArrowLeft,
   faArrowRight,
   faCircleCheck,
-  faChartLine,
-  faBoxArchive,
+  faCheckCircle,
+  faUndo,
   faChevronDown,
   faClock,
-  faCheckCircle,
   faTimesCircle,
-  faUndo,
 } from "@fortawesome/free-solid-svg-icons";
+import { Skeleton } from "@mui/material"; // ✅ Import Skeleton
 
-// Tailwind styles for statuses
 const statusStyles = {
   Pending: "bg-yellow-100 text-yellow-700 border border-yellow-300",
   Paid: "bg-green-100 text-green-700 border border-green-300",
   Failed: "bg-red-100 text-red-700 border border-red-300",
   Refunded: "bg-blue-100 text-blue-700 border border-blue-300",
-};
-
-const statusIcons = {
-  Pending: faClock,
-  Paid: faCheckCircle,
-  Failed: faTimesCircle,
-  Refunded: faUndo,
 };
 
 export default function PaymentDataTable() {
@@ -42,7 +33,6 @@ export default function PaymentDataTable() {
   const [activeTab, setActiveTab] = useState("all"); // all, Paid, Refunded
   const [filterMethod, setFilterMethod] = useState("all");
   const [showMethodFilter, setShowMethodFilter] = useState(false);
-
   const [sortOrder, setSortOrder] = useState("desc");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedRows, setSelectedRows] = useState([]);
@@ -51,25 +41,11 @@ export default function PaymentDataTable() {
 
   const paymentsPerPage = 8;
 
-  // ---- GET API Call ----
   useEffect(() => {
     axios
-      .get("https://la-dolce-vita.onrender.com/api/payment/payment-list")
+      .get("http://dev-api.payonlive.com/api/payment/payment-list")
       .then((res) => {
         const paymentsArray = res.data.data || [];
-        console.log("Payment list Response:", res.data);
-
-        // const formatted = paymentsArray.map((item) => ({
-        //   id: item._id,
-        //   amount: item.orderDetails?.amount || "N/A",
-        //   status: item.paymentStatus || "Pending",
-        //   transactionId: item.orderDetails?.transactionID || "N/A",
-        //   orderId: item.orderDetails?.orderID || "N/A",
-        //   email: item.customerDetails?.email || "N/A",
-        //   date: item.createdAt ? new Date(item.createdAt) : new Date(),
-        //   method: item.orderDetails?.paymentMethod || "N/A",
-        // }));
-
         const formatted = paymentsArray.map((item) => ({
           id: item.payment_id,
           amount: item.amount || "N/A",
@@ -91,26 +67,21 @@ export default function PaymentDataTable() {
       });
   }, []);
 
-  if (loading) return <p className="p-6">Loading payments...</p>;
   if (error) return <p className="p-6 text-red-500">{error}</p>;
 
   // ---- Filtering ----
   let tabFiltered = payments;
+  if (activeTab === "Paid") tabFiltered = payments.filter((p) => p.status === "Paid");
+  if (activeTab === "Refunded") tabFiltered = payments.filter((p) => p.status === "Refunded");
 
-  if (activeTab === "Paid")
-    tabFiltered = payments.filter((p) => p.status === "Paid");
-  if (activeTab === "Refunded")
-    tabFiltered = payments.filter((p) => p.status === "Refunded");
-
-  // search logic
   if (search.trim()) {
     const term = search.toLowerCase();
     tabFiltered = tabFiltered.filter(
       (p) =>
-        p.status.toLowerCase().includes(search.toLowerCase()) ||
-        p.email.toLowerCase().includes(search.toLowerCase()) ||
-        p.amount.toString().includes(search) ||
-        p.id.toString().includes(search)
+        p.status.toLowerCase().includes(term) ||
+        p.email.toLowerCase().includes(term) ||
+        p.amount.toString().includes(term) ||
+        p.id.toString().includes(term)
     );
   }
 
@@ -119,19 +90,16 @@ export default function PaymentDataTable() {
       ? tabFiltered
       : tabFiltered.filter((p) => p.method === filterMethod);
 
-  // ---- Sorting ----
   const sortedPayments = [...filteredPayments].sort((a, b) =>
     sortOrder === "desc" ? b.date - a.date : a.date - b.date
   );
 
-  // ---- Pagination ----
   const totalPages = Math.ceil(sortedPayments.length / paymentsPerPage);
   const currentPayments = sortedPayments.slice(
     (currentPage - 1) * paymentsPerPage,
     currentPage * paymentsPerPage
   );
 
-  // ---- Row selection ----
   const handleSelectAll = () => {
     if (selectAll) setSelectedRows([]);
     else setSelectedRows(currentPayments.map((p) => p.id));
@@ -144,8 +112,26 @@ export default function PaymentDataTable() {
     else setSelectedRows([...selectedRows, id]);
   };
 
+  // ---- Skeleton Rows ----
+  const skeletonRows = Array.from({ length: paymentsPerPage }).map((_, idx) => (
+    <tr key={idx} className="border-b">
+      <td className="p-3">
+        <Skeleton variant="rectangular" width={20} height={20} />
+      </td>
+      <td className="p-3"><Skeleton /></td>
+      <td className="p-3"><Skeleton /></td>
+      <td className="p-3"><Skeleton /></td>
+      <td className="p-3"><Skeleton /></td>
+      <td className="p-3"><Skeleton /></td>
+      <td className="p-3"><Skeleton /></td>
+      <td className="p-3"><Skeleton /></td>
+      <td className="p-3"><Skeleton variant="rectangular" width={20} height={20} /></td>
+    </tr>
+  ));
+
   return (
     <div className="p-6">
+      {/* Tabs, filters, search (unchanged) */}
       {/* Tabs and Filter */}
       <div className="flex justify-between items-center border-2 mb-5 border-gray-300 px-6  rounded-md p-2 relative">
         {/* Tabs Section */}
@@ -238,6 +224,8 @@ export default function PaymentDataTable() {
         </div>
       </div>
 
+
+
       {/* search bar code */}
       <div className="flex gap-2  relative my-5">
         <FontAwesomeIcon
@@ -256,6 +244,7 @@ export default function PaymentDataTable() {
         />
       </div>
 
+
       {/* Table */}
       <div className="overflow-x-auto rounded-lg bg-white shadow">
         <table className="min-w-full text-sm">
@@ -266,9 +255,10 @@ export default function PaymentDataTable() {
                   type="checkbox"
                   checked={selectAll}
                   onChange={handleSelectAll}
+                  disabled={loading} // disable during loading
                 />
               </th>
-              <th className="p-3">Amount</th>             
+              <th className="p-3">Amount</th>
               <th className="p-3">Transaction ID</th>
               <th className="p-3">Order ID</th>
               <th className="p-3">Email</th>
@@ -276,56 +266,57 @@ export default function PaymentDataTable() {
               <th className="p-3">Method</th>
               <th className="p-3">Status</th>
               <th className="p-3">Action</th>
-              
             </tr>
           </thead>
           <tbody>
-            {currentPayments.length > 0 ? (
-              currentPayments.map((p) => (
-                <tr key={p.id} className="border-b hover:bg-gray-50">
-                  <td className="p-3">
-                    <input
-                      type="checkbox"
-                      checked={selectedRows.includes(p.id)}
-                      onChange={() => handleSelectRow(p.id)}
-                    />
-                  </td>
-                  <td className="p-3">{p.amount}</td>
-                  <td className="p-3">{p.transactionId}</td>
-                  <td className="p-3">{p.orderId}</td>
-                  <td className="p-3">{p.email}</td>
-                  <td className="p-3">{p.date.toLocaleString()}</td>
-                  <td className="p-3">{p.method}</td>
-                   <td className="p-3">
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        statusStyles[p.status]
-                      }`}
-                    >
-                      {/* <FontAwesomeIcon icon={statusIcons[p.status]} /> */}
-                      {p.status}
-                    </span>
-                  </td>
-
-                  <td className="p-3 text-left">
-                    <button onClick={() => navigate(`/user/view-payment/${p.id}`)}>
-                      <FontAwesomeIcon className="text-center" icon={faAngleRight} />
-                    </button>
+            {loading
+              ? skeletonRows
+              : currentPayments.length > 0
+              ? currentPayments.map((p) => (
+                  <tr key={p.id} className="border-b hover:bg-gray-50">
+                    <td className="p-3">
+                      <input
+                        type="checkbox"
+                        checked={selectedRows.includes(p.id)}
+                        onChange={() => handleSelectRow(p.id)}
+                      />
+                    </td>
+                    <td className="p-3">{p.amount}</td>
+                    <td className="p-3">{p.transactionId}</td>
+                    <td className="p-3">{p.orderId}</td>
+                    <td className="p-3">{p.email}</td>
+                    <td className="p-3">{p.date.toLocaleString()}</td>
+                    <td className="p-3">{p.method}</td>
+                    <td className="p-3">
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-medium ${
+                          statusStyles[p.status]
+                        }`}
+                      >
+                        {p.status}
+                      </span>
+                    </td>
+                    <td className="p-3 text-left">
+                      <button onClick={() => navigate(`/user/view-payment/${p.id}`)}>
+                        <FontAwesomeIcon className="text-center" icon={faAngleRight} />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              : (
+                <tr>
+                  <td colSpan="9" className="p-6 text-center text-gray-500">
+                    No payments found.
                   </td>
                 </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="9" className="p-6 text-center text-gray-500">
-                  No payments found.
-                </td>
-              </tr>
-            )}
+              )}
           </tbody>
         </table>
       </div>
 
-      {/* Pagination */}
+      {/* Pagination, summary cards (unchanged) */}
+      
+  {/* Pagination */}
       <div className="flex justify-center items-center gap-2 mt-4">
         <button
           className="px-3 py-1 border rounded disabled:opacity-50"
@@ -355,6 +346,8 @@ export default function PaymentDataTable() {
           Next <FontAwesomeIcon icon={faArrowRight} />
         </button>
       </div>
+
+
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-4 md:w-3xl lg:w-3xl border-1 rounded-lg px-2 mt-6 mx-auto">

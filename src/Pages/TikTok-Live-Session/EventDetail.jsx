@@ -1,18 +1,22 @@
+// EventDetail.jsx
 import React, { useState, useEffect } from "react";
 import Navbar from "../../Components/Navbar";
 import { useNavigate, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSearch,faTrash,
+import {
+  faSearch,
+  faTrash,
   faArrowLeft,
   faTrashCan,
   faArrowRotateLeft,
   faPen,
 } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
+import { Skeleton } from "@mui/material";
 
 export default function EventDetail() {
   const navigate = useNavigate();
-  const { eventId } = useParams(); // Dynamic event ID
+  const { eventId } = useParams();
 
   const [event, setEvent] = useState(null);
   const [hostImage, setHostImage] = useState(
@@ -21,6 +25,22 @@ export default function EventDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const getStatusStyles = (status) => {
+    const styles = {
+      active: "border-green-400 text-green-600 bg-green-50",
+      inactive: "border-red-400 text-red-600 bg-red-50",
+      "about to come": "border-blue-400 text-blue-600 bg-blue-50",
+      suspended: "border-red-400 text-red-600 bg-red-50",
+    };
+    return (
+      styles[status?.toLowerCase()] ||
+      "border-gray-400 text-gray-600 bg-gray-50"
+    );
+  };
+
+  const capitalizeFirst = (str) =>
+    str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : "";
 
   useEffect(() => {
     if (!eventId) {
@@ -40,7 +60,7 @@ export default function EventDetail() {
           setError(response.data.message || "Failed to fetch event.");
         }
       } catch (err) {
-        setError(err.response?.data?.message || err.message || "Something went wrong.");
+        setError(err.response?.data?.message || err.message);
       } finally {
         setLoading(false);
       }
@@ -66,35 +86,164 @@ export default function EventDetail() {
     }
   };
 
-  if (loading) return <p className="text-center mt-10">Loading event details...</p>;
-  if (error) return <p className="text-center mt-10 text-red-500">Error: {error}</p>;
-  if (!event) return null;
-
-
-
   const handleDelete = async () => {
-  const confirmDelete = window.confirm("Are you sure you want to delete this event?");
-  if (!confirmDelete) return;
-
-  try {
-    setIsDeleting(true);
-    const response = await axios.delete(
-      `https://la-dolce-vita.onrender.com/api/event/delete-event/${eventId}`
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this event?"
     );
+    if (!confirmDelete) return;
 
-    if (response.data.success) {
-      alert("Event deleted successfully!");
-      navigate("/user/tiktok"); // Redirect after delete
-    } else {
-      alert(`Failed to delete event: ${response.data.message || "Unknown error"}`);
+    try {
+      setIsDeleting(true);
+      const response = await axios.delete(
+        `https://la-dolce-vita.onrender.com/api/event/delete-event/${eventId}`
+      );
+
+      if (response.data.success) {
+        alert("Event deleted successfully!");
+        navigate("/user/tiktok");
+      } else {
+        alert(
+          `Failed to delete event: ${
+            response.data.message || "Unknown error"
+          }`
+        );
+      }
+    } catch (error) {
+      alert(`Error: ${error.response?.data?.message || error.message}`);
+    } finally {
+      setIsDeleting(false);
     }
-  } catch (error) {
-    alert(`Error: ${error.response?.data?.message || error.message}`);
-  } finally {
-    setIsDeleting(false);
-  }
-};
+  };
 
+  // ----------------------------
+  // 🔹 Skeleton Loader (Full UI)
+  // ----------------------------
+  if (loading) {
+    return (
+      <div>
+        <Navbar heading="TikTok Live Event Management" />
+        <div className="max-w-6xl mx-5 p-6 space-y-6">
+          {/* Event Details Skeleton */}
+          <div className="border border-gray-400 rounded-2xl p-6 space-y-4">
+            <Skeleton variant="text" width={200} height={30} animation="wave" />
+            <Skeleton variant="rectangular" height={80} animation="wave" />
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6 pt-2">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i}>
+                  <Skeleton
+                    variant="text"
+                    width={120}
+                    height={20}
+                    animation="wave"
+                  />
+                  <Skeleton
+                    variant="text"
+                    width={80}
+                    height={25}
+                    animation="wave"
+                    className="mt-3"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Selected Products Skeleton */}
+          <div className="border border-gray-400 rounded-2xl p-6 space-y-4">
+            <Skeleton variant="text" width={220} height={30} animation="wave" />
+            <Skeleton variant="rectangular" height={40} animation="wave" />
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div
+                key={i}
+                className="flex items-center justify-between border border-gray-300 rounded-md px-4 py-3 bg-white"
+              >
+                <div className="flex items-center space-x-3">
+                  <Skeleton
+                    variant="circular"
+                    width={40}
+                    height={40}
+                    animation="wave"
+                  />
+                  <div>
+                    <Skeleton
+                      variant="text"
+                      width={150}
+                      height={20}
+                      animation="wave"
+                    />
+                    <Skeleton
+                      variant="text"
+                      width={100}
+                      height={15}
+                      animation="wave"
+                    />
+                  </div>
+                </div>
+                <Skeleton
+                  variant="text"
+                  width={60}
+                  height={20}
+                  animation="wave"
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* Host Info Skeleton */}
+          <div className="border border-gray-400 rounded-2xl p-6 space-y-4">
+            <Skeleton variant="text" width={180} height={30} animation="wave" />
+            <div className="flex items-center space-x-4">
+              <Skeleton
+                variant="circular"
+                width={60}
+                height={60}
+                animation="wave"
+              />
+              <div>
+                <Skeleton
+                  variant="text"
+                  width={150}
+                  height={20}
+                  animation="wave"
+                />
+                <Skeleton
+                  variant="text"
+                  width={200}
+                  height={15}
+                  animation="wave"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i}>
+                  <Skeleton
+                    variant="text"
+                    width={120}
+                    height={20}
+                    animation="wave"
+                  />
+                  <Skeleton
+                    variant="rectangular"
+                    height={40}
+                    animation="wave"
+                    className="mt-2 rounded-md"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ----------------------------
+  // 🔹 Normal Loaded UI
+  // ----------------------------
+  if (error)
+    return <p className="text-center mt-10 text-red-500">Error: {error}</p>;
+  if (!event) return null;
 
   return (
     <div>
@@ -108,7 +257,9 @@ export default function EventDetail() {
             onClick={handleDelete}
             disabled={isDeleting}
             className={`px-3 py-1 border rounded-md ${
-              isDeleting ? "bg-gray-300 text-gray-500" : "text-[#B21E1E] bg-red-50 hover:bg-red-100"
+              isDeleting
+                ? "bg-gray-300 text-gray-500"
+                : "text-[#B21E1E] bg-red-50 hover:bg-red-100"
             }`}
           >
             <FontAwesomeIcon icon={faTrashCan} className="px-2" />
@@ -116,7 +267,9 @@ export default function EventDetail() {
           </button>
 
           <button
-              onClick={() => navigate(`/user/update-event/${event._id}`, { state: { event } })}
+            onClick={() =>
+              navigate(`/user/update-event/${event._id}`, { state: { event } })
+            }
             className="mx-2 px-3 py-1 border rounded-md text-[#114E9D] bg-blue-50 hover:bg-blue-100"
           >
             <FontAwesomeIcon icon={faArrowRotateLeft} className="px-2" />
@@ -137,9 +290,13 @@ export default function EventDetail() {
       <div className="max-w-6xl mx-5 p-6 space-y-6">
         <div className="border border-gray-400 rounded-2xl p-6 space-y-4">
           <h2 className="text-sm font-medium text-gray-700">Event Name</h2>
-          <p className="text-lg font-medium mt-1">{event.eventDetails.eventName}</p>
+          <p className="text-lg font-medium mt-1">
+            {event.eventDetails.eventName}
+          </p>
 
-          <h3 className="text-sm font-medium text-gray-700">Event Description</h3>
+          <h3 className="text-sm font-medium text-gray-700">
+            Event Description
+          </h3>
           <textarea
             className="w-full h-35 mt-2 border border-gray-400 rounded-md p-3 text-sm bg-gray-100 resize-none"
             value={event.eventDetails.eventDescription}
@@ -149,28 +306,40 @@ export default function EventDetail() {
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6 text-sm pt-2">
             <div>
               <p className="font-medium text-gray-700">Status</p>
-              <span className="inline-block mt-3 px-4 py-1 rounded-full border border-orange-400 text-orange-600 bg-orange-50 text-xs font-medium">
-                {event.eventDetails.status}
+              <span
+                className={`inline-block mt-3 px-4 py-1 rounded-full border text-xs font-medium ${getStatusStyles(
+                  event.eventDetails.status
+                )}`}
+              >
+                {capitalizeFirst(event.eventDetails.status)}
               </span>
             </div>
 
             <div>
               <p className="font-medium text-gray-700">Session ID</p>
-              <p className="mt-3 text-gray-800">{event.eventDetails.sessionID}</p>
+              <p className="mt-3 text-gray-800">
+                {event.eventDetails.sessionID}
+              </p>
             </div>
 
             <div>
               <p className="font-medium text-gray-700">Start Date & Time</p>
-              <p className="mt-3 text-gray-800">{new Date(event.eventDetails.startDateTime).toLocaleString()}</p>
+              <p className="mt-3 text-gray-800">
+                {new Date(event.eventDetails.startDateTime).toLocaleString()}
+              </p>
             </div>
 
             <div>
               <p className="font-medium text-gray-700">End Date & Time</p>
-              <p className="mt-3 text-gray-800">{new Date(event.eventDetails.endDateTime).toLocaleString()}</p>
+              <p className="mt-3 text-gray-800">
+                {new Date(event.eventDetails.endDateTime).toLocaleString()}
+              </p>
             </div>
 
             <div className="col-span-2">
-              <p className="font-medium text-gray-700">TikTok Live Event Link</p>
+              <p className="font-medium text-gray-700">
+                TikTok Live Event Link
+              </p>
               <a
                 href={event.eventDetails.eventLink}
                 target="_blank"
@@ -183,9 +352,11 @@ export default function EventDetail() {
           </div>
         </div>
 
-         {/* Selected Products */}
+        {/* Selected Products */}
         <div className="border border-gray-400 rounded-2xl p-6 space-y-4">
-          <h2 className="text-base font-medium">Selected products for live</h2>
+          <h2 className="text-base font-medium">
+            Selected products for live
+          </h2>
           <div className="flex items-center border border-gray-400 rounded-md px-3 py-2 text-sm bg-white">
             <FontAwesomeIcon icon={faSearch} className="text-gray-500 mr-2" />
             <input
@@ -195,6 +366,7 @@ export default function EventDetail() {
             />
           </div>
 
+          {/* Example placeholder products */}
           <div className="space-y-3">
             {[1, 2, 3].map((item, idx) => (
               <div
@@ -208,7 +380,9 @@ export default function EventDetail() {
                     className="w-10 h-10 rounded object-cover"
                   />
                   <div>
-                    <p className="text-sm font-medium text-gray-800">Classic white Sneakers</p>
+                    <p className="text-sm font-medium text-gray-800">
+                      Classic white Sneakers
+                    </p>
                     <p className="text-xs text-gray-500">1231</p>
                   </div>
                 </div>
@@ -222,7 +396,6 @@ export default function EventDetail() {
             ))}
           </div>
         </div>
-
 
         {/* Host Information */}
         <section className="border border-gray-400 rounded-2xl p-6 space-y-4">
@@ -249,14 +422,23 @@ export default function EventDetail() {
               />
             </div>
             <div>
-              <p className="font-semibold">{event.hostInformation.hostName}</p>
-              <p className="text-sm text-gray-500">{event.hostInformation.hostEmailAddress}</p>
+              <p className="font-semibold">
+                {event.hostInformation.hostName}
+              </p>
+              <p className="text-sm text-gray-500">
+                {event.hostInformation.hostEmailAddress}
+              </p>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
-              <label className="block text-sm font-medium mb-1" htmlFor="hostName">Host Name*</label>
+              <label
+                className="block text-sm font-medium mb-1"
+                htmlFor="hostName"
+              >
+                Host Name*
+              </label>
               <input
                 type="text"
                 id="hostName"
@@ -267,7 +449,12 @@ export default function EventDetail() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1" htmlFor="emailAddress">Email Address*</label>
+              <label
+                className="block text-sm font-medium mb-1"
+                htmlFor="emailAddress"
+              >
+                Email Address*
+              </label>
               <input
                 type="email"
                 id="emailAddress"
@@ -278,7 +465,12 @@ export default function EventDetail() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1" htmlFor="phoneNumber">Phone Number</label>
+              <label
+                className="block text-sm font-medium mb-1"
+                htmlFor="phoneNumber"
+              >
+                Phone Number
+              </label>
               <input
                 type="number"
                 id="phoneNumber"
