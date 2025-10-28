@@ -102,7 +102,7 @@ const handleSubmit = async () => {
     // post request
     console.log(data);
     const res = await axios.post(
-      "https://la-dolce-vita.onrender.com/api/product/add-product",
+      "http://dev-api.payonlive.com/api/product/add-product",
       data,
       {
         withCredentials: true, // only if cookies/session used

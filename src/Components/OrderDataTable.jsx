@@ -83,7 +83,7 @@ export default function OrdersDataTable() {
     const fetchAverageData = async () => {
       try {
         const res = await axios.get(
-          "https://la-dolce-vita.onrender.com/api/order/orders-average"
+          "http://dev-api.payonlive.com/api/order/orders-average"
         );
         if (res.data.success) {
           setAverageData({

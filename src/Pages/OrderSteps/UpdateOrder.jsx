@@ -62,7 +62,7 @@ const UpdateOrder = () => {
     setOrderItems(orderItems.filter((_, i) => i !== index));
   };
 
-  const handleUpdate = async (e) => {
+ const handleUpdate = async (e) => {
   e.preventDefault();
   setLoading(true);
 
@@ -74,28 +74,27 @@ const UpdateOrder = () => {
       `http://dev-api.payonlive.com/api/order/update-order/${existingOrder._id}`,
       payload,
       {
-        // Add headers if backend expects auth
         headers: {
           "Content-Type": "application/json",
-          // Authorization: `Bearer ${token}`,  // uncomment if your API needs JWT
+          // Authorization: `Bearer ${token}`,
         },
       }
     );
 
     if (response.status === 200 && response.data.success) {
-      // alert(response.data.message || "Order updated successfully!");
-      showAlert("Order update successfully!", "success");
+      showAlert("Order updated successfully!", "success");
       navigate("/user/Orders");
     } else {
       showAlert("Failed to update order. Please try again.", "error");
-      // alert(response.data.message || "Failed to update order. Please try again.");
+      setLoading(false); // 🔹 Stop spinner on failed response
     }
   } catch (err) {
     console.error("❌ Error updating order:", err);
     showAlert("Server error. Please try again.", "error");
-    // alert("❌ Error updating order:");
+    setLoading(false); // 🔹 Stop spinner if an exception occurs
   }
 };
+
 
   // Calculate order summary
   const summary = useMemo(() => {
@@ -207,7 +206,7 @@ const UpdateOrder = () => {
 
           {orderItems.map((item, idx) => (
             <div key={idx} className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center py-3 border-b border-gray-400 last:border-b-0">
-              <div className="md:col-span-5">
+              {/* <div className="md:col-span-5">
                 <select
                   required
                   value={item.productName}
@@ -222,8 +221,25 @@ const UpdateOrder = () => {
                   <option >Adidas shoes</option>
                 
                 </select>
-              </div>
+              </div> */}
+               <div className="md:col-span-5">
+               <label className="block mb-1 text-sm font-medium">
+                  Product Name
+                </label>
+              <input
+                required
+                id="address"
+                type="text"
+                value={item.productName}
+                  onChange={(e) => handleProductChange(idx, "productName", e.target.value)}
+                placeholder="123, main city, state, 12323"
+                className="w-full rounded-lg border border-gray-300 px-2 py-2 text-sm"
+              />
+            </div>
               <div className="md:col-span-1 text-center">
+                <label className="block mb-1 text-sm font-medium">
+                  Quantity
+                </label>
                 <input
                   required
                   type="number"
@@ -234,6 +250,9 @@ const UpdateOrder = () => {
                 />
               </div>
               <div className="md:col-span-2 text-center">
+                <label className="block mb-1 text-sm font-medium">
+                  Price
+                </label>
                 <input
                   required
                   type="number"
@@ -244,9 +263,21 @@ const UpdateOrder = () => {
                   className="w-full text-center rounded-lg border border-gray-300 px-2 py-1 text-sm"
                 />
               </div>
-              <div className="md:col-span-2 text-center text-sm">
+              {/* <div className="md:col-span-2 text-center text-sm">
                 € {(item.price * item.quantity).toFixed(2)}
+              </div> */}
+              <div className="md:col-span-2 text-center">
+                <label className="block mb-1 text-center text-sm font-medium">
+                  Total
+                </label>
+                <input
+                  type="text"
+                  readOnly
+                  value={(item.price * item.quantity).toFixed(2)}
+                  className="w-full text-center rounded-lg border border-gray-300 px-2 py-1 text-sm "
+                />
               </div>
+
               <div className="md:col-span-2 flex justify-center">
                 <button type="button" onClick={() => removeProduct(idx)} className="w-8 h-8 flex justify-center items-center rounded-full hover:bg-red-100">
                   <FontAwesomeIcon icon={faTrash} className="text-red-600 text-sm" />

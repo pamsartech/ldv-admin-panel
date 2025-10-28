@@ -15,6 +15,7 @@ import { useAlert } from "../../Components/AlertContext";
 function CreateLiveEvent() {
   const navigate = useNavigate();
   const { showAlert } = useAlert();
+  const [btnLoading , setBtnLoading] = useState(false);
 
   const [eventDetails, setEventDetails] = useState({
     eventName: "",
@@ -80,7 +81,7 @@ function CreateLiveEvent() {
 
     try {
       const response = await axios.get(
-        `https://la-dolce-vita.onrender.com/api/product/product-code/${trimmedId}`
+        `http://dev-api.payonlive.com/api/product/product-code/${trimmedId}`
       );
       if (response.data.success) {
         const productData = response.data.data;
@@ -148,7 +149,8 @@ function CreateLiveEvent() {
   const handleSave = async (e) => {
     e.preventDefault();
     if (!validate()) return;
-
+    
+    setBtnLoading(true);
     setLoading(true);
 
     const payload = {
@@ -517,25 +519,25 @@ function CreateLiveEvent() {
          <div className="flex justify-end mt-4">
             <button
               type="submit"
-              disabled={loading}
+              disabled={btnLoading}
               className="bg-[#02B978] text-white px-6 py-2 rounded-lg hover:bg-[#04D18C] flex items-center gap-2"
             >
-              {loading && (
+              {btnLoading && (
                 <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
               )}
-              {loading ? "Saving..." : "Save"}
+              {btnLoading ? "Saving..." : "Save"}
             </button>
           </div>
       </form>
 
       {/* Popup */}
-      {showPopup && (
+      {/* {showPopup && (
         <div className="fixed top-5 left-1/2 transform -translate-x-1/2 z-50">
           <div className="bg-white text-black font-bold px-8 py-4 rounded-xl shadow-xl min-w-[300px] text-center">
             {popupMessage}
           </div>
         </div>
-      )}
+      )} */}
     </div>
   );
 }

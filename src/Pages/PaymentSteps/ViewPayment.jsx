@@ -36,7 +36,9 @@ function ViewPayment() {
           setError("Invalid API response structure");
         }
       } catch (err) {
-        setError(err.response?.data?.message || "Failed to fetch payment details");
+        setError(
+          err.response?.data?.message || "Failed to fetch payment details"
+        );
       } finally {
         setLoading(false);
       }
@@ -47,7 +49,9 @@ function ViewPayment() {
 
   // ✅ Delete Payment Function
   const handleDelete = async () => {
-    const confirmDelete = window.confirm("Are you sure you want to delete this payment?");
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this payment?"
+    );
     if (!confirmDelete) return;
 
     try {
@@ -60,7 +64,11 @@ function ViewPayment() {
         alert("Payment deleted successfully!");
         navigate("/user/Payments");
       } else {
-        alert(`Failed to delete payment: ${response.data.message || "Unknown error"}`);
+        alert(
+          `Failed to delete payment: ${
+            response.data.message || "Unknown error"
+          }`
+        );
       }
     } catch (error) {
       alert(`Error: ${error.response?.data?.message || error.message}`);
@@ -85,7 +93,12 @@ function ViewPayment() {
               </div>
               <div className="space-y-3">
                 {[1, 2, 3, 4].map((i) => (
-                  <Skeleton key={i} variant="rectangular" height={25} animation="wave" />
+                  <Skeleton
+                    key={i}
+                    variant="rectangular"
+                    height={25}
+                    animation="wave"
+                  />
                 ))}
               </div>
             </div>
@@ -95,14 +108,24 @@ function ViewPayment() {
               <Skeleton variant="text" width="40%" height={30} />
               <div className="space-y-2 mt-4">
                 {[1, 2, 3, 4].map((i) => (
-                  <Skeleton key={i} variant="rectangular" height={25} animation="wave" />
+                  <Skeleton
+                    key={i}
+                    variant="rectangular"
+                    height={25}
+                    animation="wave"
+                  />
                 ))}
               </div>
               <div className="mt-6">
                 <Skeleton variant="text" width="50%" height={25} />
                 {[1, 2].map((i) => (
                   <div key={i} className="flex items-center gap-3 mt-3">
-                    <Skeleton variant="rectangular" width={64} height={64} className="rounded-lg" />
+                    <Skeleton
+                      variant="rectangular"
+                      width={64}
+                      height={64}
+                      className="rounded-lg"
+                    />
                     <div className="flex-1 space-y-2">
                       <Skeleton variant="text" width="70%" height={20} />
                       <Skeleton variant="text" width="60%" height={20} />
@@ -120,9 +143,10 @@ function ViewPayment() {
 
   // Error handling
   if (error) return <p className="text-center mt-10 text-red-600">{error}</p>;
-  if (!paymentData) return <p className="text-center mt-10">No payment data found</p>;
+  if (!paymentData)
+    return <p className="text-center mt-10">No payment data found</p>;
 
-  // ✅ Destructure all the fields we need safely
+  // ✅ Destructure all fields directly from API response
   const {
     _id,
     userId,
@@ -133,11 +157,10 @@ function ViewPayment() {
     orderTotal,
     createdAt,
     payment_id,
-    paymentDetails = {},
+    paymentStatus = "Pending",
+    shippingStatus = "Pending",
     orderItems = [],
   } = paymentData;
-
-  const { paymentStatus = "Pending", deliveryStatus = "Pending" } = paymentDetails;
 
   return (
     <div>
@@ -198,12 +221,16 @@ function ViewPayment() {
             <div className="space-y-4 text-sm">
               <div className="grid grid-cols-2 items-center">
                 <span className="font-medium text-gray-700">Customer ID</span>
-                <span className="text-gray-900 font-mono text-right">{userId}</span>
+                <span className="text-gray-900 font-mono text-right">
+                  {userId}
+                </span>
               </div>
 
-              {/* Payment Status */}
+              {/* ✅ Payment Status */}
               <div className="grid grid-cols-2 items-center">
-                <span className="font-medium text-gray-700">Payment Status</span>
+                <span className="font-medium text-gray-700">
+                  Payment Status
+                </span>
                 <span
                   className={`justify-self-end px-3 py-1 rounded-full text-xs font-medium ${
                     paymentStatus === "Paid"
@@ -215,20 +242,25 @@ function ViewPayment() {
                 </span>
               </div>
 
-              {/* Delivery Status */}
+              {/* ✅ Shipping Status */}
               <div className="grid grid-cols-2 items-center">
-                <span className="font-medium text-gray-700">Delivery Status</span>
+                <span className="font-medium text-gray-700">
+                  Shipping Status
+                </span>
                 <span
                   className={`justify-self-end px-3 py-1 rounded-full text-xs font-medium ${
-                    deliveryStatus === "Shipped"
+                    shippingStatus === "Shipped"
                       ? "bg-blue-100 text-blue-700 border border-blue-700"
-                      : "bg-yellow-100 text-yellow-700 border border-yellow-700"
+                      : shippingStatus === "Processing"
+                      ? "bg-yellow-100 text-yellow-700 border border-yellow-700"
+                      : "bg-gray-100 text-gray-700 border border-gray-400"
                   }`}
                 >
-                  {deliveryStatus}
+                  {shippingStatus}
                 </span>
               </div>
 
+              {/* Actions */}
               <div className="grid grid-cols-2 items-start">
                 <span className="font-medium text-gray-700">Action</span>
                 <div className="flex flex-col gap-3 justify-self-end">
@@ -239,11 +271,19 @@ function ViewPayment() {
                     <FontAwesomeIcon icon={faUndoAlt} className="h-3 w-3 pr-2" />
                     Refund
                   </button>
+
                   <button
                     type="button"
-                    className="px-3 py-1 text-red-600 rounded-full border border-red-700 bg-red-100 hover:bg-red-200"
+                    onClick={handleDelete}
+                    disabled={isDeleting}
+                    className={`px-3 py-1 border rounded-full ${
+                      isDeleting
+                        ? "bg-gray-300 text-gray-500"
+                        : "text-[#B21E1E] bg-red-50 hover:bg-red-100"
+                    }`}
                   >
-                    <FontAwesomeIcon icon={faXmark} className="h-3 w-3 pr-1" /> Cancel order
+                    <FontAwesomeIcon icon={faXmark} className="h-3 w-3 pr-1" />
+                    {isDeleting ? "canceling..." : "Cancel order"}
                   </button>
                 </div>
               </div>
@@ -255,7 +295,9 @@ function ViewPayment() {
             <h3 className="font-medium mb-4">Order Info</h3>
             <div className="space-y-2 text-sm">
               <div className="grid grid-cols-2">
-                <span className="font-medium text-gray-700">Transaction ID</span>
+                <span className="font-medium text-gray-700">
+                  Transaction ID
+                </span>
                 <span className="text-gray-900 text-right">{payment_id}</span>
               </div>
               <div className="grid grid-cols-2 py-2">
@@ -266,7 +308,9 @@ function ViewPayment() {
               </div>
               <div className="grid grid-cols-2">
                 <span className="font-medium text-gray-700">Method</span>
-                <span className="text-gray-900 text-right">{paymentMethod}</span>
+                <span className="text-gray-900 text-right">
+                  {paymentMethod}
+                </span>
               </div>
               <div className="grid grid-cols-2">
                 <span className="font-medium text-gray-700">Amount</span>
@@ -279,18 +323,25 @@ function ViewPayment() {
               <h4 className="font-medium mb-2">Ordered Items</h4>
               {orderItems.length > 0 ? (
                 orderItems.map((item, index) => (
-                  <div key={index} className="flex items-center gap-3 mb-3 border p-2 rounded-lg">
+                  <div
+                    key={index}
+                    className="flex items-center gap-3 mb-3 border p-2 rounded-lg"
+                  >
                     <img
                       src={item.productDetails?.images?.[0]}
                       alt={item.productName}
                       className="w-16 h-16 rounded-lg object-cover"
                     />
                     <div>
-                      <p className="font-semibold">{item.productDetails?.productName}</p>
+                      <p className="font-semibold">
+                        {item.productDetails?.productName}
+                      </p>
                       <p className="text-sm text-gray-600">
                         Qty: {item.quantity} × €{item.price}
                       </p>
-                      <p className="text-sm font-medium">Total: €{item.total}</p>
+                      <p className="text-sm font-medium">
+                        Total: €{item.total}
+                      </p>
                     </div>
                   </div>
                 ))
@@ -306,4 +357,3 @@ function ViewPayment() {
 }
 
 export default ViewPayment;
-

@@ -39,7 +39,8 @@ export default function ProductTable() {
     if (!img) return "/placeholder-image.png";
     return img.startsWith("http")
       ? img
-      : `https://la-dolce-vita.onrender.com${img}`;
+      : `http://dev-api.payonlive.com${img}`;
+      // `https://la-dolce-vita.onrender.com${img}`;
   };
 
   useEffect(() => {

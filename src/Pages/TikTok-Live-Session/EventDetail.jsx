@@ -95,7 +95,7 @@ export default function EventDetail() {
     try {
       setIsDeleting(true);
       const response = await axios.delete(
-        `https://la-dolce-vita.onrender.com/api/event/delete-event/${eventId}`
+        `http://dev-api.payonlive.com/api/event/delete-event/${eventId}`
       );
 
       if (response.data.success) {
