@@ -1,16 +1,23 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useParams ,useLocation } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import Navbar from "../../Components/Navbar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faCreditCard, faXmark, faClock } from "@fortawesome/free-solid-svg-icons";
+import {
+  faArrowLeft,
+  faCreditCard,
+  faXmark,
+  faClock,
+} from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
 import { useAlert } from "../../Components/AlertContext";
 
 export default function UpdatePayment() {
-   const navigate = useNavigate();
+  const navigate = useNavigate();
   const { paymentId } = useParams();
   const location = useLocation();
   const { showAlert } = useAlert();
+
+  const [btnLoading , setBtnLoading] = useState(false);
 
   const [paymentData, setPaymentData] = useState({
     customerName: "",
@@ -29,58 +36,62 @@ export default function UpdatePayment() {
 
   const [loading, setLoading] = useState(true);
 
-  // Prefill from location.state or fetch if page refreshed
   useEffect(() => {
     const prefillData = location.state?.paymentData;
 
+    // ✅ Prefill from router state if available
     if (prefillData) {
       setPaymentData({
-        customerName: prefillData.customerDetails.customerName,
-        customerId: prefillData.customerDetails.customerID,
-        email: prefillData.customerDetails.email,
-        phone: prefillData.customerDetails.phoneNumber,
-        orderId: prefillData.orderDetails.orderID,
-        transactionId: prefillData.orderDetails.transactionID,
-        amount: prefillData.orderDetails.amount,
-        paymentMethod: prefillData.orderDetails.paymentMethod,
-        paymentStatus: prefillData.orderDetails.paymentStatus,
-        deliveryStatus: prefillData.orderDetails.deliveryStatus,
-        dateTime: prefillData.orderDetails.date?.slice(0, 16) || "",
-        notes: prefillData.orderDetails.notes || "",
+        customerName: prefillData.customerName || "",
+        customerId: prefillData.userId || "",
+        email: prefillData.email || "",
+        phone: prefillData.phoneNumber || "",
+        orderId: prefillData._id || "",
+        transactionId: prefillData.payment_id || "",
+        amount: prefillData.orderTotal || "",
+        paymentMethod: prefillData.paymentMethod || "",
+        paymentStatus: prefillData.paymentStatus || "Pending",
+        deliveryStatus: prefillData.shippingStatus || "Pending",
+        dateTime: prefillData.createdAt
+          ? prefillData.createdAt.slice(0, 16)
+          : "",
+        notes: prefillData.notes || "",
       });
       setLoading(false);
     } else {
+      // ✅ Fetch payment details if page is refreshed
       const fetchPayment = async () => {
         try {
           const res = await axios.get(
-            `http://dev-api.payonlive.com/api/payment/update-payment/${paymentId}`
+            `http://dev-api.payonlive.com/api/payment/${paymentId}/details`
           );
           const data = res.data.data;
+
           setPaymentData({
-            customerName: data.customerDetails.customerName,
-            customerId: data.customerDetails.customerID,
-            email: data.customerDetails.email,
-            phone: data.customerDetails.phoneNumber,
-            orderId: data.orderDetails.orderID,
-            transactionId: data.orderDetails.transactionID,
-            amount: data.orderDetails.amount,
-            paymentMethod: data.orderDetails.paymentMethod,
-            paymentStatus: data.orderDetails.paymentStatus,
-            deliveryStatus: data.orderDetails.deliveryStatus,
-            dateTime: data.orderDetails.date?.slice(0, 16) || "",
-            notes: data.orderDetails.notes || "",
+            customerName: data.customerName || "",
+            customerId: data.userId || "",
+            email: data.email || "",
+            phone: data.phoneNumber || "",
+            orderId: data._id || "",
+            transactionId: data.payment_id || "",
+            amount: data.orderTotal || "",
+            paymentMethod: data.paymentMethod || "",
+            paymentStatus: data.paymentStatus || "Pending",
+            deliveryStatus: data.shippingStatus || "Pending",
+            dateTime: data.createdAt ? data.createdAt.slice(0, 16) : "",
+            notes: data.notes || "",
           });
         } catch (error) {
           console.error("Error fetching payment:", error);
-          console.log(paymentData);
-          alert("Failed to load payment details.");
+          showAlert("Failed to load payment details.", "error");
         } finally {
           setLoading(false);
         }
       };
+
       fetchPayment();
     }
-  }, [paymentId, location.state]);
+  }, [paymentId, location.state, showAlert]);
 
   const handleChange = (e) => {
     const { id, value } = e.target;
@@ -88,59 +99,56 @@ export default function UpdatePayment() {
   };
 
   const handleUpdate = async (e) => {
-    e.preventDefault();
-    const payload = {
-      customerDetails: {
-        customerName: paymentData.customerName,
-        customerID: paymentData.customerId,
-        email: paymentData.email,
-        phoneNumber: paymentData.phone,
-      },
-      orderDetails: {
-        orderID: paymentData.orderId,
-        transactionID: paymentData.transactionId,
-        amount: Number(paymentData.amount),
-        paymentMethod: paymentData.paymentMethod,
-        paymentStatus: paymentData.paymentStatus,
-        deliveryStatus: paymentData.deliveryStatus,
-        date: paymentData.dateTime,
-        notes: paymentData.notes,
-      },
-    };
+  e.preventDefault();
 
-    try {
-      await axios.put(
-        `http://dev-api.payonlive.com/api/payment/update-payment/${paymentId}`,
-        payload
-      );
-      showAlert("Payment update successfully!", "success");
-      // alert("Payment updated successfully!");
-      navigate("/user/Payments");
-    } catch (error) {
-      console.error("Error updating payment:", error);
-       showAlert("Failed to update payment. Please try again.", "error");
-      // alert("Failed to update payment. Please try again.");
-    }
+  setBtnLoading(true);
+
+  const payload = {
+    orderDetails: {
+      paymentMethod: paymentData.paymentMethod,
+      paymentStatus: paymentData.paymentStatus,
+    },
   };
 
+  try {
+    const res = await axios.put(
+      `http://dev-api.payonlive.com/api/payment/update-payment/${paymentId}`,
+      payload
+    );
+    console.log("API Response:", res.data);
+    showAlert("Payment updated successfully!", "success");
+    navigate("/user/Payments");
+  } catch (error) {
+    console.error("Error updating payment:", error.response?.data || error);
+    showAlert("Failed to update payment. Please try again.", "error");
+  }
+};
 
 
-  // Helper for status classes
   const getStatusClass = (status, type) => {
     if (type === "payment") {
       switch (status) {
-        case "Paid": return "bg-green-100 text-green-600 border-green-400";
-        case "Pending": return "bg-orange-100 text-orange-600 border-orange-400";
-        case "Failed": return "bg-red-100 text-red-600 border-red-400";
-        default: return "bg-gray-100 text-gray-600 border-gray-400";
+        case "Paid":
+          return "bg-green-100 text-green-600 border-green-400";
+        case "Pending":
+          return "bg-orange-100 text-orange-600 border-orange-400";
+        case "Failed":
+          return "bg-red-100 text-red-600 border-red-400";
+        default:
+          return "bg-gray-100 text-gray-600 border-gray-400";
       }
     } else if (type === "delivery") {
       switch (status) {
-        case "Delivered": return "bg-green-100 text-green-600 border-green-400";
-        case "Shipped": return "bg-blue-100 text-blue-600 border-blue-600";
-        case "Pending": return "bg-orange-100 text-orange-600 border-orange-400";
-        case "Cancelled": return "bg-red-100 text-red-600 border-red-400";
-        default: return "bg-gray-100 text-gray-600 border-gray-400";
+        case "Delivered":
+          return "bg-green-100 text-green-600 border-green-400";
+        case "Shipped":
+          return "bg-blue-100 text-blue-600 border-blue-600";
+        case "Pending":
+          return "bg-orange-100 text-orange-600 border-orange-400";
+        case "Cancelled":
+          return "bg-red-100 text-red-600 border-red-400";
+        default:
+          return "bg-gray-100 text-gray-600 border-gray-400";
       }
     }
   };
@@ -159,7 +167,11 @@ export default function UpdatePayment() {
           onClick={() => navigate("/user/Payments")}
           className="px-3 py-1 border rounded-md text-white bg-[#02B978] hover:bg-[#04D18C]"
         >
-          <FontAwesomeIcon icon={faArrowLeft} size="lg" className="text-white px-2" />
+          <FontAwesomeIcon
+            icon={faArrowLeft}
+            size="lg"
+            className="text-white px-2"
+          />
           Back to Main View
         </button>
       </div>
@@ -169,53 +181,31 @@ export default function UpdatePayment() {
         <div className="border border-gray-400 rounded-2xl p-6">
           <h2 className="text-lg font-medium mb-4">Customer Details</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">Customer Name</label>
-              <input
-                required
-                id="customerName"
-                type="text"
-                value={paymentData.customerName}
-                onChange={handleChange}
-                className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-1">Customer ID</label>
-              <input
-                required
-                id="customerId"
-                type="text"
-                value={paymentData.customerId}
-                onChange={handleChange}
-                className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-1">Email</label>
-              <input
-                required
-                id="email"
-                type="email"
-                value={paymentData.email}
-                onChange={handleChange}
-                className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-1">Phone</label>
-              <input
-                required
-                id="phone"
-                type="text"
-                value={paymentData.phone}
-                onChange={handleChange}
-                className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm"
-              />
-            </div>
+            <InputField
+              label="Customer Name"
+              id="customerName"
+              value={paymentData.customerName}
+              onChange={handleChange}
+            />
+            <InputField
+              label="Customer ID"
+              id="customerId"
+              value={paymentData.customerId}
+              onChange={handleChange}
+            />
+            <InputField
+              label="Email"
+              id="email"
+              type="email"
+              value={paymentData.email}
+              onChange={handleChange}
+            />
+            <InputField
+              label="Phone"
+              id="phone"
+              value={paymentData.phone}
+              onChange={handleChange}
+            />
           </div>
         </div>
 
@@ -223,104 +213,56 @@ export default function UpdatePayment() {
         <div className="border border-gray-400 rounded-2xl p-6">
           <h2 className="text-lg font-medium mb-4">Order Details</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">Order ID</label>
-              <input
-                required
-                id="orderId"
-                type="text"
-                value={paymentData.orderId}
-                onChange={handleChange}
-                className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm"
-              />
-            </div>
+            <InputField
+              label="Order ID"
+              id="orderId"
+              value={paymentData.orderId}
+              onChange={handleChange}
+            />
+            <InputField
+              label="Transaction ID"
+              id="transactionId"
+              value={paymentData.transactionId}
+              onChange={handleChange}
+            />
+            <InputField
+              label="Amount"
+              id="amount"
+              type="number"
+              min="0"
+              step="0.01"
+              value={paymentData.amount}
+              onChange={handleChange}
+            />
 
-            <div>
-              <label className="block text-sm font-medium mb-1">Transaction ID</label>
-              <input
-                required
-                id="transactionId"
-                type="text"
-                value={paymentData.transactionId}
-                onChange={handleChange}
-                className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-1">Amount</label>
-              <input
-                required
-                id="amount"
-                type="number"
-                min="0"
-                step="0.01"
-                value={paymentData.amount}
-                onChange={handleChange}
-                className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-1">Payment Method</label>
-              <select
-                required
-                id="paymentMethod"
-                value={paymentData.paymentMethod}
-                onChange={handleChange}
-                className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm"
-              >
-                <option value="">Select Payment Method</option>
-                <option value="Stripe">Stripe</option>
-                <option value="PayPal">PayPal</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-1">Payment Status</label>
-              <select
-                required
-                id="paymentStatus"
-                value={paymentData.paymentStatus}
-                onChange={handleChange}
-                className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm"
-              >
-                <option value="">Select Payment Status</option>
-                <option value="Pending">Pending</option>
-                <option value="Paid">Paid</option>
-                <option value="Failed">Failed</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-1">Delivery Status</label>
-              <select
-                required
-                id="deliveryStatus"
-                value={paymentData.deliveryStatus}
-                onChange={handleChange}
-                className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm"
-              >
-                <option value="">Select Delivery Status</option>
-                <option value="Pending">Pending</option>
-                <option value="Shipped">Shipped</option>
-                <option value="Delivered">Delivered</option>
-                <option value="Cancelled">Cancelled</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-1">Time & Date</label>
-              <input
-                required
-                id="dateTime"
-                type="datetime-local"
-                value={paymentData.dateTime}
-                onChange={handleChange}
-                className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm"
-              />
-            </div>
-
+            <SelectField
+              label="Payment Method"
+              id="paymentMethod"
+              value={paymentData.paymentMethod}
+              onChange={handleChange}
+              options={["Stripe", "PayPal"]}
+            />
+            <SelectField
+              label="Payment Status"
+              id="paymentStatus"
+              value={paymentData.paymentStatus}
+              onChange={handleChange}
+              options={["Pending", "Paid", "Failed"]}
+            />
+            <SelectField
+              label="Delivery Status"
+              id="deliveryStatus"
+              value={paymentData.deliveryStatus}
+              onChange={handleChange}
+              options={["Processing", "Shipped", "Delivered", "Cancelled"]}
+            />
+            <InputField
+              label="Time & Date"
+              id="dateTime"
+              type="datetime-local"
+              value={paymentData.dateTime}
+              onChange={handleChange}
+            />
             <div className="md:col-span-2">
               <label className="block text-sm font-medium mb-1">Notes</label>
               <textarea
@@ -373,16 +315,63 @@ export default function UpdatePayment() {
             <FontAwesomeIcon icon={faXmark} />
             Discard Payment
           </button>
-          <button
+          {/* <button
             type="submit"
             className="w-full md:w-auto flex items-center justify-center gap-2 bg-[#114E9D] text-white px-4 py-2 rounded-md font-medium hover:bg-blue-500"
           >
             <FontAwesomeIcon icon={faCreditCard} />
             Update Payment
-          </button>
+          </button> */}
+
+            <button
+              type="submit"
+              disabled={btnLoading}
+              className="bg-[#114E9D] text-white px-6 py-2 rounded-lg hover:bg-blue-500 flex items-center gap-2"
+            >
+              {btnLoading && (
+                <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+              )}
+              {btnLoading ? "Updating..." : "Update Payment"}
+            </button>
+          
+
         </div>
       </form>
     </div>
   );
 }
+
+// Reusable input components for clean structure
+const InputField = ({ label, id, type = "text", value, onChange, ...rest }) => (
+  <div>
+    <label className="block text-sm font-medium mb-1">{label}</label>
+    <input
+      id={id}
+      type={type}
+      value={value}
+      onChange={onChange}
+      className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm"
+      {...rest}
+    />
+  </div>
+);
+
+const SelectField = ({ label, id, value, onChange, options }) => (
+  <div>
+    <label className="block text-sm font-medium mb-1">{label}</label>
+    <select
+      id={id}
+      value={value}
+      onChange={onChange}
+      className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm"
+    >
+      <option value="">Select {label}</option>
+      {options.map((opt) => (
+        <option key={opt} value={opt}>
+          {opt}
+        </option>
+      ))}
+    </select>
+  </div>
+);
 

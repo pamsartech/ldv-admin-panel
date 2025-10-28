@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import Navbar from "../../Components/Navbar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
@@ -10,13 +10,10 @@ const UpdateCustomer = () => {
   const navigate = useNavigate();
   const { customerId } = useParams();
   const { showAlert } = useAlert();
-  const location = useLocation();
-  
-  const [btnLoading, setBtnLoading] = useState(false)
 
-  const existingData = location.state || {};
+  const [btnLoading, setBtnLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  // --- Form State ---
   const [formData, setFormData] = useState({
     customerName: "",
     email: "",
@@ -36,66 +33,46 @@ const UpdateCustomer = () => {
     newsletter: false,
   });
 
-  const [loading, setLoading] = useState(true);
-
-  // --- Pre-fill Form ---
+  // --- Fetch from API only ---
   useEffect(() => {
-    if (existingData.name) {
-      // Fill from location.state
+  const fetchCustomer = async () => {
+    try {
+      const res = await axios.get(
+        `http://dev-api.payonlive.com/api/user/user-details/${customerId}`
+      );
+
+      const user = res.data?.data?.user || {};
+
       setFormData({
-        customerName: existingData.name || "",
-        email: existingData.email || "",
-        phone: existingData.phone || "",
-        dob: existingData.dob || "",
-        street: existingData.address?.street || "",
-        city: existingData.address?.city || "",
-        state: existingData.address?.state || "",
-        zip: existingData.address?.zipcode || "",
-        country: existingData.address?.country || "Italy",
+        customerName: user.customerName || "",
+        email: user.email || "",
+        phone: user.phoneNumber || "",
+        dob: user.dob ? user.dob.split("T")[0] : "",
+        street: user.address?.street || "",
+        city: user.address?.city || "",
+        state: user.address?.state || "",
+        zip: user.address?.zipcode || "",
+        country: user.address?.country || "Italy",
       });
-      setIsActive(existingData.status === "Active");
-      setCommunicationMethod(existingData.communicationMethod || "email");
+
+      setIsActive(user.isActive ?? true);
+      setCommunicationMethod(user.communicationMethod || "email");
       setMarketingPrefs({
-        offers: existingData.marketingPrefs?.offers || false,
-        newsletter: existingData.marketingPrefs?.newsletter || false,
+        offers: user.marketingPrefs?.offers || false,
+        newsletter: user.marketingPrefs?.newsletter || false,
       });
+
       setLoading(false);
-    } else {
-      // Fetch from API if no state
-      const fetchCustomer = async () => {
-        try {
-          const res = await axios.get(
-            `http://dev-api.payonlive.com/api/user/user-details/${customerId}`
-          );
-          const data = res.data.data;
-          setFormData({
-            customerName: data.name || "",
-            email: data.email || "",
-            phone: data.phoneno || "",
-            dob: data.dob || "",
-            street: data.address?.street || "",
-            city: data.address?.city || "",
-            state: data.address?.state || "",
-            zip: data.address?.zipcode || "",
-            country: data.address?.country || "Italy",
-          });
-          setIsActive(data.isActive);
-          setCommunicationMethod(data.communicationMethod || "email");
-          setMarketingPrefs({
-            offers: data.marketingPrefs?.offers || false,
-            newsletter: data.marketingPrefs?.newsletter || false,
-          });
-          setLoading(false);
-        } catch (err) {
-          console.error("Error fetching customer:", err);
-          setLoading(false);
-        }
-      };
-      fetchCustomer();
+    } catch (err) {
+      console.error("❌ Error fetching customer:", err);
+      showAlert("Failed to load customer data.", "error");
+      setLoading(false);
     }
-    console.log("Customer ID from params:", customerId);
-    console.log("Existing data from state:", existingData);
-  }, [customerId, existingData]);
+  };
+
+  fetchCustomer();
+}, [customerId, showAlert]);
+
 
   // --- Handle Input Change ---
   const handleChange = (e) => {
@@ -111,25 +88,23 @@ const UpdateCustomer = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setBtnLoading(true);
-    // Construct payload matching backend structure
+
     const payload = {
       customerName: formData.customerName,
       email: formData.email,
-      phoneNumber: formData.phone, // mapping 'phone' -> 'phoneNumber'
+      phoneNumber: formData.phone,
       dob: formData.dob,
       address: {
         street: formData.street,
         city: formData.city,
         state: formData.state,
-        zipcode: formData.zip, // mapping 'zip' -> 'zipcode'
+        zipcode: formData.zip,
         country: formData.country,
       },
       isActive,
       communicationMethod,
-      // Optional: only include password if user wants to update it
-      // password: formData.password || undefined
     };
-    //  console.log("Customer ID:", customerId);
+
     try {
       const res = await axios.put(
         `http://dev-api.payonlive.com/api/user/update-customer/${customerId}`,
@@ -137,24 +112,26 @@ const UpdateCustomer = () => {
       );
 
       console.log("✅ Customer updated:", res.data);
-      showAlert("Customer update successfully!", "success");
+      showAlert("Customer updated successfully!", "success");
       navigate("/user/Customers");
     } catch (err) {
-      console.error(
-        "❌ Error updating customer:",
-        err.response?.data || err.message
-      );
+      console.error("❌ Error updating customer:", err);
       showAlert("Failed to update customer. Please try again.", "error");
+    } finally {
+      setBtnLoading(false);
     }
   };
 
-  if (loading) return <p className="p-4">Loading customer data...</p>;
+  if (loading)
+    return (
+      <p className="p-4 text-gray-600 animate-pulse">Loading customer data...</p>
+    );
 
   return (
     <div>
       <Navbar heading="Customer Management" />
 
-      {/* Discard Button */}
+      {/* Header */}
       <div className="flex justify-between mt-5 mx-10">
         <h1 className="font-medium text-lg">Update Customer Details</h1>
         <button
@@ -170,6 +147,7 @@ const UpdateCustomer = () => {
         </button>
       </div>
 
+      {/* Form */}
       <form
         onSubmit={handleSubmit}
         className="max-w-6xl mx-6 p-6 space-y-8 font-sans text-gray-700"
@@ -386,30 +364,21 @@ const UpdateCustomer = () => {
           </fieldset>
         </section>
 
-        {/* Submit */}
         <hr className="text-gray-400" />
-        {/* <div className="flex justify-end">
+
+        {/* Submit Button */}
+        <div className="flex justify-end mt-4">
           <button
             type="submit"
-            className="bg-[#114E9D] text-white font-semibold rounded-lg px-5 py-2 text-sm hover:bg-blue-500"
+            disabled={btnLoading}
+            className="bg-[#114E9D] text-white px-6 py-2 rounded-lg hover:bg-blue-500 flex items-center gap-2"
           >
-            Update Customer
+            {btnLoading && (
+              <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+            )}
+            {btnLoading ? "Updating..." : "Update Customer"}
           </button>
-        </div> */}
-         
-          <div className="flex justify-end mt-4">
-            <button
-              type="submit"
-              disabled={btnLoading}
-              className="bg-[#114E9D] text-white px-6 py-2 rounded-lg hover:bg-blue-500 flex items-center gap-2"
-            >
-              {btnLoading && (
-                <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-              )}
-              {btnLoading ? "Updating..." : "Update Customer"}
-            </button>
-          </div>
-
+        </div>
       </form>
     </div>
   );

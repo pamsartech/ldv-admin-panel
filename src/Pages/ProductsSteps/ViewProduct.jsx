@@ -64,7 +64,7 @@ const ViewProduct = () => {
     try {
       setIsDeleting(true);
       const response = await axios.delete(
-        `https://la-dolce-vita.onrender.com/api/product/delete-product/${productId}`
+        `http://dev-api.payonlive.com/api/product/delete-product/${productId}`
       );
 
       if (response.data.success) {

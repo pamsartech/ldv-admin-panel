@@ -28,7 +28,7 @@ function Orders() {
       setExportError(null);
       setExporting(true);
 
-      const url = "https://la-dolce-vita.onrender.com/api/order/export-orders"; // update as needed
+      const url = "http://dev-api.payonlive.com/api/order/export-orders"; // update as needed
 
       const response = await axios.get(url, {
         responseType: "blob",

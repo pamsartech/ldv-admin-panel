@@ -222,16 +222,19 @@ export default function ViewOrder() {
                 <div className="flex justify-between items-center">
                   <span>Transaction ID</span>
                   <div className="flex items-center gap-3">
-                    <FontAwesomeIcon
+                    {/* <FontAwesomeIcon
                       icon={faFileInvoice}
                       className="text-gray-600"
-                    />
+                    /> */}
+                     <button className="ml-2 text-xs text-gray-500 hover:text-gray-700">
+                      <FontAwesomeIcon icon={faCopy} />
+                    </button>
                     <span className="truncate max-w-[160px]">
                       {order.payment_id || "N/A"}
                     </span>
-                    <button className="ml-2 text-xs text-gray-500 hover:text-gray-700">
+                    {/* <button className="ml-2 text-xs text-gray-500 hover:text-gray-700">
                       <FontAwesomeIcon icon={faCopy} />
-                    </button>
+                    </button> */}
                   </div>
                 </div>
               </div>
@@ -303,7 +306,7 @@ export default function ViewOrder() {
           {/* RIGHT COLUMN */}
           <div className="w-full lg:w-1/2 border-l border-gray-500">
             {/* Customer Info */}
-            <section className="p-6 pb-10 border-b border-gray-500">
+            <section className="p-6 pb-7 border-b border-gray-500">
               <h3 className="font-medium text-lg mb-3 mx-10">Customer Info</h3>
               <div className="text-sm text-gray-700 mx-10 space-y-3">
                 <div className="flex justify-between">
@@ -314,29 +317,34 @@ export default function ViewOrder() {
                 <div className="flex justify-between items-start">
                   <span>Email</span>
                   <div className="flex items-center gap-3">
-                    <FontAwesomeIcon
+                    {/* <FontAwesomeIcon
                       icon={faEnvelope}
                       className="text-gray-600"
-                    />
+                    /> */}
+                     <button className="ml-2 text-xs text-gray-500 hover:text-gray-700">
+                      <FontAwesomeIcon icon={faCopy} />
+                    </button>
+
                     <span className="truncate max-w-[220px]">
                       {order.email}
                     </span>
-                    <button className="ml-2 text-xs text-gray-500 hover:text-gray-700">
+                    {/* <button className="ml-2 text-xs text-gray-500 hover:text-gray-700">
                       <FontAwesomeIcon icon={faCopy} />
-                    </button>
+                    </button> */}
                   </div>
                 </div>
 
                 <div className="flex justify-between items-start">
                   <span>Phone</span>
                   <div className="flex items-center gap-3">
-                    <FontAwesomeIcon icon={faPhone} className="text-gray-600" />
+                    {/* <FontAwesomeIcon icon={faPhone} className="text-gray-600" /> */}
+                     <button className="ml-2 text-xs text-gray-500 hover:text-gray-700">
+                      <FontAwesomeIcon icon={faCopy} />
+                    </button>
                     <span className="truncate max-w-[220px]">
                       {order.phoneNumber}
                     </span>
-                    <button className="ml-2 text-xs text-gray-500 hover:text-gray-700">
-                      <FontAwesomeIcon icon={faCopy} />
-                    </button>
+                    
                   </div>
                 </div>
               </div>

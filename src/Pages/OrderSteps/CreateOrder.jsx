@@ -9,14 +9,13 @@ import { useAlert } from "../../Components/AlertContext";
 const CreateOrder = () => {
   const navigate = useNavigate();
   const { showAlert } = useAlert();
-  
+
   // 🔹 State for customer info
   const [customerName, setCustomerName] = useState("");
   const [email, setEmail] = useState("");
   const [phoneNumber, setphoneNumber] = useState("");
   const [address, setAddress] = useState("");
   const [loading, setLoading] = useState(false);
-  
 
   // 🔹 State for order items
   const [orderItems, setOrderItems] = useState([
@@ -119,7 +118,7 @@ const CreateOrder = () => {
       paymentStatus,
       shippingMethod,
       shippingStatus,
-      orderTotal : total
+      orderTotal: total,
     };
 
     console.log("📤 Sending order:", payload);
@@ -127,7 +126,8 @@ const CreateOrder = () => {
     try {
       const res = await axios.post(
         "http://dev-api.payonlive.com/api/order/create-order",
-        payload, { headers: { "Content-Type": "application/json" } }
+        payload,
+        { headers: { "Content-Type": "application/json" } }
       );
       console.log("✅ Order created:", res.data);
       if (res.data?.success || res.status === 200) {
@@ -319,7 +319,7 @@ const CreateOrder = () => {
               className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center py-3 border-b border-gray-400"
             >
               {/* Product dropdown */}
-              <div className="md:col-span-4">
+              {/* <div className="md:col-span-4">
                 <label className="block mb-1 text-sm font-medium">
                   Product Name
                 </label>
@@ -332,10 +332,27 @@ const CreateOrder = () => {
                   <option>Travel bag</option>
                   <option>clothes</option>
                   <option>boots</option>
+                  <option>T-Shirt</option>
                   <option>Asus</option>
                   <option >Adidas shoes</option>
                 </select>
                 {errors[`product_${idx}`] && (
+                  <p className="text-red-500 text-sm">
+                    {errors[`product_${idx}`]}
+                  </p>
+                )}
+              </div> */}
+              <div className="md:col-span-4">
+                <label className="block mb-1 text-sm font-medium">
+                  Product Name
+                </label>
+                <input
+                  value={item.productName}
+                  onChange={(e) => handleProductChange(idx, e.target.value)}
+                  placeholder="enter product name"
+                  className="w-full text-sm  rounded-xl border px-2 py-2"
+                />
+                {errors.address && (
                   <p className="text-red-500 text-sm">
                     {errors[`product_${idx}`]}
                   </p>
@@ -382,7 +399,9 @@ const CreateOrder = () => {
                   className="w-full text-sm border rounded-lg px-2 py-2 text-center"
                 />
                 {errors[`price_${idx}`] && (
-                  <p className="text-red-500 text-sm">{errors[`price_${idx}`]}</p>
+                  <p className="text-red-500 text-sm">
+                    {errors[`price_${idx}`]}
+                  </p>
                 )}
               </div>
 
@@ -489,7 +508,7 @@ const CreateOrder = () => {
               <option>Processing</option>
               <option>Delivered</option>
             </select>
-             {errors.shippingStatus && (
+            {errors.shippingStatus && (
               <p className="text-red-500 text-sm">{errors.shippingStatus}</p>
             )}
           </div>
@@ -534,21 +553,20 @@ const CreateOrder = () => {
           </button>
         </div> */}
 
-         <div className="flex justify-end mt-4">
-            <button
-              type="submit"
-              disabled={loading}
-              className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2"
-            >
-              {loading && (
-                <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-              )}
-              {loading ? "Submitting..." : "Submit Order"}
-            </button>
-          </div>
-
+        <div className="flex justify-end mt-4">
+          <button
+            type="submit"
+            disabled={loading}
+            className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2"
+          >
+            {loading && (
+              <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+            )}
+            {loading ? "Submitting..." : "Submit Order"}
+          </button>
+        </div>
       </form>
-       {/* ✅ Popup */}
+      {/* ✅ Popup */}
       {/* {showPopup && (
         <div className="fixed top-5 left-1/2 transform -translate-x-1/2 z-50">
           <div className="bg-white text-black font-bold px-8 py-10 rounded-xl shadow-xl min-w-[300px] text-center">
