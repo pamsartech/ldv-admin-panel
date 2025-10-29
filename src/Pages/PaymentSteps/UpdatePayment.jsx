@@ -292,7 +292,7 @@ export default function UpdatePayment() {
               </span>
             </div>
             <div>
-              <p className="text-sm mb-2 font-medium">Delivery Status</p>
+              <p className="text-sm mb-2 font-medium">Shipping Status</p>
               <span
                 className={`px-3 py-1 text-xs rounded-full border ${getStatusClass(
                   paymentData.deliveryStatus,

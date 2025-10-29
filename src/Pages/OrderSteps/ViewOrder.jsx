@@ -197,7 +197,7 @@ export default function ViewOrder() {
                 </div>
 
                 <div className="flex justify-between items-center">
-                  <span>Status</span>
+                  <span>Shipping Status</span>
                   <span>{orderStatus}</span>
                 </div>
               </div>
@@ -213,7 +213,7 @@ export default function ViewOrder() {
                 </div>
 
                 <div className="flex justify-between items-center">
-                  <span>Status</span>
+                  <span>Payment Status</span>
                   <span className="inline-block bg-green-100 text-green-600 text-xs font-semibold rounded-full px-3 py-1">
                     {order.paymentStatus}
                   </span>
@@ -366,102 +366,165 @@ export default function ViewOrder() {
             </section>
 
             {/* Activity */}
-            <section className="p-6 mx-10">
-              <h3 className="font-medium mb-4">Activity</h3>
-              <div className="relative">
-                <div className="absolute left-6 top-0 bottom-0 w-px bg-gray-300" />
+          {/* Activity */}
+<section className="p-6 mx-10">
+  <h3 className="font-medium mb-4">Activity</h3>
 
-                <ul className="space-y-8">
-                  {/* Shipped */}
-                  <li className="relative">
-                    <span className="absolute left-6 top-0 -translate-x-1/2 w-10 h-10 rounded-full bg-white border border-gray-300 flex items-center justify-center shadow-sm">
-                      <FontAwesomeIcon
-                        icon={faTruck}
-                        className="text-green-500"
-                      />
-                    </span>
-                    <div className="pl-16">
-                      <div className="flex items-center gap-3">
-                        <h4 className="font-medium">Shipped</h4>
-                        <span className="text-xs text-gray-500">
-                          2 hours ago
-                        </span>
-                      </div>
-                      <div className="mt-2 inline-flex items-center gap-3 p-2 rounded-md border border-gray-500 bg-white">
-                        <span className="text-xs text-gray-700">
-                          Order No: 5220138384381
-                        </span>
-                        <button className="ml-3 text-xs text-blue-600 font-medium px-2 py-1 rounded border border-gray-500">
-                          Track
-                        </button>
-                      </div>
-                    </div>
-                  </li>
+  {/* Timeline container */}
+  <div className="relative">
+    {/* Full gray line */}
+    <div className="absolute left-6 top-0 bottom-0 w-[2px] bg-gray-300"></div>
 
-                  {/* Email Sent */}
-                  <li className="relative">
-                    <span className="absolute left-6 top-0 -translate-x-1/2 w-8 h-8 rounded-full bg-white border border-gray-300 flex items-center justify-center shadow-sm">
-                      <FontAwesomeIcon
-                        icon={faEnvelope}
-                        className="text-blue-600"
-                      />
-                    </span>
-                    <div className="pl-16">
-                      <h4 className="font-medium">Email Sent to customer</h4>
-                      <p className="text-xs text-gray-500">August, 2025</p>
-                      <div className="mt-2 p-3 border-gray-300 border rounded-md bg-gray-50 text-xs text-gray-700">
-                        <p>Shipped Order No: 5220138384381</p>
-                        <p>
-                          Shiprocket: your order has been successfully shipped
-                        </p>
-                      </div>
-                    </div>
-                  </li>
+    {/* Dynamic green progress line */}
+    <div
+      className="absolute left-6 top-0 w-[2px] bg-green-500 transition-all duration-700"
+      style={{
+        height:
+          orderStatus?.toLowerCase() === "shipped"
+            ? "100%"
+            : orderStatus?.toLowerCase() === "in_progress" ||
+              orderStatus?.toLowerCase() === "processing"
+            ? "50%"
+            : "15%",
+      }}
+    ></div>
 
-                  {/* Order Packed */}
-                  <li className="relative">
-                    <span className="absolute left-6 top-0 -translate-x-1/2 w-8 h-8 rounded-full bg-white border border-gray-300 flex items-center justify-center shadow-sm">
-                      <FontAwesomeIcon
-                        icon={faBoxOpen}
-                        className="text-gray-500"
-                      />
-                    </span>
-                    <div className="pl-16">
-                      <h4 className="font-medium">Order Packed</h4>
-                      <p className="text-xs text-gray-500">August 5, 2025</p>
-                    </div>
-                  </li>
+    <ul className="space-y-8 relative z-10">
+      {/* Order Placed */}
+      <li className="relative">
+        <span
+          className={`absolute left-6 top-0 -translate-x-1/2 w-8 h-8 rounded-full flex items-center justify-center shadow-sm border
+            ${
+              ["pending", "in_progress", "processing", "shipped"].includes(
+                orderStatus?.toLowerCase()
+              )
+                ? "bg-green-500 border-green-500 text-white"
+                : "bg-white border-gray-300 text-gray-400"
+            }`}
+        >
+          <FontAwesomeIcon icon={faCheckCircle} />
+        </span>
+        <div className="pl-16">
+          <h4 className="font-medium">Order Placed</h4>
+          <p className="text-xs text-gray-500">
+            {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : "—"}
+          </p>
+        </div>
+      </li>
 
-                  {/* Processing */}
-                  <li className="relative">
-                    <span className="absolute left-6 top-0 -translate-x-1/2 w-8 h-8 rounded-full bg-white border border-gray-300 flex items-center justify-center shadow-sm">
-                      <FontAwesomeIcon
-                        icon={faHourglassHalf}
-                        className="text-gray-400"
-                      />
-                    </span>
-                    <div className="pl-16">
-                      <h4 className="font-medium">Processing</h4>
-                      <p className="text-xs text-gray-500">August 5, 2025</p>
-                    </div>
-                  </li>
+      {/* Processing */}
+      <li className="relative">
+        <span
+          className={`absolute left-6 top-0 -translate-x-1/2 w-8 h-8 rounded-full flex items-center justify-center shadow-sm border
+            ${
+              ["in_progress", "processing", "shipped"].includes(
+                orderStatus?.toLowerCase()
+              )
+                ? "bg-green-500 border-green-500 text-white"
+                : "bg-white border-gray-300 text-gray-400"
+            }`}
+        >
+          <FontAwesomeIcon icon={faHourglassHalf} />
+        </span>
+        <div className="pl-16">
+          <h4 className="font-medium">Processing</h4>
+          <p className="text-xs text-gray-500">
+            {["in_progress", "processing", "shipped"].includes(orderStatus?.toLowerCase())
+              ? order.updatedAt
+                ? new Date(order.updatedAt).toLocaleDateString()
+                : "—"
+              : "—"}
+          </p>
+        </div>
+      </li>
 
-                  {/* Order Placed */}
-                  <li className="relative">
-                    <span className="absolute left-6 top-0 -translate-x-1/2 w-8 h-8 rounded-full bg-white border border-gray-300 flex items-center justify-center shadow-sm">
-                      <FontAwesomeIcon
-                        icon={faCheckCircle}
-                        className="text-gray-400"
-                      />
-                    </span>
-                    <div className="pl-16">
-                      <h4 className="font-medium">Order placed</h4>
-                      <p className="text-xs text-gray-500">August 2, 2025</p>
-                    </div>
-                  </li>
-                </ul>
-              </div>
-            </section>
+      {/* Order Packed */}
+      <li className="relative">
+        <span
+          className={`absolute left-6 top-0 -translate-x-1/2 w-8 h-8 rounded-full flex items-center justify-center shadow-sm border
+            ${
+              orderStatus?.toLowerCase() === "shipped"
+                ? "bg-green-500 border-green-500 text-white"
+                : "bg-white border-gray-300 text-gray-400"
+            }`}
+        >
+          <FontAwesomeIcon icon={faBoxOpen} />
+        </span>
+        <div className="pl-16">
+          <h4 className="font-medium">Order Packed</h4>
+          <p className="text-xs text-gray-500">
+            {orderStatus?.toLowerCase() === "shipped" && order.updatedAt
+              ? new Date(order.updatedAt).toLocaleDateString()
+              : "—"}
+          </p>
+        </div>
+      </li>
+
+      {/* Shipped */}
+      <li className="relative">
+        <span
+          className={`absolute left-6 top-0 -translate-x-1/2 w-10 h-10 rounded-full flex items-center justify-center shadow-sm border
+            ${
+              orderStatus?.toLowerCase() === "shipped"
+                ? "bg-green-500 border-green-500 text-white"
+                : "bg-white border-gray-300 text-gray-400"
+            }`}
+        >
+          <FontAwesomeIcon icon={faTruck} />
+        </span>
+        <div className="pl-16">
+          <div className="flex items-center gap-3">
+            <h4 className="font-medium">Shipped</h4>
+            <span className="text-xs text-gray-500">
+              {orderStatus?.toLowerCase() === "shipped" ? "Just now" : "—"}
+            </span>
+          </div>
+
+          {orderStatus?.toLowerCase() === "shipped" && (
+            <div className="mt-2 inline-flex items-center gap-3 p-2 rounded-md border border-gray-300 bg-white">
+              <span className="text-xs text-gray-700">
+                Order No: {order._id}
+              </span>
+              <button className="ml-3 text-xs text-blue-600 font-medium px-2 py-1 rounded border border-gray-300">
+                Track
+              </button>
+            </div>
+          )}
+        </div>
+      </li>
+
+      {/* Email Sent */}
+      <li className="relative">
+        <span
+          className={`absolute left-6 top-0 -translate-x-1/2 w-8 h-8 rounded-full flex items-center justify-center shadow-sm border
+            ${
+              orderStatus?.toLowerCase() === "shipped"
+                ? "bg-green-500 border-green-500 text-white"
+                : "bg-white border-gray-300 text-gray-400"
+            }`}
+        >
+          <FontAwesomeIcon icon={faEnvelope} />
+        </span>
+        <div className="pl-16">
+          <h4 className="font-medium">Email Sent to customer</h4>
+          <p className="text-xs text-gray-500">
+            {orderStatus?.toLowerCase() === "shipped" && order.updatedAt
+              ? new Date(order.updatedAt).toLocaleDateString()
+              : "—"}
+          </p>
+
+          <div className="mt-2 p-3 border-gray-300 border rounded-md bg-gray-50 text-xs text-gray-700">
+            <p>Shipped Order No: {order._id}</p>
+            <p>Shiprocket: your order has been successfully shipped</p>
+          </div>
+        </div>
+      </li>
+    </ul>
+  </div>
+</section>
+
+
+
           </div>
         </div>
       </div>

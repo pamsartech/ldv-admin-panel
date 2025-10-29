@@ -19,7 +19,7 @@ const CreateOrder = () => {
 
   // 🔹 State for order items
   const [orderItems, setOrderItems] = useState([
-    { productName: "", quantity: 1, price: 28.23 },
+    { productName: "", quantity: 1, price: 0 },
   ]);
 
   // 🔹 State for payment & shipping
@@ -160,7 +160,7 @@ const CreateOrder = () => {
     0
   );
   const tax = subtotal * 0.1; // Example 10%
-  const shippingFee = shippingMethod === "Free Shipping" ? 0 : 5;
+  const shippingFee = shippingMethod === "Free Shipping" ? 0 : 7;
   const total = subtotal + tax + shippingFee;
 
   return (
@@ -389,7 +389,7 @@ const CreateOrder = () => {
                 <input
                   required
                   type="number"
-                  step="0.01"
+                  
                   value={item.price}
                   onChange={(e) => {
                     const newItems = [...orderItems];
@@ -504,9 +504,9 @@ const CreateOrder = () => {
               className="w-full rounded-lg border px-3 py-2 text-sm"
             >
               <option value="">Select shipping status</option>
-              <option>Shipped</option>
+              {/* <option>Shipped</option> */}
               <option>Processing</option>
-              <option>Delivered</option>
+              {/* <option>Delivered</option> */}
             </select>
             {errors.shippingStatus && (
               <p className="text-red-500 text-sm">{errors.shippingStatus}</p>

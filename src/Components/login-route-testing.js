@@ -1,601 +1,630 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-
-function Login() {
-  const navigate = useNavigate();
-
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
-
-    try {
-      // Send POST request to your login API
-      const response = await axios.post("https://la-dolce-vita.onrender.com/api/admin/login", {
-        email: username, // Assuming your backend expects "email"
-        password: password,
-      });
-
-      if (response.data.success) {
-        // Save token in localStorage
-        localStorage.setItem("token", response.data.token);
-
-        // Optionally save user info
-        localStorage.setItem("user", JSON.stringify(response.data.user));
-
-        // Redirect to dashboard
-        navigate("/dashboard");
-      } else {
-        setError(response.data.message || "Login failed");
-      }
-    } catch (err) {
-      setError(err.response?.data?.message || "Server error");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-white px-4 py-8">
-      <div className="flex flex-col md:flex-row bg-white rounded-2xl shadow-lg w-full max-w-5xl overflow-hidden">
-        {/* Left side: Logo */}
-        <div className="flex items-center justify-center w-full md:w-1/2 bg-white p-8">
-          <img
-            src="/icons/logo dv.svg"
-            alt="La Dolce Vita Logo"
-            className="w-40 h-40 md:w-64 md:h-64 object-contain"
-          />
-        </div>
-
-        {/* Right side: Form */}
-        <div className="flex flex-col justify-center w-full md:w-1/2 p-8 sm:p-10">
-          <h2 className="text-green-800 text-2xl md:text-3xl font-semibold mb-6 text-center md:text-left">
-            SIGN IN
-          </h2>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Username */}
-            <div>
-              <input
-                type="text"
-                placeholder="Username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="w-full border-b-2 border-green-800 bg-transparent py-2 text-green-800 placeholder-green-800 focus:outline-none"
-                required
-              />
-            </div>
-
-            {/* Password with toggle */}
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full border-b-2 border-green-800 bg-transparent py-2 pr-10 text-green-800 placeholder-green-800 focus:outline-none"
-                required
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-0 transform -translate-y-1/2 pr-2 text-green-800 focus:outline-none"
-                aria-label={showPassword ? "Hide password" : "Show password"}
-              >
-                {showPassword ? (
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5 sm:h-6 sm:w-6"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                    />
-                  </svg>
-                ) : (
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5 sm:h-6 sm:w-6"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M13.875 18.825A10.05 10.05 0 0112 19c-4.477 0-8.268-2.943-9.542-7a9.956 9.956 0 012.223-3.434m1.77-1.77A9.956 9.956 0 0112 5c4.477 0 8.268 2.943 9.542 7a10.05 10.05 0 01-1.223 2.432M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M3 3l18 18"
-                    />
-                  </svg>
-                )}
-              </button>
-            </div>
-
-            {/* Remember me + Forgot password */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-green-800 text-sm gap-3">
-              <label className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  className="form-checkbox h-4 w-4 text-green-800"
-                />
-                <span>Remember me</span>
-              </label>
-              <button
-                type="button"
-                onClick={() => navigate("/reset-password")}
-                className="hover:underline text-center sm:text-right"
-              >
-                Forgot password?
-              </button>
-            </div>
-
-            {/* Error message */}
-            {error && <p className="text-red-600 text-sm">{error}</p>}
-
-            {/* Submit */}
-            <button
-              type="submit"
-              disabled={loading}
-              className={`w-full py-2 rounded-full text-white ${
-                loading ? "bg-gray-400" : "bg-green-800 hover:bg-green-900"
-              } transition-colors`}
-            >
-              {loading ? "Signing in..." : "Sign in"}
-            </button>
-          </form>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export default Login;
-
-
-
-
-
-// this is routes backup code 
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-
-import Login from "./Pages/Login";
-import ResetPassword from "./Pages/ResetPassword";
-
-
-// dashboard routes
-import Sidebar from "./Components/Sidebar";
-import Dashboard from "./Pages/Dashboard";
-import Products from "./Pages/Products";
-import Orders from "./Pages/Orders";
-import Customers from "./Pages/Customers";
-import Payments from "./Pages/Payments";
-import TikTokLive from "./Pages/TikTokLive";
-import Setting from "./Pages/Setting";
-
-import ViewProduct from "./Pages/ProductsSteps/ViewProduct";
-import AddProductWizard from "./Pages/ProductsSteps/AddProductWizard";
-import AddProductStep1 from "./Pages/ProductsSteps/AddProductStep1";
-import AddProductStep2 from "./Pages/ProductsSteps/AddProductStep2";
-import AddProductStep3 from "./Pages/ProductsSteps/AddProductStep3";
-import UpdateProduct from "./Pages/ProductsSteps/UpdateProduct";
-
-import CreateOrder from "./Pages/OrderSteps/CreateOrder";
-import ViewOrder from "./Pages/OrderSteps/ViewOrder";
-import UpdateOrder from "./Pages/OrderSteps/UpdateOrder";
-
-import CreateCustomer from "./Pages/CustomerSteps/CreateCustomer";
-import ViewCustomer from "./Pages/CustomerSteps/ViewCustomer";
-import UpdateCustomer from "./Pages/CustomerSteps/UpdateCustomer";
-
-import CreatePayment from "./Pages/PaymentSteps/CreatePayment";
-import ViewPayment from "./Pages/PaymentSteps/ViewPayment";
-import UpdatePayment from "./Pages/PaymentSteps/UpdatePayment";
-
-import CreateLiveEvent from "./Pages/TikTok-Live-Session/CreateLiveEvent";
-import EventDetail from "./Pages/TikTok-Live-Session/EventDetail";
-import UpdateEvent from "./Pages/TikTok-Live-Session/UpdateEvent";
-
-
-function App() {
-  return (
-    <div>
-     
-
-       {/* login routers */}
-       <Router>
-        <Routes>
-           <Route path="/" element={ <Login /> } />
-           <Route path="/reset-password" element={ <ResetPassword /> } />         
-        </Routes>
-      </Router>
-
-
-      {/* this is dashboard routers */}
-      <Router>
-      <div className="flex">
-        <Sidebar />
-        <main className="flex-1 bg-white min-h-screen">
-          <Routes>
-
-            <Route path="/user/dashboard" element={<Dashboard />} />
-            <Route path="/user/products" element={<Products />} />         
-            <Route path="/user/orders" element={<Orders />} />
-            <Route path="/user/customers" element={<Customers />} />
-            <Route path="/user/payments" element={<Payments />} />
-            <Route path="/user/tiktok" element={<TikTokLive />} />
-            <Route path="/user/setting" element={<Setting />} />
-
-            {/* this is product sub pages routes */}
-            <Route path="/user/view-product/:productId" element={<ViewProduct />} />   
-            <Route path="/user/add-product" element={<AddProductWizard />} />        
-            <Route path="/user/update-product/:productId" element= { <UpdateProduct /> } />
-
-            {/* this is order sub pages routes */}
-            <Route path="/user/create-order" element= { <CreateOrder /> } />
-            <Route path="/user/view-order/:orderId" element= { <ViewOrder /> } />
-            <Route path="/user/update-order/:id" element= { <UpdateOrder /> } />
-
-            {/* this is customer sub pages routes */}
-            <Route path="/user/create-customer" element= { <CreateCustomer /> } />
-            <Route path="/user/view-customer/:customerId" element= { <ViewCustomer /> } />
-            <Route path="/user/update-customer/:customerId" element= { <UpdateCustomer /> } />
-
-            {/* this is payment sub pages routes */}
-            <Route path="/user/create-payment" element= { <CreatePayment /> } />
-            <Route path="/user/view-payment/:paymentId" element= { <ViewPayment /> } />
-            <Route path="/user/update-payment/:paymentId" element= { <UpdatePayment /> } />
-
-            {/* this is tiktok live sub pages routes */}
-            <Route path="/user/create-live-event" element= { <CreateLiveEvent /> } />
-            <Route path="/user/live-event-detail/:eventId" element= { <EventDetail /> } />
-            <Route path="/user/update-event/:eventId" element= { <UpdateEvent /> } />
-           
-          </Routes>
-        </main>
-      </div>
-    </Router>  
-
-    </div>
-  );
-}
-
-export default App;
-
-
-
-
-
-// this is routes backup code with logic integrated
-import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from "react-router-dom";
-
-// 📄 Pages
-import Login from "./Pages/Login";
-import ResetPassword from "./Pages/ResetPassword";
-import Dashboard from "./Pages/Dashboard";
-import Products from "./Pages/Products";
-import Orders from "./Pages/Orders";
-import Customers from "./Pages/Customers";
-import Payments from "./Pages/Payments";
-import TikTokLive from "./Pages/TikTokLive";
-import Setting from "./Pages/Setting";
-
-// 🧭 Components
-import Sidebar from "./Components/Sidebar";
-
-// 🧾 Product Steps
-import ViewProduct from "./Pages/ProductsSteps/ViewProduct";
-import AddProductWizard from "./Pages/ProductsSteps/AddProductWizard";
-import UpdateProduct from "./Pages/ProductsSteps/UpdateProduct";
-
-// 🛍️ Order Steps
-import CreateOrder from "./Pages/OrderSteps/CreateOrder";
-import ViewOrder from "./Pages/OrderSteps/ViewOrder";
-import UpdateOrder from "./Pages/OrderSteps/UpdateOrder";
-
-// 👤 Customer Steps
-import CreateCustomer from "./Pages/CustomerSteps/CreateCustomer";
-import ViewCustomer from "./Pages/CustomerSteps/ViewCustomer";
-import UpdateCustomer from "./Pages/CustomerSteps/UpdateCustomer";
-
-// 💳 Payment Steps
-import CreatePayment from "./Pages/PaymentSteps/CreatePayment";
-import ViewPayment from "./Pages/PaymentSteps/ViewPayment";
-import UpdatePayment from "./Pages/PaymentSteps/UpdatePayment";
-
-// 📡 TikTok Live Session
-import CreateLiveEvent from "./Pages/TikTok-Live-Session/CreateLiveEvent";
-import EventDetail from "./Pages/TikTok-Live-Session/EventDetail";
-import UpdateEvent from "./Pages/TikTok-Live-Session/UpdateEvent";
-
-/* ---------------- Protected Layout ---------------- */
-function ProtectedLayout() {
-  const isAuth = localStorage.getItem("isAuthenticated") === "true";
-
-  if (!isAuth) return <Navigate to="/" replace />;
-
-  return (
-    <div className="flex">
-      <Sidebar />
-      <main className="flex-1 bg-white min-h-screen">
-        <Outlet />
-      </main>
-    </div>
-  );
-}
-
-/* ---------------- Main App ---------------- */
-function App() {
-  // ✅ Handle login success
-  const handleLoginSuccess = (token, user) => {
-    localStorage.setItem("token", token);
-    localStorage.setItem("user", JSON.stringify(user));
-    localStorage.setItem("isAuthenticated", "true");
-  };
-
-  // Optional logout helper
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    localStorage.removeItem("isAuthenticated");
-    window.location.href = "/"; // force redirect to login
-  };
-
-  return (
-    <Router>
-      <Routes>
-        {/* ---------- Public Routes ---------- */}
-        <Route path="/" element={<Login onLoginSuccess={handleLoginSuccess} />} />
-        <Route path="/user/reset-password" element={<ResetPassword />} />
-
-        {/* ---------- Protected Routes (With Sidebar Layout) ---------- */}
-        <Route element={<ProtectedLayout />}>
-          {/* Main Dashboard */}
-          <Route path="/user/dashboard" element={<Dashboard />} />
-          <Route path="/user/products" element={<Products />} />
-          <Route path="/user/orders" element={<Orders />} />
-          <Route path="/user/customers" element={<Customers />} />
-          <Route path="/user/payments" element={<Payments />} />
-          <Route path="/user/tiktok" element={<TikTokLive />} />
-          <Route path="/user/setting" element={<Setting />} />
-
-          {/* Product Sub Routes */}
-          <Route path="/user/view-product/:productId" element={<ViewProduct />} />
-          <Route path="/user/add-product" element={<AddProductWizard />} />
-          <Route path="/user/update-product/:productId" element={<UpdateProduct />} />
-
-          {/* Order Sub Routes */}
-          <Route path="/user/create-order" element={<CreateOrder />} />
-          <Route path="/user/view-order/:orderId" element={<ViewOrder />} />
-          <Route path="/user/update-order/:id" element={<UpdateOrder />} />
-
-          {/* Customer Sub Routes */}
-          <Route path="/user/create-customer" element={<CreateCustomer />} />
-          <Route path="/user/view-customer/:customerId" element={<ViewCustomer />} />
-          <Route path="/user/update-customer/:customerId" element={<UpdateCustomer />} />
-
-          {/* Payment Sub Routes */}
-          <Route path="/user/create-payment" element={<CreatePayment />} />
-          <Route path="/user/view-payment/:paymentId" element={<ViewPayment />} />
-          <Route path="/user/update-payment/:paymentId" element={<UpdatePayment />} />
-
-          {/* TikTok Live Sub Routes */}
-          <Route path="/user/create-live-event" element={<CreateLiveEvent />} />
-          <Route path="/user/live-event-detail/:eventId" element={<EventDetail />} />
-          <Route path="/user/update-event/:eventId" element={<UpdateEvent />} />
-        </Route>
-
-        {/* ---------- Fallback ---------- */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </Router>
-  );
-}
-
-export default App;
-
-
-
-
-
-
-
-
-
-// alert code
-import React, { createContext, useContext, useState, useCallback } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  Typography,
-  Box,
-} from "@mui/material";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import ErrorIcon from "@mui/icons-material/Error";
-import InfoIcon from "@mui/icons-material/Info";
+  faSearch,
+  faAngleRight,
+  faCircleCheck,
+  faChartLine,
+  faBoxArchive,
+  faChevronLeft,
+  faChevronRight,
+  faTimes,
+  faTrash,
+} from "@fortawesome/free-solid-svg-icons";
+import { Skeleton, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button } from "@mui/material";
 
-const AlertContext = createContext();
+const statusColors = {
+  Pending: "bg-yellow-100 text-yellow-700 border border-yellow-300",
+  Paid: "bg-green-100 text-green-700 border border-green-300",
+  Failed: "bg-red-100 text-red-700 border border-red-300",
+  Shipped: "bg-blue-100 text-blue-700 border border-blue-300",
+  Processing: "bg-orange-100 text-orange-700 border border-orange-300",
+  Delivered: "bg-emerald-100 text-emerald-700 border border-emerald-300",
+  Cancelled: "bg-red-100 text-red-700 border border-red-300",
+  Dispatched: "bg-purple-100 text-purple-700 border border-purple-300",
+  "Out for delivery": "bg-orange-100 text-orange-700 border border-orange-300",
+};
 
-export const AlertProvider = ({ children }) => {
-  const [alertState, setAlertState] = useState({
-    open: false,
-    message: "",
-    type: "info", // 'success', 'error', 'info'
-    onConfirm: null,
+export default function OrdersDataTable() {
+  const navigate = useNavigate();
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [activeTab, setActiveTab] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [filterPayment, setFilterPayment] = useState("all");
+  const [sortAsc, setSortAsc] = useState(true);
+  const [search, setSearch] = useState("");
+  const [selectedRows, setSelectedRows] = useState([]);
+  const [deleting, setDeleting] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const ordersPerPage = 8;
+
+  const [averageData, setAverageData] = useState({
+    averageOrder: 0,
+    deliveryRate: "0%",
   });
 
-  const showAlert = useCallback((message, type = "info", onConfirm = null) => {
-    setAlertState({ open: true, message, type, onConfirm });
+  // ✅ Fetch orders + average data
+  useEffect(() => {
+    const fetchOrders = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await axios.get(
+          "http://dev-api.payonlive.com/api/order/order-list"
+        );
+        const apiOrders = response.data.orders || response.data.data || [];
+        const formattedOrders = apiOrders.map((o) => ({
+          id: o._id || "N/A",
+          customer: o.customerName || o.customer || "Unknown",
+          product:
+            o.orderItems && o.orderItems.length > 0
+              ? o.orderItems.map((item) => item.productName).join(", ")
+              : "N/A",
+          payment: o.paymentStatus || "Pending",
+          shipping: o.shippingStatus || "Processing",
+          amount:
+            o.orderItems && o.orderItems.length > 0
+              ? o.orderItems.reduce((sum, item) => sum + (item.total || 0), 0)
+              : 0,
+          date: o.createdAt || "",
+          phoneNumber: o.phoneNumber || "unknown",
+          transactionId: o.payment_id || o.payment_Id || "unknown",
+        }));
+        setOrders(formattedOrders);
+      } catch (err) {
+        console.error(err);
+        setError("Failed to fetch orders.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const fetchAverageData = async () => {
+      try {
+        const res = await axios.get(
+          "http://dev-api.payonlive.com/api/order/orders-average"
+        );
+        if (res.data.success) {
+          setAverageData({
+            averageOrder: res.data.averages.lastDay,
+            deliveryRate: res.data.deliverySuccessRate.lastDay,
+          });
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchOrders();
+    fetchAverageData();
   }, []);
 
-  const handleClose = () => {
-    setAlertState((prev) => ({ ...prev, open: false }));
-    if (alertState.onConfirm) alertState.onConfirm();
+  // ✅ Filter + Sort + Tabs
+  const filteredOrders = useMemo(() => {
+    let result = [...orders];
+    if (search.trim()) {
+      const lowerSearch = search.toLowerCase();
+      result = result.filter(
+        (o) =>
+          o.customer.toLowerCase().includes(lowerSearch) ||
+          o.product.toLowerCase().includes(lowerSearch) ||
+          o.id.toString().toLowerCase().includes(lowerSearch)
+      );
+    }
+    if (activeTab === "active") {
+      result = result.filter(
+        (o) => o.payment === "Pending" || o.shipping === "Shipped"
+      );
+    } else if (activeTab === "archived") {
+      result = result.filter(
+        (o) => o.shipping === "Delivered" || o.shipping === "Cancelled"
+      );
+    }
+    if (filterPayment !== "all") {
+      result = result.filter((o) => o.payment === filterPayment);
+    }
+    result.sort((a, b) => {
+      const nameA = a.customer || "";
+      const nameB = b.customer || "";
+      return sortAsc ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
+    });
+    return result;
+  }, [orders, activeTab, filterPayment, sortAsc, search]);
+
+  const totalPages = Math.ceil(filteredOrders.length / ordersPerPage);
+  const currentOrders = filteredOrders.slice(
+    (currentPage - 1) * ordersPerPage,
+    currentPage * ordersPerPage
+  );
+
+  // ✅ Bulk delete logic
+  const handleSelectRow = (id) => {
+    setSelectedRows((prev) =>
+      prev.includes(id) ? prev.filter((row) => row !== id) : [...prev, id]
+    );
   };
 
-  const getIcon = (type) => {
-    switch (type) {
-      case "success":
-        return <CheckCircleIcon sx={{ color: "#4CAF50", fontSize: 40 }} />;
-      case "error":
-        return <ErrorIcon sx={{ color: "#F44336", fontSize: 40 }} />;
-      case "info":
-      default:
-        return <InfoIcon sx={{ color: "#2196F3", fontSize: 40 }} />;
+  const handleSelectAll = () => {
+    if (selectedRows.length === currentOrders.length) {
+      setSelectedRows([]);
+    } else {
+      setSelectedRows(currentOrders.map((o) => o.id));
     }
   };
 
+  const handleOpenConfirm = () => {
+    if (selectedRows.length === 0) return;
+    setConfirmOpen(true);
+  };
+
+  const handleCloseConfirm = () => setConfirmOpen(false);
+
+  const handleBulkDelete = async () => {
+  try {
+    setDeleting(true);
+
+    console.log("Deleting order IDs:", selectedRows); // Debug log
+
+    const response = await axios.post(
+      "http://dev-api.payonlive.com/api/order/bulk-delete",
+      { order_ids: selectedRows }, // ✅ Correct key name
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (response.data.success) {
+      // ✅ Remove deleted orders locally
+      setOrders((prev) => prev.filter((o) => !selectedRows.includes(o.id)));
+      setSelectedRows([]);
+      setConfirmOpen(false);
+    } else {
+      console.error("Delete failed:", response.data);
+      alert(response.data.message || "Failed to delete selected orders.");
+    }
+  } catch (error) {
+    console.error("Bulk delete error:", error.response || error);
+    alert("Failed to delete selected orders. Check console for details.");
+  } finally {
+    setDeleting(false);
+  }
+};
+
+
+  // ✅ Skeletons
+  const skeletonRows = Array.from({ length: ordersPerPage }).map((_, idx) => (
+    <tr key={idx} className="border-b">
+      {Array.from({ length: 7 }).map((_, i) => (
+        <td key={i} className="py-3 px-4">
+          <Skeleton animation="wave" />
+        </td>
+      ))}
+    </tr>
+  ));
+
+  const skeletonCard = (
+    <div className="bg-white rounded-lg shadow p-6 border">
+      <Skeleton animation="wave" variant="text" width="50%" height={30} />
+      <div className="flex gap-4 mt-4">
+        <Skeleton animation="wave" variant="rectangular" width={50} height={30} />
+        <Skeleton animation="wave" variant="rectangular" width={50} height={30} />
+        <Skeleton animation="wave" variant="rectangular" width={50} height={30} />
+      </div>
+    </div>
+  );
+
+  const skeletonRightPanel = (
+    <div className="col-span-3 bg-white rounded-lg shadow p-6">
+      <Skeleton animation="wave" variant="text" width="40%" height={25} />
+      <div className="space-y-2 mt-4">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <Skeleton key={i} animation="wave" variant="text" width="80%" />
+        ))}
+      </div>
+    </div>
+  );
+
+  if (error) return <p className="text-center mt-6 text-red-600">{error}</p>;
+
   return (
-    <AlertContext.Provider value={{ showAlert }}>
-      {children}
+    <div>
+      {/* Tabs + Filters + Search */}
+      <div className="flex justify-between items-center border-2 border-gray-300 px-6 mt-5 rounded-md p-2 mx-6">
+        <div className="flex gap-6">
+          <button
+            onClick={() => {
+              setActiveTab("all");
+              setCurrentPage(1);
+            }}
+            className={`flex items-center gap-2 text-sm px-2 pb-1 ${
+              activeTab === "all"
+                ? "text-black font-medium border-b-2 border-black"
+                : "text-gray-600 hover:text-black"
+            }`}
+          >
+            <FontAwesomeIcon icon={faCircleCheck} /> All
+          </button>
+          <button
+            onClick={() => {
+              setActiveTab("active");
+              setCurrentPage(1);
+            }}
+            className={`flex items-center gap-2 text-sm px-2 pb-1 ${
+              activeTab === "active"
+                ? "text-black font-medium border-b-2 border-black"
+                : "text-gray-600 hover:text-black"
+            }`}
+          >
+            <FontAwesomeIcon icon={faChartLine} /> Active
+          </button>
+          <button
+            onClick={() => {
+              setActiveTab("archived");
+              setCurrentPage(1);
+            }}
+            className={`flex items-center gap-2 text-sm px-2 pb-1 ${
+              activeTab === "archived"
+                ? "text-black font-medium border-b-2 border-black"
+                : "text-gray-600 hover:text-black"
+            }`}
+          >
+            <FontAwesomeIcon icon={faBoxArchive} /> Archived
+          </button>
+        </div>
 
-      <Dialog open={alertState.open} onClose={handleClose}>
-        <DialogTitle>
-          <Box display="flex" alignItems="center" gap={2}>
-            {getIcon(alertState.type)}
-            <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-              {alertState.type === "success"
-                ? "Success"
-                : alertState.type === "error"
-                ? "Error"
-                : "Info"}
-            </Typography>
-          </Box>
-        </DialogTitle>
+        <div className="flex gap-2">
+          <select
+            value={filterPayment}
+            onChange={(e) => {
+              setFilterPayment(e.target.value);
+              setCurrentPage(1);
+            }}
+            className="border border-gray-400 px-3 py-1.5 rounded-md text-sm text-gray-900"
+          >
+            <option value="all">All Payments</option>
+            <option value="Pending">Pending</option>
+            <option value="Paid">Paid</option>
+            <option value="Failed">Failed</option>
+          </select>
 
+          <button
+            onClick={() => setSortAsc(!sortAsc)}
+            className="border border-gray-400 px-3 py-1.5 rounded-md text-sm text-gray-900 hover:bg-gray-100"
+          >
+            Sort {sortAsc ? "A→Z" : "Z→A"}
+          </button>
+
+            {/* bulk delete button */}
+           <button
+                onClick={handleOpenConfirm}
+                disabled={selectedRows.length === 0 || deleting}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-white transition ${
+                  selectedRows.length === 0 || deleting
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-red-600 hover:bg-red-700"
+                }`}
+              >
+                {deleting ? (
+                  <CircularProgress size={18} color="inherit" />
+                ) : (
+                  <>
+                    <FontAwesomeIcon icon={faTrash} />
+                    Delete Selected ({selectedRows.length})
+                  </>
+                )}
+              </button>
+        </div>
+      </div>
+
+      {/* Search bar */}
+      <div className="flex gap-2 mx-6 relative mt-5">
+        <FontAwesomeIcon icon={faSearch} className="absolute left-3 top-3 text-gray-400" />
+        <input
+          type="text"
+          placeholder="Search"
+          value={search}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setCurrentPage(1);
+          }}
+          className="w-full pl-10 pr-4 py-2 rounded-md border border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+
+      {/* Orders Table + Right Panel */}
+      <div className="p-6 bg-gray-50 min-h-screen">
+        <div className="grid grid-cols-12 gap-4">
+          <div
+            className={`bg-white rounded-lg shadow p-4 transition-all duration-300 ${
+              selectedOrder ? "col-span-9" : "col-span-12"
+            }`}
+          >
+           
+
+            <table className="w-full text-sm text-left border-collapse">
+              <thead>
+                <tr className="border-b text-gray-600">
+                  <th className="py-3 px-4">
+                    <input
+                      type="checkbox"
+                      checked={
+                        selectedRows.length === currentOrders.length &&
+                        currentOrders.length > 0
+                      }
+                      onChange={handleSelectAll}
+                    />
+                  </th>
+                  <th className="py-3 px-4">Order ID</th>
+                  <th className="py-3 px-4">Customer</th>
+                  <th className="py-3 px-4">Product</th>
+                  <th className="py-3 px-4">Payment Status</th>
+                  <th className="py-3 px-4">Shipping Status</th>
+                  <th className="py-3 px-4">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {loading
+                  ? skeletonRows
+                  : currentOrders.length > 0
+                  ? currentOrders.map((order) => (
+                      <tr
+                        key={order.id}
+                        className={`border-b hover:bg-gray-50 ${
+                          selectedRows.includes(order.id)
+                            ? "bg-red-50"
+                            : ""
+                        }`}
+                      >
+                        <td className="py-3 px-4">
+                          <input
+                            type="checkbox"
+                            checked={selectedRows.includes(order.id)}
+                            onChange={() => handleSelectRow(order.id)}
+                          />
+                        </td>
+                        <td className="py-3 px-4 font-medium">{order.id}</td>
+                        <td className="py-3 px-4">{order.customer}</td>
+                        <td className="py-3 px-4">{order.product}</td>
+                        <td className="py-3 px-4">
+                          <span
+                            className={`px-3 py-1 rounded-full text-xs font-medium ${
+                              statusColors[order.payment]
+                            }`}
+                          >
+                            {order.payment}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4">
+                          <span
+                            className={`px-3 py-1 rounded-full text-xs font-medium ${
+                              statusColors[order.shipping]
+                            }`}
+                          >
+                            {order.shipping}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-gray-500">
+                          <button
+                            onClick={() => setSelectedOrder(order)}
+                            className="hover:text-black"
+                          >
+                            <FontAwesomeIcon icon={faAngleRight} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  : (
+                    <tr>
+                      <td colSpan="7" className="text-center py-6 text-gray-500 italic">
+                        No matching results
+                      </td>
+                    </tr>
+                  )}
+              </tbody>
+            </table>
+
+            {/* Pagination */}
+            <div className="flex justify-between items-center mt-4">
+              <button
+                onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                disabled={currentPage === 1}
+                className="px-3 py-1 text-sm border rounded disabled:opacity-50"
+              >
+                <FontAwesomeIcon icon={faChevronLeft} /> Previous
+              </button>
+              <div className="space-x-2">
+                {Array.from({ length: totalPages }).map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setCurrentPage(idx + 1)}
+                    className={`px-3 py-1 text-sm border rounded ${
+                      currentPage === idx + 1 ? "bg-black text-white" : ""
+                    }`}
+                  >
+                    {idx + 1}
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={() =>
+                  setCurrentPage((p) => Math.min(p + 1, totalPages))
+                }
+                disabled={currentPage === totalPages}
+                className="px-3 py-1 text-sm border rounded disabled:opacity-50"
+              >
+                Next <FontAwesomeIcon icon={faChevronRight} />
+              </button>
+            </div>
+
+            {/* Bottom Cards */}
+            <div className="grid grid-cols-2 lg:w-3xl gap-6 mt-16 mx-auto">
+              {loading ? (
+                <>
+                  {skeletonCard}
+                  {skeletonCard}
+                </>
+              ) : (
+                <>
+                  <div className="bg-white rounded-lg shadow p-6 border">
+                    <h3 className="font-semibold text-gray-800">
+                      TikTok Live Event
+                    </h3>
+                    <div className="flex gap-8 mt-6 text-sm font-medium text-gray-700">
+                      <button className="hover:text-black">Day</button>
+                      <button className="hover:text-black">Week</button>
+                      <button className="hover:text-black">Month</button>
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-lg shadow p-6 border flex items-center justify-between">
+                    <div>
+                      <h3 className="font-semibold text-sm text-gray-800 mb-2">
+                        Average Order value
+                      </h3>
+                      <p className="text-2xl font-bold mt-2">
+                        €{averageData.averageOrder}
+                      </p>
+                      <p className="text-gray-600 text-sm mt-2">
+                        Average Order value
+                      </p>
+                    </div>
+
+                    <div className="w-px bg-gray-300 h-16 mx-6"></div>
+
+                    <div className="text-sm text-gray-700">
+                      <p className="font-medium">Delivery status</p>
+                      <p className="mt-8">
+                        Delivered :{" "}
+                        <span className="font-semibold">
+                          {averageData.deliveryRate}
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Right panel */}
+          {loading
+            ? skeletonRightPanel
+            : selectedOrder && (
+                <div className="col-span-3 bg-white rounded-lg shadow p-6 transition-all duration-300">
+                  <div className="flex justify-between items-center border-b pb-3">
+                    <h2 className="text-md font-medium">
+                      Order {selectedOrder.id}
+                    </h2>
+                    <button
+                      className="underline"
+                      onClick={() =>
+                        navigate(`/user/view-order/${selectedOrder.id}`)
+                      }
+                    >
+                      View Details
+                    </button>
+                    <button
+                      onClick={() => setSelectedOrder(null)}
+                      className="text-gray-500 hover:text-black"
+                    >
+                      <FontAwesomeIcon icon={faTimes} />
+                    </button>
+                  </div>
+
+                  <div className="mt-4 text-xs text-gray-700 space-y-2">
+                    <p>
+                      <strong>Order ID:</strong> {selectedOrder.id}
+                    </p>
+                    <p>
+                      <strong>Date:</strong>{" "}
+                      {selectedOrder.date || "20/08/2025"}
+                    </p>
+                    <p>
+                      <strong>Order amount:</strong> €{" "}
+                      {selectedOrder.amount || "28.23"}
+                    </p>
+                    <p>
+                      <strong>Status:</strong> {selectedOrder.payment}
+                    </p>
+                  </div>
+
+                  <hr className="my-4" />
+
+                  <div className="text-xs text-gray-700 space-y-2">
+                    <h3 className="font-bold text-sm text-gray-800">
+                      Customer Info
+                    </h3>
+                    <p>
+                      <strong>Name:</strong> {selectedOrder.customer}{" "}
+                    </p>
+                    <p>
+                      <strong>Email:</strong>{" "}
+                      {selectedOrder.customer.toLowerCase()}@gmail.com
+                    </p>
+                    <p>
+                      <strong>Phone:</strong> {selectedOrder.phoneNumber}
+                    </p>
+                  </div>
+
+                  <hr className="my-4" />
+
+                  <div className="text-xs text-gray-700 space-y-2">
+                    <h3 className="font-bold text-sm text-gray-800">
+                      Payment Info
+                    </h3>
+                    <p>
+                      <strong>Method:</strong> Stripe
+                    </p>
+                    <p>
+                      <strong>Status: </strong> {selectedOrder.payment}
+                    </p>
+                    <p>
+                      <strong>Transaction ID:</strong>{" "}
+                      {selectedOrder.transactionId}
+                    </p>
+                  </div>
+                </div>
+              )}
+        </div>
+      </div>
+
+      {/* ✅ Confirmation Modal */}
+      <Dialog open={confirmOpen} onClose={handleCloseConfirm}>
+        <DialogTitle>Confirm Bulk Delete</DialogTitle>
         <DialogContent>
-          <Typography sx={{ mt: 1 }}>{alertState.message}</Typography>
+          <DialogContentText>
+            Are you sure you want to delete{" "}
+            <strong>{selectedRows.length}</strong> selected orders? This action
+            cannot be undone.
+          </DialogContentText>
         </DialogContent>
-
         <DialogActions>
-          <Button onClick={handleClose} variant="contained">
-            OK
+          <Button onClick={handleCloseConfirm} color="primary">
+            Cancel
+          </Button>
+          <Button
+            onClick={handleBulkDelete}
+            color="error"
+            variant="contained"
+            disabled={deleting}
+          >
+            {deleting ? (
+              <CircularProgress size={18} color="inherit" />
+            ) : (
+              "Delete"
+            )}
           </Button>
         </DialogActions>
       </Dialog>
-    </AlertContext.Provider>
-  );
-};
-
-export const useAlert = () => useContext(AlertContext);
-
-
-
-
-
-
-
-// navbar code 
-import { useState } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBell, faChevronDown } from "@fortawesome/free-solid-svg-icons";
-import { useNavigate } from "react-router-dom";
-
-function Navbar(props) {
-  const [isOpen, setIsOpen] = useState(false);
-  const navigate = useNavigate();
-
-  // 🔐 Logout handler
-  const handleLogout = () => {
-    // Remove token and any stored user info
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-
-    // Close dropdown
-    setIsOpen(false);
-
-    // Redirect to login
-    navigate("/login");
-  };
-
-  return (
-    <div>
-      <nav className="w-full bg-white border-b border-gray-400 px-6 py-3 flex items-center justify-between">
-        {/* Left Section */}
-        <div>
-          <h1 className="text-lg font-semibold text-gray-900">
-            {props.heading}
-          </h1>
-        </div>
-
-        {/* Right Section */}
-        <div className="flex items-center space-x-6">
-          {/* Notification Icon */}
-          <button className="text-gray-600 hover:text-gray-800">
-            <FontAwesomeIcon icon={faBell} size="lg" />
-          </button>
-
-          {/* Profile Section */}
-          <div className="relative">
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className="flex items-center space-x-2 focus:outline-none"
-            >
-              <img
-                src="https://png.pngtree.com/png-clipart/20231019/original/pngtree-user-profile-avatar-png-image_13369991.png"
-                alt="User"
-                className="w-8 h-8 rounded-full"
-              />
-              <span className="font-medium text-sm">Louis G</span>
-              <FontAwesomeIcon icon={faChevronDown} className="text-gray-500" />
-            </button>
-
-            {/* Dropdown Menu */}
-            {isOpen && (
-              <div className="absolute right-0 mt-2 w-40 bg-gray-100 border border-gray-400 rounded-lg shadow-lg py-2 z-50">
-                <button
-                  onClick={() => setIsOpen(false)}
-                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                >
-                  Profile
-                </button>
-
-                <button
-                  onClick={() => setIsOpen(false)}
-                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                >
-                  Settings
-                </button>
-
-                <button
-                  onClick={handleLogout}
-                  className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
-                >
-                  Logout
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      </nav>
     </div>
   );
 }
 
-export default Navbar;
+

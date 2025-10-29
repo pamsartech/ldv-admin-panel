@@ -11,8 +11,9 @@ import {
   faChevronLeft,
   faChevronRight,
   faTimes,
+  faTrash,
 } from "@fortawesome/free-solid-svg-icons";
-import { Skeleton } from "@mui/material";
+import { Skeleton, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button } from "@mui/material";
 
 const statusColors = {
   Pending: "bg-yellow-100 text-yellow-700 border border-yellow-300",
@@ -37,6 +38,9 @@ export default function OrdersDataTable() {
   const [filterPayment, setFilterPayment] = useState("all");
   const [sortAsc, setSortAsc] = useState(true);
   const [search, setSearch] = useState("");
+  const [selectedRows, setSelectedRows] = useState([]);
+  const [deleting, setDeleting] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const ordersPerPage = 8;
 
   const [averageData, setAverageData] = useState({
@@ -44,7 +48,7 @@ export default function OrdersDataTable() {
     deliveryRate: "0%",
   });
 
-  // Fetch orders + average data
+  // ✅ Fetch orders + average data
   useEffect(() => {
     const fetchOrders = async () => {
       setLoading(true);
@@ -100,7 +104,7 @@ export default function OrdersDataTable() {
     fetchAverageData();
   }, []);
 
-  // Filter + Sort + Tabs
+  // ✅ Filter + Sort + Tabs
   const filteredOrders = useMemo(() => {
     let result = [...orders];
     if (search.trim()) {
@@ -138,10 +142,66 @@ export default function OrdersDataTable() {
     currentPage * ordersPerPage
   );
 
-  // Skeletons
+  // ✅ Bulk delete logic
+  const handleSelectRow = (id) => {
+    setSelectedRows((prev) =>
+      prev.includes(id) ? prev.filter((row) => row !== id) : [...prev, id]
+    );
+  };
+
+  const handleSelectAll = () => {
+    if (selectedRows.length === currentOrders.length) {
+      setSelectedRows([]);
+    } else {
+      setSelectedRows(currentOrders.map((o) => o.id));
+    }
+  };
+
+  const handleOpenConfirm = () => {
+    if (selectedRows.length === 0) return;
+    setConfirmOpen(true);
+  };
+
+  const handleCloseConfirm = () => setConfirmOpen(false);
+
+  const handleBulkDelete = async () => {
+  try {
+    setDeleting(true);
+
+    console.log("Deleting order IDs:", selectedRows); // Debug log
+
+    const response = await axios.post(
+      "http://dev-api.payonlive.com/api/order/bulk-delete",
+      { order_ids: selectedRows }, // ✅ Correct key name
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (response.data.success) {
+      // ✅ Remove deleted orders locally
+      setOrders((prev) => prev.filter((o) => !selectedRows.includes(o.id)));
+      setSelectedRows([]);
+      setConfirmOpen(false);
+    } else {
+      console.error("Delete failed:", response.data);
+      alert(response.data.message || "Failed to delete selected orders.");
+    }
+  } catch (error) {
+    console.error("Bulk delete error:", error.response || error);
+    alert("Failed to delete selected orders. Check console for details.");
+  } finally {
+    setDeleting(false);
+  }
+};
+
+
+  // ✅ Skeletons
   const skeletonRows = Array.from({ length: ordersPerPage }).map((_, idx) => (
     <tr key={idx} className="border-b">
-      {Array.from({ length: 6 }).map((_, i) => (
+      {Array.from({ length: 7 }).map((_, i) => (
         <td key={i} className="py-3 px-4">
           <Skeleton animation="wave" />
         </td>
@@ -218,6 +278,7 @@ export default function OrdersDataTable() {
             <FontAwesomeIcon icon={faBoxArchive} /> Archived
           </button>
         </div>
+
         <div className="flex gap-2">
           <select
             value={filterPayment}
@@ -232,21 +293,39 @@ export default function OrdersDataTable() {
             <option value="Paid">Paid</option>
             <option value="Failed">Failed</option>
           </select>
+
           <button
             onClick={() => setSortAsc(!sortAsc)}
             className="border border-gray-400 px-3 py-1.5 rounded-md text-sm text-gray-900 hover:bg-gray-100"
           >
             Sort {sortAsc ? "A→Z" : "Z→A"}
           </button>
+
+            {/* bulk delete button */}
+           <button
+                onClick={handleOpenConfirm}
+                disabled={selectedRows.length === 0 || deleting}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-white transition ${
+                  selectedRows.length === 0 || deleting
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-red-600 hover:bg-red-700"
+                }`}
+              >
+                {deleting ? (
+                  <CircularProgress size={18} color="inherit" />
+                ) : (
+                  <>
+                    <FontAwesomeIcon icon={faTrash} />
+                    Delete Selected ({selectedRows.length})
+                  </>
+                )}
+              </button>
         </div>
       </div>
 
-      {/* search bar code */}
+      {/* Search bar */}
       <div className="flex gap-2 mx-6 relative mt-5">
-        <FontAwesomeIcon
-          icon={faSearch}
-          className="absolute left-3 top-3 text-gray-400"
-        />
+        <FontAwesomeIcon icon={faSearch} className="absolute left-3 top-3 text-gray-400" />
         <input
           type="text"
           placeholder="Search"
@@ -267,9 +346,21 @@ export default function OrdersDataTable() {
               selectedOrder ? "col-span-9" : "col-span-12"
             }`}
           >
+           
+
             <table className="w-full text-sm text-left border-collapse">
               <thead>
                 <tr className="border-b text-gray-600">
+                  <th className="py-3 px-4">
+                    <input
+                      type="checkbox"
+                      checked={
+                        selectedRows.length === currentOrders.length &&
+                        currentOrders.length > 0
+                      }
+                      onChange={handleSelectAll}
+                    />
+                  </th>
                   <th className="py-3 px-4">Order ID</th>
                   <th className="py-3 px-4">Customer</th>
                   <th className="py-3 px-4">Product</th>
@@ -279,52 +370,63 @@ export default function OrdersDataTable() {
                 </tr>
               </thead>
               <tbody>
-                {loading ? (
-                  skeletonRows
-                ) : currentOrders.length > 0 ? (
-                  currentOrders.map((order) => (
-                    <tr key={order.id} className="border-b hover:bg-gray-50">
-                      <td className="py-3 px-4 font-medium">{order.id}</td>
-                      <td className="py-3 px-4">{order.customer}</td>
-                      <td className="py-3 px-4">{order.product}</td>
-                      <td className="py-3 px-4">
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-medium ${
-                            statusColors[order.payment]
-                          }`}
-                        >
-                          {order.payment}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4">
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-medium ${
-                            statusColors[order.shipping]
-                          }`}
-                        >
-                          {order.shipping}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4 text-gray-500">
-                        <button
-                          onClick={() => setSelectedOrder(order)}
-                          className="hover:text-black"
-                        >
-                          <FontAwesomeIcon icon={faAngleRight} />
-                        </button>
+                {loading
+                  ? skeletonRows
+                  : currentOrders.length > 0
+                  ? currentOrders.map((order) => (
+                      <tr
+                        key={order.id}
+                        className={`border-b hover:bg-gray-50 ${
+                          selectedRows.includes(order.id)
+                            ? "bg-red-50"
+                            : ""
+                        }`}
+                      >
+                        <td className="py-3 px-4">
+                          <input
+                            type="checkbox"
+                            checked={selectedRows.includes(order.id)}
+                            onChange={() => handleSelectRow(order.id)}
+                          />
+                        </td>
+                        <td className="py-3 px-4 font-medium">{order.id}</td>
+                        <td className="py-3 px-4">{order.customer}</td>
+                        <td className="py-3 px-4">{order.product}</td>
+                        <td className="py-3 px-4">
+                          <span
+                            className={`px-3 py-1 rounded-full text-xs font-medium ${
+                              statusColors[order.payment]
+                            }`}
+                          >
+                            {order.payment}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4">
+                          <span
+                            className={`px-3 py-1 rounded-full text-xs font-medium ${
+                              statusColors[order.shipping]
+                            }`}
+                          >
+                            {order.shipping}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-gray-500">
+                          <button
+                            onClick={() => setSelectedOrder(order)}
+                            className="hover:text-black"
+                          >
+                            <FontAwesomeIcon icon={faAngleRight} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  : (
+                    <tr>
+                      <td colSpan="7" className="text-center py-6 text-gray-500 italic">
+                        No matching results
                       </td>
                     </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td
-                      colSpan="6"
-                      className="text-center py-6 text-gray-500 italic"
-                    >
-                      No matching results
-                    </td>
-                  </tr>
-                )}
+                  )}
               </tbody>
             </table>
 
@@ -416,7 +518,6 @@ export default function OrdersDataTable() {
             ? skeletonRightPanel
             : selectedOrder && (
                 <div className="col-span-3 bg-white rounded-lg shadow p-6 transition-all duration-300">
-                  {/* Selected Order info panel */}
                   <div className="flex justify-between items-center border-b pb-3">
                     <h2 className="text-md font-medium">
                       Order {selectedOrder.id}
@@ -442,10 +543,12 @@ export default function OrdersDataTable() {
                       <strong>Order ID:</strong> {selectedOrder.id}
                     </p>
                     <p>
-                      <strong>Date:</strong> {selectedOrder.date || "20/08/2025"}
+                      <strong>Date:</strong>{" "}
+                      {selectedOrder.date || "20/08/2025"}
                     </p>
                     <p>
-                      <strong>Order amount:</strong> € {selectedOrder.amount || "28.23"}
+                      <strong>Order amount:</strong> €{" "}
+                      {selectedOrder.amount || "28.23"}
                     </p>
                     <p>
                       <strong>Status:</strong> {selectedOrder.payment}
@@ -491,6 +594,36 @@ export default function OrdersDataTable() {
               )}
         </div>
       </div>
+
+      {/* ✅ Confirmation Modal */}
+      <Dialog open={confirmOpen} onClose={handleCloseConfirm}>
+        <DialogTitle>Confirm Bulk Delete</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete{" "}
+            <strong>{selectedRows.length}</strong> selected orders? This action
+            cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseConfirm} color="primary">
+            Cancel
+          </Button>
+          <Button
+            onClick={handleBulkDelete}
+            color="error"
+            variant="contained"
+            disabled={deleting}
+          >
+            {deleting ? (
+              <CircularProgress size={18} color="inherit" />
+            ) : (
+              "Delete"
+            )}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 }
+
