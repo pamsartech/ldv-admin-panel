@@ -178,7 +178,7 @@ function Products() {
                     </p>
                   </div>
                 </div>
-                <span className="font-semibold">₹{product.price || 0}</span>
+                <span className="font-semibold">€{product.price || 0}</span>
               </li>
             ))}
           </ul>

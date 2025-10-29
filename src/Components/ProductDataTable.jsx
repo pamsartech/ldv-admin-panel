@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
+  faTrash,
   faSearch,
   faChevronLeft,
   faChevronRight,
@@ -11,6 +12,16 @@ import {
   faChartLine,
   faChevronDown,
 } from "@fortawesome/free-solid-svg-icons";
+import {
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Button,
+  CircularProgress,
+} from "@mui/material";
+
 import axios from "axios";
 import { Skeleton } from "@mui/material";
 import namer from "color-namer";
@@ -21,6 +32,8 @@ export default function ProductTable() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const [activeTab, setActiveTab] = useState("all");
   const [selected, setSelected] = useState([]);
@@ -37,11 +50,10 @@ export default function ProductTable() {
 
   const getImageUrl = (img) => {
     if (!img) return "/placeholder-image.png";
-    return img.startsWith("http")
-      ? img
-      : `http://dev-api.payonlive.com${img}`;
-      // `https://la-dolce-vita.onrender.com${img}`;
+    return img.startsWith("http") ? img : `http://dev-api.payonlive.com${img}`;
+    // `https://la-dolce-vita.onrender.com${img}`;
   };
+
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -172,6 +184,43 @@ export default function ProductTable() {
     <Skeleton variant="rectangular" height={40} width="100%" animation="wave" />
   );
 
+  // 🔸 Open confirmation dialog
+  const handleOpenConfirm = () => {
+    if (selected.length === 0) {
+      alert("Please select at least one product to delete.");
+      return;
+    }
+    setConfirmOpen(true);
+  };
+
+  // 🔸 Close dialog
+  const handleCloseConfirm = () => {
+    setConfirmOpen(false);
+  };
+
+  // 🔸 Bulk delete selected products
+  const handleBulkDelete = async () => {
+    try {
+      setDeleteLoading(true);
+      await axios.post(
+        "http://dev-api.payonlive.com/api/product/bulk-delete",
+        {
+         product_ids: selected,
+        }
+      );
+
+      // Remove deleted items locally
+      setProducts((prev) => prev.filter((p) => !selected.includes(p._id)));
+      setSelected([]);
+      setConfirmOpen(false);
+    } catch (err) {
+      console.error("Bulk delete failed:", err);
+      alert("Failed to delete selected products.");
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
   // ============================
   // 🔸 UI Rendering
   // ============================
@@ -228,7 +277,7 @@ export default function ProductTable() {
         </div>
 
         {/* Filter & Sort */}
-        <div className="flex gap-2 relative">
+        <div className="flex gap-2">
           {loading ? (
             <>
               <Skeleton width={70} height={35} animation="wave" />
@@ -237,7 +286,7 @@ export default function ProductTable() {
           ) : (
             <>
               {/* Filter Dropdown */}
-              <div className="relative">
+              <div className=" relative">
                 <button
                   onClick={() => setShowFilter((prev) => !prev)}
                   className="flex items-center gap-2 border border-gray-400 px-3 py-1.5 rounded-md text-sm text-gray-900 hover:bg-gray-100 transition"
@@ -301,6 +350,29 @@ export default function ProductTable() {
                     </div>
                   </div>
                 )}
+              </div>
+
+
+             {/* bulk delete button */}
+              <div className=" relative">
+                <button
+                  onClick={handleOpenConfirm}
+                  disabled={selected.length === 0 || deleteLoading}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-white transition ${
+                    selected.length === 0 || deleteLoading
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-red-600 hover:bg-red-700"
+                  }`}
+                >
+                  {deleteLoading ? (
+                    <CircularProgress size={18} color="inherit" />
+                  ) : (
+                    <>
+                      <FontAwesomeIcon icon={faTrash} />
+                      Delete Selected ({selected.length})
+                    </>
+                  )}
+                </button>
               </div>
             </>
           )}
@@ -491,6 +563,38 @@ export default function ProductTable() {
           </div>
         </>
       )}
+
+      {/* Material UI Confirmation Dialog */}
+      <Dialog
+        open={confirmOpen}
+        onClose={handleCloseConfirm}
+        aria-labelledby="confirm-delete-title"
+      >
+        <DialogTitle id="confirm-delete-title">Confirm Bulk Delete</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete <strong>{selected.length}</strong>{" "}
+            selected product(s)? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseConfirm} color="inherit">
+            Cancel
+          </Button>
+          <Button
+            onClick={handleBulkDelete}
+            color="error"
+            variant="contained"
+            disabled={deleteLoading}
+          >
+            {deleteLoading ? (
+              <CircularProgress size={20} color="inherit" />
+            ) : (
+              "Delete"
+            )}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 }

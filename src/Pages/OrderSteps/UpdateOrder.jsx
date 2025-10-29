@@ -1,8 +1,13 @@
-import React, { useState, useMemo , useEffect } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Navbar from "../../Components/Navbar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus, faTrash, faXmark } from "@fortawesome/free-solid-svg-icons";
+import {
+  faPlus,
+  faTrash,
+  faXmark,
+  faClipboard,
+} from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
 import { useAlert } from "../../Components/AlertContext";
 
@@ -11,7 +16,7 @@ const UpdateOrder = () => {
   const { showAlert } = useAlert();
   const location = useLocation();
   const existingOrder = location.state?.orderData;
-  const[loading , setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   // if (!existingOrder) {
   //   // If no data passed, redirect back
@@ -19,11 +24,10 @@ const UpdateOrder = () => {
   // }
 
   useEffect(() => {
-  if (!existingOrder) {
-    navigate("/Orders");
-  }
-}, [existingOrder, navigate]);
-
+    if (!existingOrder) {
+      navigate("/Orders");
+    }
+  }, [existingOrder, navigate]);
 
   const [orderData, setOrderData] = useState({
     customerName: existingOrder.customerName || "",
@@ -37,10 +41,10 @@ const UpdateOrder = () => {
   });
 
   const [orderItems, setOrderItems] = useState(
-    existingOrder.orderItems?.map(item => ({
+    existingOrder.orderItems?.map((item) => ({
       productName: item.productName,
       quantity: item.quantity,
-      price: item.price
+      price: item.price,
     })) || [{ productName: "", quantity: 1, price: 0 }]
   );
 
@@ -62,39 +66,44 @@ const UpdateOrder = () => {
     setOrderItems(orderItems.filter((_, i) => i !== index));
   };
 
- const handleUpdate = async (e) => {
-  e.preventDefault();
-  setLoading(true);
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+    setLoading(true);
 
-  try {
-    // Include _id in payload just in case backend needs it
-    const payload = { ...orderData, orderItems, _id: existingOrder._id };
+    try {
+      // Include _id in payload just in case backend needs it
+      const payload = { ...orderData };
 
-    const response = await axios.put(
-      `http://dev-api.payonlive.com/api/order/update-order/${existingOrder._id}`,
-      payload,
-      {
-        headers: {
-          "Content-Type": "application/json",
-          // Authorization: `Bearer ${token}`,
-        },
+      const response = await axios.put(
+        `http://dev-api.payonlive.com/api/order/update-order/${existingOrder._id}`,
+        payload,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            // Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.status === 200 && response.data.success) {
+        showAlert("Order updated successfully!", "success");
+        navigate("/user/Orders");
+      } else {
+        showAlert("Failed to update order. Please try again.", "error");
+        setLoading(false); // 🔹 Stop spinner on failed response
       }
-    );
-
-    if (response.status === 200 && response.data.success) {
-      showAlert("Order updated successfully!", "success");
-      navigate("/user/Orders");
-    } else {
-      showAlert("Failed to update order. Please try again.", "error");
-      setLoading(false); // 🔹 Stop spinner on failed response
+    } catch (err) {
+      console.error("❌ Error updating order:", err);
+      showAlert("Server error. Please try again.", "error");
+      setLoading(false); // 🔹 Stop spinner if an exception occurs
     }
-  } catch (err) {
-    console.error("❌ Error updating order:", err);
-    showAlert("Server error. Please try again.", "error");
-    setLoading(false); // 🔹 Stop spinner if an exception occurs
-  }
-};
+  };
 
+  //  const handleCopyLink = () => {
+  //     navigator.clipboard.writeText(orderData.trackLink);
+  //     setPopupMessage("TikTok live event link copied to clipboard!");
+  //     setShowPopup(true);
+  //   };
 
   // Calculate order summary
   const summary = useMemo(() => {
@@ -119,7 +128,11 @@ const UpdateOrder = () => {
           onClick={() => navigate("/user/Orders")}
           className="px-3 py-1 border border-red-700 text-red-700 bg-red-50 rounded-md hover:bg-gray-100"
         >
-          <FontAwesomeIcon icon={faXmark} size="lg" className="text-red-700 px-2" />
+          <FontAwesomeIcon
+            icon={faXmark}
+            size="lg"
+            className="text-red-700 px-2"
+          />
           Discard
         </button>
       </div>
@@ -133,7 +146,10 @@ const UpdateOrder = () => {
           <h2 className="text-lg font-semibold">Customer Info</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div>
-              <label htmlFor="customerName" className="block mb-1 text-sm font-medium text-gray-600">
+              <label
+                htmlFor="customerName"
+                className="block mb-1 text-sm font-medium text-gray-600"
+              >
                 Customer Name
               </label>
               <input
@@ -147,7 +163,10 @@ const UpdateOrder = () => {
               />
             </div>
             <div>
-              <label htmlFor="email" className="block mb-1 text-sm font-medium text-gray-600">
+              <label
+                htmlFor="email"
+                className="block mb-1 text-sm font-medium text-gray-600"
+              >
                 Email
               </label>
               <input
@@ -161,7 +180,10 @@ const UpdateOrder = () => {
               />
             </div>
             <div>
-              <label htmlFor="phoneNumber" className="block mb-1 text-sm font-medium text-gray-600">
+              <label
+                htmlFor="phoneNumber"
+                className="block mb-1 text-sm font-medium text-gray-600"
+              >
                 Phone number
               </label>
               <input
@@ -175,7 +197,10 @@ const UpdateOrder = () => {
               />
             </div>
             <div>
-              <label htmlFor="address" className="block mb-1 text-sm font-medium text-gray-600">
+              <label
+                htmlFor="address"
+                className="block mb-1 text-sm font-medium text-gray-600"
+              >
                 Shipping address
               </label>
               <input
@@ -205,7 +230,10 @@ const UpdateOrder = () => {
           </div>
 
           {orderItems.map((item, idx) => (
-            <div key={idx} className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center py-3 border-b border-gray-400 last:border-b-0">
+            <div
+              key={idx}
+              className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center py-3 border-b border-gray-400 last:border-b-0"
+            >
               {/* <div className="md:col-span-5">
                 <select
                   required
@@ -222,20 +250,22 @@ const UpdateOrder = () => {
                 
                 </select>
               </div> */}
-               <div className="md:col-span-5">
-               <label className="block mb-1 text-sm font-medium">
+              <div className="md:col-span-5">
+                <label className="block mb-1 text-sm font-medium">
                   Product Name
                 </label>
-              <input
-                required
-                id="address"
-                type="text"
-                value={item.productName}
-                  onChange={(e) => handleProductChange(idx, "productName", e.target.value)}
-                placeholder="123, main city, state, 12323"
-                className="w-full rounded-lg border border-gray-300 px-2 py-2 text-sm"
-              />
-            </div>
+                <input
+                  required
+                  id="address"
+                  type="text"
+                  value={item.productName}
+                  onChange={(e) =>
+                    handleProductChange(idx, "productName", e.target.value)
+                  }
+                  placeholder="123, main city, state, 12323"
+                  className="w-full rounded-lg border border-gray-300 px-2 py-2 text-sm"
+                />
+              </div>
               <div className="md:col-span-1 text-center">
                 <label className="block mb-1 text-sm font-medium">
                   Quantity
@@ -245,21 +275,31 @@ const UpdateOrder = () => {
                   type="number"
                   min="1"
                   value={item.quantity}
-                  onChange={(e) => handleProductChange(idx, "quantity", parseInt(e.target.value))}
+                  onChange={(e) =>
+                    handleProductChange(
+                      idx,
+                      "quantity",
+                      parseInt(e.target.value)
+                    )
+                  }
                   className="w-full text-center rounded-lg border border-gray-300 px-2 py-1 text-sm"
                 />
               </div>
               <div className="md:col-span-2 text-center">
-                <label className="block mb-1 text-sm font-medium">
-                  Price
-                </label>
+                <label className="block mb-1 text-sm font-medium">Price</label>
                 <input
                   required
                   type="number"
                   min="0.01"
                   step="0.01"
                   value={item.price}
-                  onChange={(e) => handleProductChange(idx, "price", parseFloat(e.target.value))}
+                  onChange={(e) =>
+                    handleProductChange(
+                      idx,
+                      "price",
+                      parseFloat(e.target.value)
+                    )
+                  }
                   className="w-full text-center rounded-lg border border-gray-300 px-2 py-1 text-sm"
                 />
               </div>
@@ -279,8 +319,15 @@ const UpdateOrder = () => {
               </div>
 
               <div className="md:col-span-2 flex justify-center">
-                <button type="button" onClick={() => removeProduct(idx)} className="w-8 h-8 flex justify-center items-center rounded-full hover:bg-red-100">
-                  <FontAwesomeIcon icon={faTrash} className="text-red-600 text-sm" />
+                <button
+                  type="button"
+                  onClick={() => removeProduct(idx)}
+                  className="w-8 h-8 flex justify-center items-center rounded-full hover:bg-red-100"
+                >
+                  <FontAwesomeIcon
+                    icon={faTrash}
+                    className="text-red-600 text-sm"
+                  />
                 </button>
               </div>
             </div>
@@ -290,7 +337,12 @@ const UpdateOrder = () => {
         {/* Payment & Shipping */}
         <section className="border border-gray-400 rounded-lg p-6 grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div>
-            <label htmlFor="paymentMethod" className="block mb-1 text-sm font-medium text-gray-600">Payment Method</label>
+            <label
+              htmlFor="paymentMethod"
+              className="block mb-1 text-sm font-medium text-gray-600"
+            >
+              Payment Method
+            </label>
             <select
               required
               id="paymentMethod"
@@ -299,14 +351,18 @@ const UpdateOrder = () => {
               className="w-full rounded-lg border border-gray-400 px-3 py-2 text-sm"
             >
               <option value="">Select Payment method</option>
-              <option>Credit Card</option>
-              <option>Paypal</option>
-              <option>Bank Transfer</option>
-              <option>UPI</option>
+
+              <option value="paypal">Paypal</option>
+              <option value="stripe">Stripe</option>
             </select>
           </div>
           <div>
-            <label htmlFor="paymentStatus" className="block mb-1 text-sm font-medium text-gray-600">Payment Status</label>
+            <label
+              htmlFor="paymentStatus"
+              className="block mb-1 text-sm font-medium text-gray-600"
+            >
+              Payment Status
+            </label>
             <select
               required
               id="paymentStatus"
@@ -321,7 +377,12 @@ const UpdateOrder = () => {
             </select>
           </div>
           <div>
-            <label htmlFor="shippingMethod" className="block mb-1 text-sm font-medium text-gray-600">Shipping Method</label>
+            <label
+              htmlFor="shippingMethod"
+              className="block mb-1 text-sm font-medium text-gray-600"
+            >
+              Shipping Method
+            </label>
             <select
               required
               id="shippingMethod"
@@ -337,7 +398,12 @@ const UpdateOrder = () => {
             </select>
           </div>
           <div>
-            <label htmlFor="shippingStatus" className="block mb-1 text-sm font-medium text-gray-600">Shipping Status</label>
+            <label
+              htmlFor="shippingStatus"
+              className="block mb-1 text-sm font-medium text-gray-600"
+            >
+              Shipping Status
+            </label>
             <select
               required
               id="shippingStatus"
@@ -346,22 +412,61 @@ const UpdateOrder = () => {
               className="w-full rounded-lg border border-gray-400 px-3 py-2 text-sm"
             >
               <option value="">Select shipping status</option>
-              <option>Shipped</option>
               <option>Processing</option>
+              <option>Shipped</option>        
               <option>Delivered</option>
-              <option>Pending</option>
+              {/* <option>Pending</option> */}
             </select>
+          </div>
+
+          <div className="flex flex-col">
+            <label className="mb-1 text-gray-700 font-medium">
+              Order Tracking Link*
+            </label>
+            <div className="flex items-center border border-gray-400 rounded-lg px-3 py-2 shadow-sm focus-within:ring-2 focus-within:ring-blue-400 transition">
+              <input
+                type="text"
+                name="eventLink"
+                value={orderData.trackLink}
+                onChange={handleChange}
+                className="flex-grow focus:outline-none"
+              />
+              {/* <button
+                            type="button"
+                            onClick={handleCopyLink}
+                            className="ml-2 text-gray-600 hover:text-blue-500 transition"
+                          >
+                            <FontAwesomeIcon icon={faClipboard} />
+                          </button> */}
+            </div>
+            {/* {errors.eventLink && (
+                          <p className="text-red-500 text-sm mt-1">{errors.trackLink}</p>
+                        )} */}
           </div>
         </section>
 
         {/* Order Summary */}
         <section className="border border-gray-400 rounded-lg p-4 w-full sm:w-80">
-          <h3 className="font-semibold mb-4 text-sm text-gray-700">Order Summary</h3>
+          <h3 className="font-semibold mb-4 text-sm text-gray-700">
+            Order Summary
+          </h3>
           <div className="text-sm text-gray-700 space-y-2">
-            <div className="flex justify-between"><span>Sub Total</span><span>€ {summary.subTotal.toFixed(2)}</span></div>
-            <div className="flex justify-between"><span>Tax (10%)</span><span>€ {summary.tax.toFixed(2)}</span></div>
-            <div className="flex justify-between"><span>Shipping Fee</span><span>€ {summary.shippingFee.toFixed(2)}</span></div>
-            <div className="border-t border-gray-400 mt-5 pt-2 font-semibold flex justify-between"><span>Total</span><span>€ {summary.total.toFixed(2)}</span></div>
+            <div className="flex justify-between">
+              <span>Sub Total</span>
+              <span>€ {summary.subTotal.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Tax (10%)</span>
+              <span>€ {summary.tax.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Shipping Fee</span>
+              <span>€ {summary.shippingFee.toFixed(2)}</span>
+            </div>
+            <div className="border-t border-gray-400 mt-5 pt-2 font-semibold flex justify-between">
+              <span>Total</span>
+              <span>€ {summary.total.toFixed(2)}</span>
+            </div>
           </div>
         </section>
 
@@ -371,23 +476,21 @@ const UpdateOrder = () => {
             Update Order
           </button>
         </div> */}
-         <div className="flex justify-end mt-4">
-            <button
-              type="submit"
-              disabled={loading}
-              className="bg-[#114E9D] text-white px-6 py-2 rounded-lg hover:bg-blue-500 flex items-center gap-2"
-            >
-              {loading && (
-                <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-              )}
-              {loading ? "Updating..." : "Update Order"}
-            </button>
-          </div>
+        <div className="flex justify-end mt-4">
+          <button
+            type="submit"
+            disabled={loading}
+            className="bg-[#114E9D] text-white px-6 py-2 rounded-lg hover:bg-blue-500 flex items-center gap-2"
+          >
+            {loading && (
+              <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+            )}
+            {loading ? "Updating..." : "Update Order"}
+          </button>
+        </div>
       </form>
     </div>
   );
 };
 
 export default UpdateOrder;
-
-

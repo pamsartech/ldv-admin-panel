@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate , useParams } from "react-router-dom";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -11,10 +11,9 @@ import {
   faCheckCircle,
   faUndo,
   faChevronDown,
-  faClock,
-  faTimesCircle,
+  faTrash,
 } from "@fortawesome/free-solid-svg-icons";
-import { Skeleton } from "@mui/material"; // ✅ Import Skeleton
+import { Skeleton } from "@mui/material";
 
 const statusStyles = {
   Pending: "bg-yellow-100 text-yellow-700 border border-yellow-300",
@@ -30,8 +29,9 @@ export default function PaymentDataTable() {
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { paymentId } = useParams();
 
-  const [activeTab, setActiveTab] = useState("all"); // all, Paid, Refunded
+  const [activeTab, setActiveTab] = useState("all");
   const [filterMethod, setFilterMethod] = useState("all");
   const [showMethodFilter, setShowMethodFilter] = useState(false);
   const [sortOrder, setSortOrder] = useState("desc");
@@ -39,9 +39,11 @@ export default function PaymentDataTable() {
   const [selectedRows, setSelectedRows] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
   const [search, setSearch] = useState("");
+  const [deleting, setDeleting] = useState(false);
 
   const paymentsPerPage = 8;
 
+  // Fetch Data
   useEffect(() => {
     axios
       .get("http://dev-api.payonlive.com/api/payment/payment-list")
@@ -57,7 +59,6 @@ export default function PaymentDataTable() {
           date: item.createdAt ? new Date(item.createdAt) : new Date(),
           method: item.method || "N/A",
         }));
-
         setPayments(formatted);
         setLoading(false);
       })
@@ -101,89 +102,101 @@ export default function PaymentDataTable() {
     currentPage * paymentsPerPage
   );
 
+  // ---- Select / Deselect ----
   const handleSelectAll = () => {
-    if (selectAll) setSelectedRows([]);
-    else setSelectedRows(currentPayments.map((p) => p.id));
+    if (selectAll) {
+      setSelectedRows([]);
+    } else {
+      setSelectedRows(currentPayments.map((p) => p.id));
+    }
     setSelectAll(!selectAll);
   };
 
   const handleSelectRow = (id) => {
-    if (selectedRows.includes(id))
-      setSelectedRows(selectedRows.filter((r) => r !== id));
-    else setSelectedRows([...selectedRows, id]);
+    setSelectedRows((prev) =>
+      prev.includes(id) ? prev.filter((r) => r !== id) : [...prev, id]
+    );
+  };
+
+
+  // ---- Bulk Delete Functionality ----
+  const handleBulkDelete = async () => {
+    if (selectedRows.length === 0) {
+      alert("Please select at least one item to delete.");
+      return;
+    }
+
+    const confirmDelete = window.confirm(
+      `Are you sure you want to delete ${selectedRows.length} selected payments?`
+    );
+    if (!confirmDelete) return;
+
+    try {
+      setDeleting(true);
+
+      // Example API call (replace with your delete endpoint)
+      await axios.delete(`http://dev-api.payonlive.com/api/payment/delete-payment/${paymentId}`, {
+        ids: selectedRows,
+      });
+
+      // Remove from UI
+      setPayments((prev) => prev.filter((p) => !selectedRows.includes(p.id)));
+      setSelectedRows([]);
+      setSelectAll(false);
+      alert("Selected payments deleted successfully.");
+    } catch (error) {
+      console.error("Bulk delete failed:", error);
+      alert("Error deleting selected payments.");
+    } finally {
+      setDeleting(false);
+    }
   };
 
   // ---- Skeleton Rows ----
   const skeletonRows = Array.from({ length: paymentsPerPage }).map((_, idx) => (
     <tr key={idx} className="border-b">
-      <td className="p-3">
-        <Skeleton variant="rectangular" width={20} height={20} />
-      </td>
-      <td className="p-3"><Skeleton /></td>
-      <td className="p-3"><Skeleton /></td>
-      <td className="p-3"><Skeleton /></td>
-      <td className="p-3"><Skeleton /></td>
-      <td className="p-3"><Skeleton /></td>
-      <td className="p-3"><Skeleton /></td>
-      <td className="p-3"><Skeleton /></td>
-      <td className="p-3"><Skeleton variant="rectangular" width={20} height={20} /></td>
+      {Array.from({ length: 9 }).map((_, i) => (
+        <td key={i} className="p-3">
+          <Skeleton variant="rectangular" width={i === 0 ? 20 : "100%"} height={20} />
+        </td>
+      ))}
     </tr>
   ));
 
   return (
     <div className="p-6">
-      {/* Tabs, filters, search (unchanged) */}
-      {/* Tabs and Filter */}
-      <div className="flex justify-between items-center border-2 mb-5 border-gray-300 px-6  rounded-md p-2 relative">
-        {/* Tabs Section */}
+      {/* Tabs and Filters */}
+      <div className="flex justify-between items-center border-2 mb-5 border-gray-300 px-6 rounded-md p-2 relative">
+        {/* Tabs */}
         <div className="flex gap-6">
-          <button
-            onClick={() => {
-              setActiveTab("all");
-              setCurrentPage(1);
-            }}
-            className={`flex items-center gap-2 text-sm px-2 pb-1 ${
-              activeTab === "all"
-                ? "text-black font-medium border-b-2 border-black"
-                : "text-gray-600 hover:text-black"
-            }`}
-          >
-            <FontAwesomeIcon icon={faCircleCheck} />
-            All
-          </button>
-
-          <button
-            onClick={() => {
-              setActiveTab("Paid");
-              setCurrentPage(1);
-            }}
-            className={`flex items-center gap-2 text-sm px-2 pb-1 ${
-              activeTab === "Paid"
-                ? "text-black font-medium border-b-2 border-black"
-                : "text-gray-600 hover:text-black"
-            }`}
-          >
-            <FontAwesomeIcon icon={faCheckCircle} />
-            Paid
-          </button>
-
-          <button
-            onClick={() => {
-              setActiveTab("Refunded");
-              setCurrentPage(1);
-            }}
-            className={`flex items-center gap-2 text-sm px-2 pb-1 ${
-              activeTab === "Refunded"
-                ? "text-black font-medium border-b-2 border-black"
-                : "text-gray-600 hover:text-black"
-            }`}
-          >
-            <FontAwesomeIcon icon={faUndo} />
-            Refunded
-          </button>
+          {["all", "Paid", "Refunded"].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => {
+                setActiveTab(tab);
+                setCurrentPage(1);
+              }}
+              className={`flex items-center gap-2 text-sm px-2 pb-1 ${
+                activeTab === tab
+                  ? "text-black font-medium border-b-2 border-black"
+                  : "text-gray-600 hover:text-black"
+              }`}
+            >
+              <FontAwesomeIcon
+                icon={
+                  tab === "all"
+                    ? faCircleCheck
+                    : tab === "Paid"
+                    ? faCheckCircle
+                    : faUndo
+                }
+              />
+              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+            </button>
+          ))}
         </div>
 
-        {/* Filter Dropdown */}
+        {/* Filter + Sort */}
         <div className="flex gap-2 relative">
           <button
             onClick={() => setShowMethodFilter(!showMethodFilter)}
@@ -214,7 +227,7 @@ export default function PaymentDataTable() {
             </div>
           )}
 
-          {/* Sort Button */}
+           {/* Sort Button */}
           <button
             onClick={() => setSortOrder(sortOrder === "desc" ? "asc" : "desc")}
             className="flex items-center gap-2 border border-gray-400 px-3 py-1.5 rounded-md text-sm text-gray-900 hover:bg-gray-100 transition"
@@ -222,41 +235,72 @@ export default function PaymentDataTable() {
             <img src="/icons/flowbite_sort-outline.svg" alt="icon" />
             Sort by Date {sortOrder === "desc" ? "↓" : "↑"}
           </button>
+
+         {/* bulk delete button */}
+         {/* <button
+          onClick={handleBulkDelete}
+          disabled={selectedRows.length === 0 || deleting}
+          className={`flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-red-700 transition ${
+            deleting ? "opacity-70 cursor-not-allowed" : ""
+          }`}
+        >
+          <FontAwesomeIcon icon={faTrashAlt} />
+          {deleting ? "Deleting..." : `Delete Selected (${selectedRows.length})`}
+        </button> */}
+          
+          <button
+  onClick={handleBulkDelete}
+  disabled={selectedRows.length === 0 || deleting}
+  className={`flex items-center gap-2 px-3 py-2 rounded-md text-white transition ${
+    selectedRows.length === 0 || deleting
+      ? "bg-gray-400 cursor-not-allowed"
+      : "bg-red-600 hover:bg-red-700"
+  }`}
+>
+  {deleting ? (
+    <CircularProgress size={18} color="inherit" />
+  ) : (
+    <>
+      <FontAwesomeIcon icon={faTrash} />
+      Delete Selected ({selectedRows.length})
+    </>
+  )}
+</button>
+
+
         </div>
       </div>
 
-
-
-      {/* search bar code */}
-      <div className="flex gap-2  relative my-5">
-        <FontAwesomeIcon
-          icon={faSearch}
-          className="absolute left-3 top-3 text-gray-400"
-        />
-        <input
-          type="text"
-          placeholder="Search"
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setCurrentPage(1);
-          }}
-          className="w-full pl-10 pr-4 py-2 rounded-md border border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-      </div>
-
+   
+       {/* search bar code */}
+            <div className="flex gap-2  relative my-5">
+              <FontAwesomeIcon
+                icon={faSearch}
+                className="absolute left-3 top-3 text-gray-400"
+              />
+              <input
+                type="text"
+                placeholder="Search"
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="w-full pl-10 pr-4 py-2 rounded-md border border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
 
       {/* Table */}
       <div className="overflow-x-auto rounded-lg bg-white shadow">
         <table className="min-w-full text-sm">
-          <thead className="border-b text-left">
+          <thead className="border-b text-left bg-gray-50">
             <tr>
               <th className="p-3">
                 <input
                   type="checkbox"
                   checked={selectAll}
                   onChange={handleSelectAll}
-                  disabled={loading} // disable during loading
+                  disabled={loading}
                 />
               </th>
               <th className="p-3">Amount</th>
@@ -274,7 +318,12 @@ export default function PaymentDataTable() {
               ? skeletonRows
               : currentPayments.length > 0
               ? currentPayments.map((p) => (
-                  <tr key={p.id} className="border-b hover:bg-gray-50">
+                  <tr
+                    key={p.id}
+                    className={`border-b hover:bg-gray-50 ${
+                      selectedRows.includes(p.id) ? "bg-red-50" : ""
+                    }`}
+                  >
                     <td className="p-3">
                       <input
                         type="checkbox"
@@ -299,7 +348,7 @@ export default function PaymentDataTable() {
                     </td>
                     <td className="p-3 text-left">
                       <button onClick={() => navigate(`/user/view-payment/${p.id}`)}>
-                        <FontAwesomeIcon className="text-center" icon={faAngleRight} />
+                        <FontAwesomeIcon icon={faAngleRight} />
                       </button>
                     </td>
                   </tr>
@@ -315,9 +364,7 @@ export default function PaymentDataTable() {
         </table>
       </div>
 
-      {/* Pagination, summary cards (unchanged) */}
-      
-  {/* Pagination */}
+      {/* Pagination */}
       <div className="flex justify-center items-center gap-2 mt-4">
         <button
           className="px-3 py-1 border rounded disabled:opacity-50"
@@ -348,9 +395,7 @@ export default function PaymentDataTable() {
         </button>
       </div>
 
-
-
-      {/* Summary Cards */}
+       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-4 md:w-3xl lg:w-3xl border-1 rounded-lg px-2 mt-6 mx-auto">
         <div className="bg-white border-r-1 border-gray-400 shadow p-6 text-center">
           <h3 className="text-gray-800 text-xl">Total revenue</h3>

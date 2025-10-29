@@ -10,8 +10,18 @@ import {
   faCircleCheck,
   faChartLine,
   faChevronDown,
+  faTrash,
 } from "@fortawesome/free-solid-svg-icons";
-import { Skeleton } from "@mui/material"; // ✅ Import Skeleton
+import {
+  Skeleton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Button,
+  CircularProgress,
+} from "@mui/material";
 
 export default function TiktokLiveTable() {
   const navigate = useNavigate();
@@ -30,6 +40,9 @@ export default function TiktokLiveTable() {
   const [selectedStatus, setSelectedStatus] = useState("All");
   const [sortAsc, setSortAsc] = useState(true);
 
+  const [openConfirm, setOpenConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
   const itemsPerPage = 10;
 
   // ---- Fetch live events ----
@@ -42,7 +55,6 @@ export default function TiktokLiveTable() {
         );
 
         const eventsArray = res.data.data || [];
-        console.log("API Response:", res.data);
 
         const formatted = eventsArray.map((item) => ({
           id: item._id,
@@ -74,7 +86,7 @@ export default function TiktokLiveTable() {
 
   if (error) return <p className="p-6 text-red-500">{error}</p>;
 
-  // ---- Filtering & Sorting Logic (unchanged) ----
+  // ---- Filtering & Sorting Logic ----
   let tabFilteredData = liveData;
   if (activeTab === "active")
     tabFilteredData = liveData.filter((e) => e.status === "Active");
@@ -93,15 +105,23 @@ export default function TiktokLiveTable() {
       ? tabFilteredData.filter((e) => e.status === selectedStatus)
       : tabFilteredData;
 
-  const sortedData = [...filteredData].sort((a, b) =>
-    sortAsc ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name)
-  );
+  // const sortedData = [...filteredData].sort((a, b) =>
+  //   sortAsc ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name)
+  // );
+  // ---- Sort by Date (start date) ----
+const sortedData = [...filteredData].sort((a, b) => {
+  const dateA = new Date(a.start);
+  const dateB = new Date(b.start);
+  return sortAsc ? dateA - dateB : dateB - dateA;
+});
+
 
   const totalPages = Math.ceil(sortedData.length / itemsPerPage);
   const indexOfLast = currentPage * itemsPerPage;
   const indexOfFirst = indexOfLast - itemsPerPage;
   const currentData = sortedData.slice(indexOfFirst, indexOfLast);
 
+  // ---- Select Logic ----
   const handleSelectAll = () => {
     if (selectAll) setSelectedRows([]);
     else setSelectedRows(currentData.map((item) => item.id));
@@ -114,6 +134,50 @@ export default function TiktokLiveTable() {
     else setSelectedRows([...selectedRows, id]);
   };
 
+  // ---- Bulk Delete ----
+  const handleBulkDelete = () => {
+    if (selectedRows.length === 0) {
+      alert("Please select at least one event to delete.");
+      return;
+    }
+    setOpenConfirm(true);
+  };
+
+  const confirmDelete = async () => {
+    try {
+      setDeleting(true);
+      // Example API endpoint – replace with your actual delete API
+      await axios.post(
+        "http://dev-api.payonlive.com/api/event/delete-multiple",
+        {
+          ids: selectedRows,
+        }
+      );
+
+      setLiveData((prev) =>
+        prev.filter((item) => !selectedRows.includes(item.id))
+      );
+
+      setSelectedRows([]);
+      setSelectAll(false);
+      setOpenConfirm(false);
+    } catch (error) {
+      console.error("Error deleting events:", error);
+      alert("Failed to delete selected events.");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+   const handleFilterSelect = (status) => {
+    setSelectedStatus(status);
+    setShowFilter(false);
+    setCurrentPage(1);
+  };
+
+  const handleCloseConfirm = () => setOpenConfirm(false);
+
+  // ---- Status Styling ----
   const getStatusStyle = (status) => {
     switch (status) {
       case "Active":
@@ -129,44 +193,21 @@ export default function TiktokLiveTable() {
     }
   };
 
-  const handleFilterSelect = (status) => {
-    setSelectedStatus(status);
-    setShowFilter(false);
-    setCurrentPage(1);
-  };
-
-  // ---- Skeleton Row Generator ----
+  // ---- Skeleton ----
   const skeletonRows = Array.from({ length: itemsPerPage }).map((_, i) => (
     <tr key={i} className="border-b">
-      <td className="p-3">
-        <Skeleton variant="rounded" width={80} height={35} />
-      </td>
-      <td className="p-3">
-        <Skeleton variant="text" width={80} height={35} />
-      </td>
-      <td className="p-3">
-        <Skeleton variant="text" width={80} height={35}  />
-      </td>
-      <td className="p-3">
-        <Skeleton variant="text" width={80} height={35} />
-      </td>
-      <td className="p-3">
-        <Skeleton variant="text" width={80} height={35} />
-      </td>
-      <td className="p-3">
-        <Skeleton variant="text" width={80} height={35} />
-      </td>
-      <td className="p-3">
-        <Skeleton variant="text" width={80} height={35} />
-      </td>
+      {Array.from({ length: 7 }).map((__, j) => (
+        <td key={j} className="p-3">
+          <Skeleton variant="rounded" width={80} height={35} />
+        </td>
+      ))}
     </tr>
   ));
 
   return (
     <div>
-      {/* Tabs, Filter, Search (unchanged) */}
+      {/* Tabs & Filters (same as before) */}
 
-      {/* Tabs & Filter */}
       <div className="flex justify-between items-center border-2 border-gray-300 px-6 mt-5 rounded-md p-2 mx-6 relative">
         {/* Tabs */}
         <div className="flex gap-6">
@@ -201,8 +242,6 @@ export default function TiktokLiveTable() {
           </button>
         </div>
 
-
-
         {/* Filter & Sort */}
         <div className="flex gap-2 relative">
           <button
@@ -232,17 +271,45 @@ export default function TiktokLiveTable() {
             </div>
           )}
 
-          <button
+          {/* <button
             onClick={() => setSortAsc(!sortAsc)}
             className="flex items-center gap-2 border border-gray-400 px-3 py-1.5 rounded-md text-sm text-gray-900 hover:bg-gray-100 transition"
           >
             <img src="/icons/flowbite_sort-outline.svg" alt="icon" />
             Sort {sortAsc ? "A → Z" : "Z → A"}
+          </button> */}
+
+          <button
+  onClick={() => setSortAsc(!sortAsc)}
+  className="flex items-center gap-2 border border-gray-400 px-3 py-1.5 rounded-md text-sm text-gray-900 hover:bg-gray-100 transition"
+>
+  <img src="/icons/flowbite_sort-outline.svg" alt="icon" />
+  Sort by Date 
+  {/* {sortAsc ? "Oldest → Newest" : "Newest → Oldest"} */}
+</button>
+
+
+           {/* Bulk Delete button */}
+          <button
+            onClick={handleBulkDelete}
+            disabled={selectedRows.length === 0 || deleting}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-white transition ${
+              selectedRows.length === 0 || deleting
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-red-600 hover:bg-red-700"
+            }`}
+          >
+            {deleting ? (
+              <CircularProgress size={18} color="inherit" />
+            ) : (
+              <>
+                <FontAwesomeIcon icon={faTrash} />
+                Delete Selected ({selectedRows.length})
+              </>
+            )}
           </button>
         </div>
       </div>
-
-
 
       {/* search bar code */}
       <div className="flex gap-2 mx-6 relative mt-5">
@@ -273,7 +340,7 @@ export default function TiktokLiveTable() {
                     type="checkbox"
                     checked={selectAll}
                     onChange={handleSelectAll}
-                    disabled={loading} // disable during loading
+                    disabled={loading}
                   />
                 </th>
                 <th className="p-3">Event Name</th>
@@ -285,56 +352,54 @@ export default function TiktokLiveTable() {
               </tr>
             </thead>
             <tbody>
-              {loading
-                ? skeletonRows
-                : currentData.length > 0
-                ? currentData.map((item) => (
-                    <tr key={item.id} className="border-b hover:bg-gray-50">
-                      <td className="p-3">
-                        <input
-                          type="checkbox"
-                          checked={selectedRows.includes(item.id)}
-                          onChange={() => handleSelectRow(item.id)}
-                        />
-                      </td>
-                      <td className="p-3">{item.name}</td>
-                      <td className="p-3">{item.sessionID}</td>
-                      <td className="p-3">{item.start}</td>
-                      <td className="p-3">{item.end}</td>
-                      <td className="p-3">
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusStyle(
-                            item.status
-                          )}`}
-                        >
-                          {item.status}
-                        </span>
-                      </td>
-                      <td className="p-3 text-left">
-                        <button
-                          onClick={() =>
-                            navigate(`/user/live-event-detail/${item.id}`)
-                          }
-                        >
-                          <FontAwesomeIcon icon={faAngleRight} />
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                : (
-                  <tr>
-                    <td colSpan="7" className="p-6 text-center text-gray-500">
-                      No events found for selected filter.
+              {loading ? (
+                skeletonRows
+              ) : currentData.length > 0 ? (
+                currentData.map((item) => (
+                  <tr key={item.id} className="border-b hover:bg-gray-50">
+                    <td className="p-3">
+                      <input
+                        type="checkbox"
+                        checked={selectedRows.includes(item.id)}
+                        onChange={() => handleSelectRow(item.id)}
+                      />
+                    </td>
+                    <td className="p-3">{item.name}</td>
+                    <td className="p-3">{item.sessionID}</td>
+                    <td className="p-3">{item.start}</td>
+                    <td className="p-3">{item.end}</td>
+                    <td className="p-3">
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusStyle(
+                          item.status
+                        )}`}
+                      >
+                        {item.status}
+                      </span>
+                    </td>
+                    <td className="p-3 text-left">
+                      <button
+                        onClick={() =>
+                          navigate(`/user/live-event-detail/${item.id}`)
+                        }
+                      >
+                        <FontAwesomeIcon icon={faAngleRight} />
+                      </button>
                     </td>
                   </tr>
-                )}
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="7" className="p-6 text-center text-gray-500">
+                    No events found for selected filter.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
 
-        
-        
-{/* Pagination */}
+        {/* Pagination (unchanged) */}
         <div className="flex justify-center items-center space-x-2 mt-4">
           <button
             className="px-3 py-1 border rounded disabled:opacity-50"
@@ -367,6 +432,35 @@ export default function TiktokLiveTable() {
           </button>
         </div>
       </div>
+
+      {/* ✅ Confirmation Modal */}
+      <Dialog open={openConfirm} onClose={handleCloseConfirm}>
+        <DialogTitle>Confirm Bulk Delete</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete{" "}
+            <strong>{selectedRows.length}</strong> selected event(s)? This
+            action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseConfirm} color="inherit">
+            Cancel
+          </Button>
+          <Button
+            onClick={confirmDelete}
+            color="error"
+            variant="contained"
+            disabled={deleting}
+          >
+            {deleting ? (
+              <CircularProgress size={20} color="inherit" />
+            ) : (
+              "Delete"
+            )}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 }
