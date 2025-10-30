@@ -44,7 +44,7 @@ function UpdateProduct() {
     const fetchProduct = async () => {
       try {
         const res = await axios.get(
-          `http://dev-api.payonlive.com/api/product/product-details/${productId}`
+          `https://dev-api.payonlive.com/api/product/product-details/${productId}`
         );
         if (res.data.success) {
           const data = res.data.data;
@@ -113,7 +113,7 @@ function UpdateProduct() {
 
     try {
       const response = await axios.put(
-        `http://dev-api.payonlive.com/api/product/update-product/${productId}`,
+        `https://dev-api.payonlive.com/api/product/update-product/${productId}`,
         payload,
         { headers: { "Content-Type": "application/json" } }
       );
@@ -124,10 +124,13 @@ function UpdateProduct() {
         );
       } else {
         showAlert("Failed to update product.", "error");
+        btnLoading(false);
       }
     } catch (error) {
       console.error("Error updating product:", error);
       alert(error?.response?.data?.message || "⚠️ Failed to update product.");
+      showAlert("Failed to update product.", "error");
+      btnLoading(false);
     }
   };
 

@@ -23,14 +23,13 @@ import {
   Button,
 } from "@mui/material";
 
-export default function CustomersTable() {
+export default function CustomersTable({ onSelectionChange }) {
   const navigate = useNavigate();
 
   const [customersData, setCustomersData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [sortByDateAsc, setSortByDateAsc] = useState(true);
-
 
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage] = useState(8);
@@ -44,10 +43,16 @@ export default function CustomersTable() {
   const [deleting, setDeleting] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
 
+  useEffect(() => {
+    if (onSelectionChange) {
+      onSelectionChange(selectedRows);
+    }
+  }, [selectedRows, onSelectionChange]);
+
   // ---- GET API call ----
   useEffect(() => {
     axios
-      .get("http://dev-api.payonlive.com/api/user/customer-list")
+      .get("https://dev-api.payonlive.com/api/user/customer-list")
       .then((res) => {
         const customersArray = res.data.data || [];
         const formatted = customersArray.map((item) => ({
@@ -59,7 +64,12 @@ export default function CustomersTable() {
             : "N/A",
           email: item.email || "N/A",
           orders: item.totalOrders || 0,
-          status: item.status || "Inactive",
+          status: item.status
+            ? item.status.charAt(0).toUpperCase() +
+              item.status.slice(1).toLowerCase()
+            : "Inactive",
+
+          // status: item.status || "Inactive",
         }));
         setCustomersData(formatted);
         setLoading(false);
@@ -70,38 +80,33 @@ export default function CustomersTable() {
       });
   }, []);
 
+  const filteredData = useMemo(() => {
+    let data = [...customersData];
 
+    // 🔍 Search filter
+    if (search.trim()) {
+      data = data.filter(
+        (c) =>
+          c.name.toLowerCase().includes(search.toLowerCase()) ||
+          c.email.toLowerCase().includes(search.toLowerCase()) ||
+          c.id.toString().includes(search)
+      );
+    }
 
- const filteredData = useMemo(() => {
-  let data = [...customersData];
+    // ⚙️ Status filter
+    if (filterStatus !== "All") {
+      data = data.filter((c) => c.status === filterStatus);
+    }
 
-  // 🔍 Search filter
-  if (search.trim()) {
-    data = data.filter(
-      (c) =>
-        c.name.toLowerCase().includes(search.toLowerCase()) ||
-        c.email.toLowerCase().includes(search.toLowerCase()) ||
-        c.id.toString().includes(search)
-    );
-  }
+    // 🔄 Sort by date
+    data.sort((a, b) => {
+      const dateA = new Date(a.dateJoined || a.date);
+      const dateB = new Date(b.dateJoined || b.date);
+      return sortByDateAsc ? dateA - dateB : dateB - dateA;
+    });
 
-  // ⚙️ Status filter
-  if (filterStatus !== "All") {
-    data = data.filter((c) => c.status === filterStatus);
-  }
-
-  // 🔄 Sort by date
-  data.sort((a, b) => {
-    const dateA = new Date(a.dateJoined || a.date);
-    const dateB = new Date(b.dateJoined || b.date);
-    return sortByDateAsc ? dateA - dateB : dateB - dateA;
-  });
-
-  return data;
-}, [customersData, search, filterStatus, sortByDateAsc]);
-
-
-
+    return data;
+  }, [customersData, search, filterStatus, sortByDateAsc]);
 
   const totalPages = Math.ceil(filteredData.length / rowsPerPage);
   const currentRows = filteredData.slice(
@@ -146,8 +151,8 @@ export default function CustomersTable() {
   const handleBulkDelete = async () => {
     setDeleting(true);
     try {
-      await axios.post("http://dev-api.payonlive.com/api/user/bulk-delete", {
-       user_ids: selectedRows.map(String),
+      await axios.post("https://dev-api.payonlive.com/api/user/bulk-delete", {
+        user_ids: selectedRows.map(String),
       });
       setCustomersData((prev) =>
         prev.filter((c) => !selectedRows.includes(c.id))
@@ -216,68 +221,68 @@ export default function CustomersTable() {
   return (
     <div>
       {/* filter bar */}
-     <div className="flex flex-wrap items-center justify-between gap-3 mx-6 mt-3">
-  {/* 🔍 Search Bar */}
-  <div className="relative flex-1 min-w-[250px]">
-    <FontAwesomeIcon
-      icon={faSearch}
-      className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-    />
-    <input
-      type="text"
-      placeholder="Search"
-      value={search}
-      onChange={(e) => {
-        setSearch(e.target.value);
-        setCurrentPage(1);
-      }}
-      className="w-full pl-10 pr-4 py-2 rounded-md border border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-    />
-  </div>
-
-  {/* Right side buttons */}
-  <div className="flex items-center gap-3">
-    {/* 🧩 Filter Dropdown */}
-    <div className="relative">
-      <button
-        className="flex items-center gap-2 border border-gray-400 px-3 py-2 rounded-md text-sm text-gray-700 hover:bg-gray-100 transition"
-        onClick={() => setShowFilter((prev) => !prev)}
-      >
-        <FontAwesomeIcon icon={faFilter} />
-        Filter
-        <FontAwesomeIcon icon={faChevronDown} className="text-xs" />
-      </button>
-      {showFilter && (
-        <div className="absolute right-0 mt-1 w-32 bg-white border rounded shadow-lg z-10">
-          {["All", "Active", "Inactive"].map((status) => (
-            <button
-              key={status}
-              onClick={() => {
-                setFilterStatus(status);
-                setShowFilter(false);
-                setCurrentPage(1);
-              }}
-              className={`block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 ${
-                filterStatus === status ? "bg-gray-200 font-medium" : ""
-              }`}
-            >
-              {status}
-            </button>
-          ))}
+      <div className="flex flex-wrap items-center justify-between gap-3 mx-6 mt-3">
+        {/* 🔍 Search Bar */}
+        <div className="relative flex-1 min-w-[250px]">
+          <FontAwesomeIcon
+            icon={faSearch}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+          />
+          <input
+            type="text"
+            placeholder="Search"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setCurrentPage(1);
+            }}
+            className="w-full pl-10 pr-4 py-2 rounded-md border border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
         </div>
-      )}
-    </div>
 
-    {/* ↕️ Sort Button */}
-    <button
-  onClick={() => setSortByDateAsc((prev) => !prev)}
-  className="flex items-center gap-2 border border-gray-400 px-3 py-2 rounded-md text-sm text-gray-700 hover:bg-gray-100 transition"
->
-  <FontAwesomeIcon icon={faUpDown} />
-  Sort by Date 
-</button>
+        {/* Right side buttons */}
+        <div className="flex items-center gap-3">
+          {/* 🧩 Filter Dropdown */}
+          <div className="relative">
+            <button
+              className="flex items-center gap-2 border border-gray-400 px-3 py-2 rounded-md text-sm text-gray-700 hover:bg-gray-100 transition"
+              onClick={() => setShowFilter((prev) => !prev)}
+            >
+              <FontAwesomeIcon icon={faFilter} />
+              Filter
+              <FontAwesomeIcon icon={faChevronDown} className="text-xs" />
+            </button>
+            {showFilter && (
+              <div className="absolute right-0 mt-1 w-32 bg-white border rounded shadow-lg z-10">
+                {["All", "Active", "Inactive"].map((status) => (
+                  <button
+                    key={status}
+                    onClick={() => {
+                      setFilterStatus(status);
+                      setShowFilter(false);
+                      setCurrentPage(1);
+                    }}
+                    className={`block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 ${
+                      filterStatus === status ? "bg-gray-200 font-medium" : ""
+                    }`}
+                  >
+                    {status}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
 
-    {/* <button
+          {/* ↕️ Sort Button */}
+          <button
+            onClick={() => setSortByDateAsc((prev) => !prev)}
+            className="flex items-center gap-2 border border-gray-400 px-3 py-2 rounded-md text-sm text-gray-700 hover:bg-gray-100 transition"
+          >
+            <FontAwesomeIcon icon={faUpDown} />
+            Sort by Date
+          </button>
+
+          {/* <button
       className="flex items-center gap-2 border border-gray-400 px-3 py-2 rounded-md text-sm text-gray-700 hover:bg-gray-100 transition"
       onClick={() => handleSort("spend")}
     >
@@ -285,28 +290,27 @@ export default function CustomersTable() {
       Sort
     </button> */}
 
-    {/* 🗑️ Bulk Delete Button */}
-    <button
-      onClick={handleOpenConfirm}
-      disabled={selectedRows.length === 0 || deleting}
-      className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm text-white transition ${
-        selectedRows.length === 0 || deleting
-          ? "bg-gray-400 cursor-not-allowed"
-          : "bg-red-600 hover:bg-red-700"
-      }`}
-    >
-      {deleting ? (
-        <CircularProgress size={18} color="inherit" />
-      ) : (
-        <>
-          <FontAwesomeIcon icon={faTrash} />
-          Delete Selected ({selectedRows.length})
-        </>
-      )}
-    </button>
-  </div>
-</div>
-
+          {/* 🗑️ Bulk Delete Button */}
+          <button
+            onClick={handleOpenConfirm}
+            disabled={selectedRows.length === 0 || deleting}
+            className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm text-white transition ${
+              selectedRows.length === 0 || deleting
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-red-600 hover:bg-red-700"
+            }`}
+          >
+            {deleting ? (
+              <CircularProgress size={18} color="inherit" />
+            ) : (
+              <>
+                <FontAwesomeIcon icon={faTrash} />
+                Delete Selected ({selectedRows.length})
+              </>
+            )}
+          </button>
+        </div>
+      </div>
 
       {/* customer data table */}
       <div className="p-6 bg-white rounded shadow mt-4">

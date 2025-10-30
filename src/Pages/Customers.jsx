@@ -1,9 +1,13 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import Navbar from "../Components/Navbar";
 import CustomersTable from "../Components/CustomerDataTable";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faDownload, faUpload, faPlus } from "@fortawesome/free-solid-svg-icons";
+import {
+  faDownload,
+  faUpload,
+  faPlus,
+} from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
 
 function Customers() {
@@ -17,34 +21,63 @@ function Customers() {
   const [importProgress, setImportProgress] = useState(0);
   const [importResult, setImportResult] = useState(null);
   const [importError, setImportError] = useState(null);
+  const [selectedUsers, setSelectedUsers] = useState([]);
+  const [fadeOut, setFadeOut] = useState(false);
+
+  useEffect(() => {
+   if (
+    importResult?.failedCustomers?.length > 0 ||
+    importResult?.duplicateCustomers?.length > 0
+  )  {
+      setFadeOut(false);
+      const fadeTimer = setTimeout(() => setFadeOut(true), 2500); // start fade after 2.5s
+      const removeTimer = setTimeout(() => setImportResult(null), 3000); // remove after 3s
+
+      return () => {
+        clearTimeout(fadeTimer);
+      };
+    }
+  }, [importResult]);
 
   // ----- EXPORT FUNCTION -----
   const handleExport = async () => {
     try {
-      setExportError(null);
       setExporting(true);
 
-      const url = "http://dev-api.payonlive.com/api/user/export-customer";
-      const response = await axios.get(url, { responseType: "blob" });
+      // if no user selected, export all
+      const payload =
+        selectedUsers.length > 0 ? { userIds: selectedUsers } : { userIds: [] };
 
-      let filename = "customers_export.xlsx";
-      const disposition = response.headers["content-disposition"];
-      if (disposition) {
-        const match = disposition.match(/filename="?(.+)"?/);
-        if (match && match[1]) filename = match[1];
-      }
+      console.log("Selected User IDs:", selectedUsers); // ✅ Log before sending
 
-      const blobUrl = window.URL.createObjectURL(new Blob([response.data]));
+      const response = await axios.post(
+        "https://dev-api.payonlive.com/api/user/export-customer",
+        payload, // :white_check_mark: Body for POST
+        {
+          headers: { "Content-Type": "application/json" },
+          responseType: "blob",
+        }
+      );
+
+      console.log("Export API Response:", response);
+
+      // ✅ Create and trigger download
+      const blob = new Blob([response.data], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
       const link = document.createElement("a");
-      link.href = blobUrl;
-      link.setAttribute("download", filename);
+      link.href = URL.createObjectURL(blob);
+      link.download = "customer_export.xlsx";
       document.body.appendChild(link);
       link.click();
       link.remove();
-      window.URL.revokeObjectURL(blobUrl);
-    } catch (err) {
-      console.error("Export failed:", err);
-      setExportError("Failed to export customers.");
+    } catch (error) {
+      console.error("❌ Error exporting customer:", error);
+      if (error.response) {
+        console.error("Response data:", error.response.data);
+        console.error("Response status:", error.response.status);
+      }
+      alert("Failed to export customer");
     } finally {
       setExporting(false);
     }
@@ -70,12 +103,10 @@ function Customers() {
   const uploadImportFile = async (file) => {
     try {
       console.log("Import initiated for file:", file.name);
-      setImportError(null);
-      setImportResult(null);
-      setImporting(true);
-      setImportProgress(0);
 
-      const url = "http://dev-api.payonlive.com/api/user/import-customer";
+      setImporting(true);
+
+      const url = "https://dev-api.payonlive.com/api/user/import-customer";
 
       const formData = new FormData();
       formData.append("file", file);
@@ -125,7 +156,9 @@ function Customers() {
           `Import completed: ${data.summary.successful} successes, ${data.summary.failed} failed, ${data.summary.duplicates} duplicates.`
         );
       } else {
-        setImportError(response.data?.message || "Import failed - unknown response");
+        setImportError(
+          response.data?.message || "Import failed - unknown response"
+        );
         console.warn("Import returned false success flag:", response.data);
       }
     } catch (err) {
@@ -138,7 +171,6 @@ function Customers() {
       setImportError(message);
     } finally {
       setImporting(false);
-      setImportProgress(0);
     }
   };
 
@@ -167,36 +199,6 @@ function Customers() {
             />
           </label>
 
-          {importing && (
-            <div className="text-sm text-gray-600 ml-2">
-              Uploading: {importProgress}%
-            </div>
-          )}
-
-          {/* {importResult && (
-            <div className="ml-2 text-sm">
-              <div className="text-green-600">
-                Imported successfully: {importResult.successful} / {importResult.total}
-              </div>
-
-              {importResult.failed > 0 && (
-                <div className="text-red-600 mt-1">
-                  Failed: {importResult.failed}
-                </div>
-              )}
-
-              {importResult.duplicates > 0 && (
-                <div className="text-yellow-600 mt-1">
-                  Duplicates: {importResult.duplicates}
-                </div>
-              )}
-            </div>
-          )} */}
-
-          {importError && (
-            <div className="ml-2 text-sm text-red-600">Import error: {importError}</div>
-          )}
-
           <button
             onClick={handleExport}
             className="flex items-center gap-2 border border-gray-400 px-3 py-1.5 rounded-md text-sm text-gray-700 hover:bg-gray-100 transition"
@@ -221,42 +223,53 @@ function Customers() {
       </div>
 
       {/* Failed Customers Details */}
-      {importResult?.failedCustomers && importResult.failedCustomers.length > 0 && (
-        <div className="p-4 mx-6 bg-white rounded shadow mt-3">
-          <h4 className="font-medium mb-2">
-            Failed Customers ({importResult.failedCustomers.length})
-          </h4>
-          <div className="text-xs text-gray-700 space-y-2 max-h-48 overflow-auto">
-            {importResult.failedCustomers.map((f, idx) => (
-              <div key={idx} className="border-b pb-2">
-                <div><strong>{f.name}</strong></div>
-                <div>Email: {f.email}</div>
-                <div className="text-red-600">Error: {f.error}</div>
-              </div>
-            ))}
+      {importResult?.failedCustomers &&
+        importResult.failedCustomers.length > 0 && (
+          <div className="p-4 mx-6 bg-white rounded shadow mt-3">
+            <h4 className="font-medium mb-2">
+              Failed Customers ({importResult.failedCustomers.length})
+            </h4>
+            <div className="text-xs text-gray-700 space-y-2 max-h-48 overflow-auto">
+              {importResult.failedCustomers.map((f, idx) => (
+                <div key={idx} className="border-b pb-2">
+                  <div>
+                    <strong>{f.name}</strong>
+                  </div>
+                  <div>Email: {f.email}</div>
+                  <div className="text-red-600">Error: {f.error}</div>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
       {/* Duplicate Customers Details */}
-      {importResult?.duplicateCustomers && importResult.duplicateCustomers.length > 0 && (
-        <div className="p-4 mx-6 bg-white rounded shadow mt-3">
-          <h4 className="font-medium mb-2">
-            Duplicate Customers ({importResult.duplicateCustomers.length})
-          </h4>
-          <div className="text-xs text-gray-700 space-y-2 max-h-48 overflow-auto">
-            {importResult.duplicateCustomers.map((d, idx) => (
-              <div key={idx} className="border-b pb-2">
-                <div><strong>{d.name}</strong></div>
-                <div>Email: {d.email}</div>
-                <div className="text-yellow-600">Error: {d.error}</div>
-              </div>
-            ))}
+      {importResult?.duplicateCustomers &&
+        importResult.duplicateCustomers.length > 0 && (
+          <div 
+          // className="p-4 mx-6 bg-white rounded shadow mt-3"
+           className={`p-4 mx-6 bg-white rounded shadow mt-3 transition-opacity duration-500 ease-in-out ${
+            fadeOut ? "opacity-0" : "opacity-100"
+          }`}
+          >
+            <h4 className="font-medium mb-2">
+              Duplicate Customers ({importResult.duplicateCustomers.length})
+            </h4>
+            <div className="text-xs text-gray-700 space-y-2 max-h-48 overflow-auto">
+              {importResult.duplicateCustomers.map((d, idx) => (
+                <div key={idx} className="border-b pb-2">
+                  <div>
+                    <strong>{d.name}</strong>
+                  </div>
+                  <div>Email: {d.email}</div>
+                  <div className="text-yellow-600">Error: {d.error}</div>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      <CustomersTable />
+      <CustomersTable onSelectionChange={setSelectedUsers} />
     </div>
   );
 }

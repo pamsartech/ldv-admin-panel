@@ -18,7 +18,7 @@ const Login = () => {
     setError("");
 
     try {
-      const response = await axios.post("http://dev-api.payonlive.com/api/admin/login", {
+      const response = await axios.post("https://dev-api.payonlive.com/api/admin/login", {
         email,
         password,
       });

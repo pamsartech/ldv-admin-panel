@@ -24,7 +24,7 @@ function Navbar({ heading }) {
       setError(null);
 
       const response = await axios.get(
-        "http://dev-api.payonlive.com/api/notifications"
+        "https://dev-api.payonlive.com/api/notifications"
       );
 
       if (response.data && response.data.success) {

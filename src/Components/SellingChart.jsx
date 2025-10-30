@@ -24,7 +24,7 @@ import axios
       try {
         console.log("📡 Fetching best-selling products...");
         const res = await axios.get(
-          "http://dev-api.payonlive.com/api/product/best-selling"
+          "https://dev-api.payonlive.com/api/product/best-selling"
         );
         console.log("Bst selling products:", res.data);
         setBestSelling(res.data.data || []);

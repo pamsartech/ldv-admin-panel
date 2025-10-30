@@ -52,7 +52,7 @@ export default function EventDetail() {
     const fetchEvent = async () => {
       try {
         const response = await axios.get(
-          `http://dev-api.payonlive.com/api/event/event-details/${eventId}`
+          `https://dev-api.payonlive.com/api/event/event-details/${eventId}`
         );
         if (response.data.success && response.data.data) {
           setEvent(response.data.data);
@@ -353,49 +353,62 @@ export default function EventDetail() {
         </div>
 
         {/* Selected Products */}
-        <div className="border border-gray-400 rounded-2xl p-6 space-y-4">
-          <h2 className="text-base font-medium">
-            Selected products for live
-          </h2>
-          <div className="flex items-center border border-gray-400 rounded-md px-3 py-2 text-sm bg-white">
-            <FontAwesomeIcon icon={faSearch} className="text-gray-500 mr-2" />
-            <input
-              type="text"
-              placeholder="Search by products name or SKU to add products"
-              className="w-full focus:outline-none placeholder:text-gray-400"
-            />
-          </div>
+       {/* Selected Products */}
+<div className="border border-gray-400 rounded-2xl p-6 space-y-4">
+  <h2 className="text-base font-medium">Selected products for live</h2>
 
-          {/* Example placeholder products */}
-          <div className="space-y-3">
-            {[1, 2, 3].map((item, idx) => (
-              <div
-                key={idx}
-                className="flex items-center justify-between border border-gray-400 rounded-md px-4 py-3 bg-white"
-              >
-                <div className="flex items-center space-x-3">
-                  <img
-                    src="https://uspoloassn.in/cdn/shop/files/1_b38f1b29-bdee-4078-8f72-1507aad69aa7.jpg"
-                    alt="Product"
-                    className="w-10 h-10 rounded object-cover"
-                  />
-                  <div>
-                    <p className="text-sm font-medium text-gray-800">
-                      Classic white Sneakers
-                    </p>
-                    <p className="text-xs text-gray-500">1231</p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-4">
-                  <p className="text-sm font-semibold">€ 12.99</p>
-                  <button className="text-gray-500 hover:text-red-600">
-                    <FontAwesomeIcon icon={faTrash} />
-                  </button>
-                </div>
-              </div>
-            ))}
+  {/* <div className="flex items-center border border-gray-400 rounded-md px-3 py-2 text-sm bg-white">
+    <FontAwesomeIcon icon={faSearch} className="text-gray-500 mr-2" />
+    <input
+      type="text"
+      placeholder="Search by products name or SKU to add products"
+      className="w-full focus:outline-none placeholder:text-gray-400"
+    />
+  </div> */}
+
+  <div className="space-y-3">
+    {event.products && event.products.length > 0 ? (
+      event.products.map((product, index) => (
+        <div
+          key={index}
+          className="flex items-center justify-between border border-gray-400 rounded-md px-4 py-3 bg-white"
+        >
+          <div className="flex items-center space-x-3">
+            <img
+              src={
+                product.productId?.images?.[0] ||
+                "https://via.placeholder.com/100x100?text=No+Image"
+              }
+              alt={product.productId?.productName || "Product"}
+              className="w-10 h-10 rounded object-cover"
+            />
+            <div>
+              <p className="text-sm font-medium text-gray-800">
+                {product.productId?.productName || "Unnamed Product"}
+              </p>
+              <p className="text-xs text-gray-500">
+                {product.productId?.productCode || "No SKU"}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center space-x-4">
+            <p className="text-sm font-semibold">
+              {product.productId?.price
+                ? `€ ${product.productId.price}`
+                : "N/A"}
+            </p>
+            
           </div>
         </div>
+      ))
+    ) : (
+      <p className="text-gray-500 text-sm text-center py-3 border border-gray-200 rounded-md">
+        No products selected for this live event.
+      </p>
+    )}
+  </div>
+</div>
+
 
         {/* Host Information */}
         <section className="border border-gray-400 rounded-2xl p-6 space-y-4">

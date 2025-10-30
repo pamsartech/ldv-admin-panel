@@ -26,7 +26,7 @@ import axios from "axios";
 import { Skeleton } from "@mui/material";
 import namer from "color-namer";
 
-export default function ProductTable() {
+export default function ProductTable({onSelectionChange}) {
   const navigate = useNavigate();
 
   const [products, setProducts] = useState([]);
@@ -50,8 +50,8 @@ export default function ProductTable() {
 
   const getImageUrl = (img) => {
     if (!img) return "/placeholder-image.png";
-    return img.startsWith("http") ? img : `http://dev-api.payonlive.com${img}`;
-    // `https://la-dolce-vita.onrender.com${img}`;
+    return img.startsWith("https") ? img : `https://dev-api.payonlive.com${img}`;
+    // `httpss://la-dolce-vita.onrender.com${img}`;
   };
 
 
@@ -60,7 +60,7 @@ export default function ProductTable() {
       try {
         setLoading(true);
         const res = await axios.get(
-          "http://dev-api.payonlive.com/api/product/product-list"
+          "https://dev-api.payonlive.com/api/product/product-list"
         );
         if (res.data && res.data.data) {
           setProducts(res.data.data);
@@ -148,15 +148,23 @@ export default function ProductTable() {
     startIndex + rowsPerPage
   );
 
-  const toggleSelectAll = (e) => {
-    if (e.target.checked) setSelected(currentProducts.map((p) => p._id));
-    else setSelected([]);
-  };
+   const toggleSelectAll = () => {
+  let newSelected = [];
+  if (!allSelected) newSelected = currentProducts.map((p) => p._id);
+  setSelected(newSelected);
+  onSelectionChange(newSelected)
+};
 
   const toggleSelect = (id) => {
-    setSelected((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
-    );
+   
+    let newSelected;
+    if (selected.includes(id)) {
+      newSelected = selected.filter((x) => x !== id);
+    } else {
+      newSelected = [...selected, id];
+    }
+    setSelected(newSelected);
+    onSelectionChange(newSelected); // ✅ Notify
   };
 
   const allSelected =
@@ -203,7 +211,7 @@ export default function ProductTable() {
     try {
       setDeleteLoading(true);
       await axios.post(
-        "http://dev-api.payonlive.com/api/product/bulk-delete",
+        "https://dev-api.payonlive.com/api/product/bulk-delete",
         {
          product_ids: selected,
         }

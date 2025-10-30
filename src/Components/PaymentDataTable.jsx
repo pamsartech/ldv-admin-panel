@@ -23,7 +23,7 @@ const statusStyles = {
   Refunded: "bg-blue-100 text-blue-700 border border-blue-300",
 };
 
-export default function PaymentDataTable() {
+export default function PaymentDataTable({ onSelectionChange }) {
   const navigate = useNavigate();
 
   const [payments, setPayments] = useState([]);
@@ -46,7 +46,7 @@ export default function PaymentDataTable() {
   // Fetch Data
   useEffect(() => {
     axios
-      .get("http://dev-api.payonlive.com/api/payment/payment-list")
+      .get("https://dev-api.payonlive.com/api/payment/payment-list")
       .then((res) => {
         const paymentsArray = res.data.data || [];
         const formatted = paymentsArray.map((item) => ({
@@ -103,20 +103,37 @@ export default function PaymentDataTable() {
   );
 
   // ---- Select / Deselect ----
-  const handleSelectAll = () => {
-    if (selectAll) {
-      setSelectedRows([]);
-    } else {
-      setSelectedRows(currentPayments.map((p) => p.id));
-    }
-    setSelectAll(!selectAll);
-  };
+    const handleSelectAll = () => {
+  let newSelected = [];
+  if (!selectAll) newSelected = currentPayments.map((p) => p.id);
+  setSelectedRows(newSelected);
+  setSelectAll(!selectAll);
+  onSelectionChange(newSelected); // ✅ Notify parent
+};
+  // const handleSelectAll = () => {
+  //   if (selectAll) {
+  //     setSelectedRows([]);
+  //   } else {
+  //     setSelectedRows(currentPayments.map((p) => p.id));
+  //   }
+  //   setSelectAll(!selectAll);
+  // };
 
   const handleSelectRow = (id) => {
-    setSelectedRows((prev) =>
-      prev.includes(id) ? prev.filter((r) => r !== id) : [...prev, id]
-    );
-  };
+  let newSelected;
+  if (selectedRows.includes(id)) {
+    newSelected = selectedRows.filter((r) => r !== id);
+  } else {
+    newSelected = [...selectedRows, id];
+  }
+  setSelectedRows(newSelected);
+  onSelectionChange(newSelected); // ✅ Notify parent
+};
+  // const handleSelectRow = (id) => {
+  //   setSelectedRows((prev) =>
+  //     prev.includes(id) ? prev.filter((r) => r !== id) : [...prev, id]
+  //   );
+  // };
 
 
   // ---- Bulk Delete Functionality ----
@@ -135,7 +152,7 @@ export default function PaymentDataTable() {
       setDeleting(true);
 
       // Example API call (replace with your delete endpoint)
-      await axios.delete(`http://dev-api.payonlive.com/api/payment/delete-payment/${paymentId}`, {
+      await axios.delete(`https://dev-api.payonlive.com/api/payment/delete-payment/${paymentId}`, {
         ids: selectedRows,
       });
 
