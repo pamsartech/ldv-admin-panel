@@ -26,10 +26,54 @@ export default function CreatePayment() {
   const [loading, setLoading] = useState(false);
 
   // 🔹 Handle Submit
-  const handleSubmit = async (e) => {
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   setLoading(true);
+    
+  //   const payload = {
+  //     orderId: orderID,
+  //     amount: parseFloat(amount.replace(/[^0-9.]/g, "")),
+  //     paymentMethod,
+  //     paymentStatus,
+  //     deliveryStatus,
+  //     paymentDate: new Date(date).toISOString(),
+  //     notes,
+  //   };
+
+  //   console.log("📤 Sending payment payload:", payload);
+    
+
+  //   try {
+  //     const res = await axios.post(
+  //       "https://dev-api.payonlive.com/api/payment/create-payment",
+  //       payload,
+  //       {
+  //         headers: { "Content-Type": "application/json" },
+  //       }
+  //     );
+
+  //     console.log("✅ Payment created:", res.data);
+  //     showAlert(res.data.message || "Payment created successfully!", "success");
+  //     navigate("/user/Payments");
+  //   } catch (err) {
+  //     console.error("❌ Error creating payment:", err.response?.data || err);
+  //     showAlert("Failed to create payment. Please try again.", "error");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+    const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    
+
+    // ✅ Basic Validation
+    if (!orderID || !amount || !paymentMethod || !date) {
+      showAlert("Please fill in all required fields.", "error");
+      setLoading(false);
+      return;
+    }
+
     const payload = {
       orderId: orderID,
       amount: parseFloat(amount.replace(/[^0-9.]/g, "")),
@@ -41,24 +85,27 @@ export default function CreatePayment() {
     };
 
     console.log("📤 Sending payment payload:", payload);
-    
 
     try {
       const res = await axios.post(
         "https://dev-api.payonlive.com/api/payment/create-payment",
         payload,
-        {
-          headers: { "Content-Type": "application/json" },
-        }
+        { headers: { "Content-Type": "application/json" } }
       );
 
       console.log("✅ Payment created:", res.data);
-      showAlert(res.data.message || "Payment created successfully!", "success");
-      navigate("/user/Payments");
+
+      if (res.data?.success || res.status === 200) {
+        showAlert(res.data.message || "Payment created successfully!", "success");
+        navigate("/user/Payments");
+      } else {
+        showAlert("Failed to create payment. Please try again.", "error");
+      }
     } catch (err) {
       console.error("❌ Error creating payment:", err.response?.data || err);
-      showAlert("Failed to create payment. Please try again.", "error");
+      showAlert("Server error. Please try again.", "error");
     } finally {
+      // ✅ Stop spinner no matter what
       setLoading(false);
     }
   };

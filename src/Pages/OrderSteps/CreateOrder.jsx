@@ -102,59 +102,55 @@ const CreateOrder = () => {
 
   // 🔹 Handle form submit
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    setLoading(true);
+  setLoading(true);
 
-    if (!validate()) return;
+  const isValid = validate();
+  if (!isValid) {
+    setLoading(false); // ✅ Stop spinner if validation fails
+    return;
+  }
 
-    const payload = {
-      customerName,
-      email,
-      phoneNumber,
-      address,
-      orderItems,
-      paymentMethod,
-      paymentStatus,
-      shippingMethod,
-      shippingStatus,
-      orderTotal: total,
-    };
-
-    console.log("📤 Sending order:", payload);
-
-    try {
-      const res = await axios.post(
-        "https://dev-api.payonlive.com/api/order/create-order",
-        payload,
-        { headers: { "Content-Type": "application/json" } }
-      );
-      console.log("✅ Order created:", res.data);
-      if (res.data?.success || res.status === 200) {
-        showAlert("Order created successfully!", "success");
-        navigate("/user/Orders");
-        //  showAlert("Event created successfully!", "success", () => {
-        //   navigate("/user/tiktok");
-        // setPopupMessage("Order created successfully!");
-        // setShowPopup(true);
-        // setTimeout(() => {
-        //   console.log("Redirecting to /Orders");
-        //   navigate("/user/Orders");
-        // }, 1500);
-      } else {
-        showAlert("Failed to create order. Please try again.", "error");
-        setLoading(false);
-        // setPopupMessage(res.data.message || "Failed to create order ❌");
-        // setShowPopup(true);
-      }
-    } catch (err) {
-      console.error("Sever Error  while creating order:", err);
-      showAlert("Server error. Please try again.", "error");
-      setLoading(false);
-      // setPopupMessage("Server error — please try again.");
-      // setShowPopup(true);
-    }
+  const payload = {
+    customerName,
+    email,
+    phoneNumber,
+    address,
+    orderItems,
+    paymentMethod,
+    paymentStatus,
+    shippingMethod,
+    shippingStatus,
+    orderTotal: total,
   };
+
+  console.log("📤 Sending order:", payload);
+
+  try {
+    const res = await axios.post(
+      "https://dev-api.payonlive.com/api/order/create-order",
+      payload,
+      { headers: { "Content-Type": "application/json" } }
+    );
+
+    console.log("✅ Order created:", res.data);
+
+    if (res.data?.success || res.status === 200) {
+      showAlert("Order created successfully!", "success");
+      navigate("/user/Orders");
+    } else {
+      showAlert("Failed to create order. Please try again.", "error");
+    }
+  } catch (err) {
+    console.error("Server Error while creating order:", err);
+    showAlert("Server error. Please try again.", "error");
+  } finally {
+    // ✅ Always stop the spinner — success or fail
+    setLoading(false);
+  }
+};
+
 
   // calculate
   const subtotal = orderItems.reduce(
@@ -181,7 +177,7 @@ const CreateOrder = () => {
             size="lg"
             className="text-red-700 px-2"
           />
-          Discard Product
+          Discard
         </button>
       </div>
 
@@ -569,14 +565,7 @@ const CreateOrder = () => {
           </button>
         </div>
       </form>
-      {/* ✅ Popup */}
-      {/* {showPopup && (
-        <div className="fixed top-5 left-1/2 transform -translate-x-1/2 z-50">
-          <div className="bg-white text-black font-bold px-8 py-10 rounded-xl shadow-xl min-w-[300px] text-center">
-            {popupMessage}
-          </div>
-        </div>
-      )} */}
+    
     </div>
   );
 };

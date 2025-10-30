@@ -95,7 +95,7 @@ export default function EventDetail() {
     try {
       setIsDeleting(true);
       const response = await axios.delete(
-        `http://dev-api.payonlive.com/api/event/delete-event/${eventId}`
+        `https://dev-api.payonlive.com/api/event/delete-event/${eventId}`
       );
 
       if (response.data.success) {

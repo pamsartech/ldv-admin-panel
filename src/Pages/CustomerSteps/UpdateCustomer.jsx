@@ -85,42 +85,99 @@ const UpdateCustomer = () => {
   };
 
   // --- Handle Form Submit ---
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   setBtnLoading(true);
+
+  //   const payload = {
+  //     customerName: formData.customerName,
+  //     email: formData.email,
+  //     phoneNumber: formData.phone,
+  //     dob: formData.dob,
+  //     address: {
+  //       street: formData.street,
+  //       city: formData.city,
+  //       state: formData.state,
+  //       zipcode: formData.zip,
+  //       country: formData.country,
+  //     },
+  //     isActive,
+  //     communicationMethod,
+  //   };
+
+  //   try {
+  //     const res = await axios.put(
+  //       `https://dev-api.payonlive.com/api/user/update-customer/${customerId}`,
+  //       payload
+  //     );
+
+  //     console.log("✅ Customer updated:", res.data);
+  //     showAlert("Customer updated successfully!", "success");
+  //     navigate("/user/Customers");
+  //   } catch (err) {
+  //     console.error("❌ Error updating customer:", err);
+  //     showAlert("Failed to update customer. Please try again.", "error");
+  //   } finally {
+  //     setBtnLoading(false);
+  //   }
+  // };
+
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setBtnLoading(true);
+  e.preventDefault();
+  setBtnLoading(true);
 
-    const payload = {
-      customerName: formData.customerName,
-      email: formData.email,
-      phoneNumber: formData.phone,
-      dob: formData.dob,
-      address: {
-        street: formData.street,
-        city: formData.city,
-        state: formData.state,
-        zipcode: formData.zip,
-        country: formData.country,
-      },
+  // ✅ Basic validation before API call
+  if (
+    !formData.customerName ||
+    !formData.email ||
+    !formData.phone ||
+    !formData.street
+  ) {
+    showAlert("Please fill in all required fields.", "error");
+    setBtnLoading(false); // Stop spinner if validation fails
+    return;
+  }
+
+   const payload = {
+       customerName: formData.customerName,
+       email: formData.email,
+       phoneNumber: formData.phone,
+       dob: formData.dob,
+       address: {
+         street: formData.street,
+         city: formData.city,
+         state: formData.state,
+         zipcode: formData.zip,
+         country: formData.country,
+       },
       isActive,
-      communicationMethod,
-    };
+       communicationMethod,
+     };
 
-    try {
-      const res = await axios.put(
-        `https://dev-api.payonlive.com/api/user/update-customer/${customerId}`,
-        payload
-      );
+  try {
+    const res = await axios.put(
+      `https://dev-api.payonlive.com/api/user/update-customer/${customerId}`,
+      payload,
+      { headers: { "Content-Type": "application/json" } }
+    );
 
-      console.log("✅ Customer updated:", res.data);
+    console.log("✅ Customer updated:", res.data);
+
+    if (res.data?.success || res.status === 200) {
       showAlert("Customer updated successfully!", "success");
       navigate("/user/Customers");
-    } catch (err) {
-      console.error("❌ Error updating customer:", err);
+    } else {
       showAlert("Failed to update customer. Please try again.", "error");
-    } finally {
-      setBtnLoading(false);
     }
-  };
+  } catch (err) {
+    console.error("❌ Error updating customer:", err.response?.data || err.message);
+    showAlert("Server error. Please try again.", "error");
+  } finally {
+    // ✅ Always stop spinner no matter what
+    setBtnLoading(false);
+  }
+};
+
 
   if (loading)
     return (

@@ -47,18 +47,30 @@ const CreateCustomer = () => {
   e.preventDefault();
   setLoading(true);
 
-  // Construct payload matching backend API
+  // ✅ Basic validation (optional)
+  if (
+    !formData.customerName ||
+    !formData.email ||
+    !formData.phoneNumber ||
+    !formData.password
+  ) {
+    showAlert("Please fill in all required fields.", "error");
+    setLoading(false); // stop spinner if validation fails
+    return;
+  }
+
+  // ✅ Construct payload
   const payload = {
-    customerName: formData.customerName,
-    email: formData.email,
-    phoneNumber: String(formData.phoneNumber), // ensure string
+    customerName: formData.customerName.trim(),
+    email: formData.email.trim(),
+    phoneNumber: String(formData.phoneNumber),
     dob: formData.dob,
     password: formData.password,
     address: {
       street: formData.street,
       city: formData.city,
       state: formData.state,
-      zipcode: String(formData.zipcode), // ensure string
+      zipcode: String(formData.zipcode),
       country: formData.country,
     },
     isActive: statusActive,
@@ -68,19 +80,27 @@ const CreateCustomer = () => {
   try {
     const res = await axios.post(
       "https://dev-api.payonlive.com/api/user/create-customer",
-      payload
+      payload,
+      { headers: { "Content-Type": "application/json" } }
     );
 
     console.log("✅ Customer created:", res.data);
-    showAlert("Customer created successfully!", "success");
-    navigate("/user/Customers"); // redirect after save
+
+    if (res.data?.success || res.status === 200) {
+      showAlert("Customer created successfully!", "success");
+      navigate("/user/Customers");
+    } else {
+      showAlert("Failed to create customer. Please try again.", "error");
+    }
   } catch (err) {
     console.error("❌ Error creating customer:", err.response?.data || err.message);
-      showAlert("Failed to create customer. Please try again.", "error");
-      setLoading(false);
-    // alert("Failed to create customer. Please check the console for details.");
+    showAlert("Server error. Please try again.", "error");
+  } finally {
+    // ✅ Always stop spinner no matter what
+    setLoading(false);
   }
 };
+
 
 
   return (
@@ -99,7 +119,7 @@ const CreateCustomer = () => {
             size="lg"
             className="text-red-700 px-2"
           />
-          Discard Product
+          Discard 
         </button>
       </div>
 
