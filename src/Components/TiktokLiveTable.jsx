@@ -51,7 +51,7 @@ export default function TiktokLiveTable() {
       try {
         setLoading(true);
         const res = await axios.get(
-          "http://dev-api.payonlive.com/api/event/event-list"
+          "https://dev-api.payonlive.com/api/event/event-list"
         );
 
         const eventsArray = res.data.data || [];
@@ -148,9 +148,9 @@ const sortedData = [...filteredData].sort((a, b) => {
       setDeleting(true);
       // Example API endpoint – replace with your actual delete API
       await axios.post(
-        "http://dev-api.payonlive.com/api/event/delete-multiple",
+        "https://dev-api.payonlive.com/api/event/bulk-delete",
         {
-          ids: selectedRows,
+        event_ids: selectedRows,
         }
       );
 

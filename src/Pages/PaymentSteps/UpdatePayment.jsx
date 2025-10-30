@@ -63,7 +63,7 @@ export default function UpdatePayment() {
       const fetchPayment = async () => {
         try {
           const res = await axios.get(
-            `http://dev-api.payonlive.com/api/payment/${paymentId}/details`
+            `https://dev-api.payonlive.com/api/payment/${paymentId}/details`
           );
           const data = res.data.data;
 
@@ -112,7 +112,7 @@ export default function UpdatePayment() {
 
   try {
     const res = await axios.put(
-      `http://dev-api.payonlive.com/api/payment/update-payment/${paymentId}`,
+      `https://dev-api.payonlive.com/api/payment/update-payment/${paymentId}`,
       payload
     );
     console.log("API Response:", res.data);
@@ -121,6 +121,7 @@ export default function UpdatePayment() {
   } catch (error) {
     console.error("Error updating payment:", error.response?.data || error);
     showAlert("Failed to update payment. Please try again.", "error");
+    btnLoading(false);
   }
 };
 

@@ -28,7 +28,8 @@ export default function CreatePayment() {
   // 🔹 Handle Submit
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    setLoading(true);
+    
     const payload = {
       orderId: orderID,
       amount: parseFloat(amount.replace(/[^0-9.]/g, "")),
@@ -40,11 +41,11 @@ export default function CreatePayment() {
     };
 
     console.log("📤 Sending payment payload:", payload);
-    setLoading(true);
+    
 
     try {
       const res = await axios.post(
-        "http://dev-api.payonlive.com/api/payment/create-payment",
+        "https://dev-api.payonlive.com/api/payment/create-payment",
         payload,
         {
           headers: { "Content-Type": "application/json" },

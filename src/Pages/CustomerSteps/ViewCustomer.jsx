@@ -86,7 +86,7 @@ const ViewCustomer = () => {
     const fetchCustomer = async () => {
       try {
         const response = await axios.get(
-          `http://dev-api.payonlive.com/api/user/user-details/${customerId}`
+          `https://dev-api.payonlive.com/api/user/user-details/${customerId}`
         );
 
         const result = response.data;
@@ -143,7 +143,7 @@ const ViewCustomer = () => {
     if (!confirmDelete) return;
     try {
       setIsDeleting(true);
-      const response = await axios.delete(`http://dev-api.payonlive.com/api/user/delete-customer/${customerId}`);
+      const response = await axios.delete(`https://dev-api.payonlive.com/api/user/delete-customer/${customerId}`);
       if (response.status === 200) {
         alert("Customer deleted successfully!");
         navigate("/user/Customers");

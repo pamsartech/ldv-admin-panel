@@ -41,7 +41,7 @@ const ViewProduct = () => {
     const fetchProduct = async () => {
       try {
         const res = await axios.get(
-          `http://dev-api.payonlive.com/api/product/product-details/${productId}`
+          `https://dev-api.payonlive.com/api/product/product-details/${productId}`
         );
         if (res.data.success) {
           setProduct(res.data.data);
@@ -64,7 +64,7 @@ const ViewProduct = () => {
     try {
       setIsDeleting(true);
       const response = await axios.delete(
-        `http://dev-api.payonlive.com/api/product/delete-product/${productId}`
+        `https://dev-api.payonlive.com/api/product/delete-product/${productId}`
       );
 
       if (response.data.success) {
@@ -161,9 +161,9 @@ const ViewProduct = () => {
             <div className="flex gap-4 mb-6">
               {product.images && product.images.length > 0 ? (
                 product.images.map((img, i) => {
-                  const imageUrl = img.startsWith("http")
+                  const imageUrl = img.startsWith("https")
                     ? img
-                    : `https://la-dolce-vita.onrender.com${img}`;
+                    : `https://dev-api.payonlive.com${img}`;
                   return (
                     <img
                       key={i}

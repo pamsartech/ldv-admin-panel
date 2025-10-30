@@ -75,7 +75,7 @@ const UpdateOrder = () => {
       const payload = { ...orderData };
 
       const response = await axios.put(
-        `http://dev-api.payonlive.com/api/order/update-order/${existingOrder._id}`,
+        `https://dev-api.payonlive.com/api/order/update-order/${existingOrder._id}`,
         payload,
         {
           headers: {
@@ -220,13 +220,13 @@ const UpdateOrder = () => {
         <section className="border border-gray-400 rounded-lg p-6 overflow-x-auto">
           <div className="flex justify-between items-center border-gray-200 pb-3 mb-4">
             <h2 className="text-lg font-semibold">Order Items</h2>
-            <button
+            {/* <button
               type="button"
               onClick={addProduct}
               className="flex items-center gap-2 bg-green-600 text-white text-[12px] font-semibold px-3 py-2 rounded-lg hover:bg-green-700"
             >
               <FontAwesomeIcon icon={faPlus} /> Add product
-            </button>
+            </button> */}
           </div>
 
           {orderItems.map((item, idx) => (
@@ -256,8 +256,8 @@ const UpdateOrder = () => {
                 </label>
                 <input
                   required
-                  id="address"
                   type="text"
+                   readOnly
                   value={item.productName}
                   onChange={(e) =>
                     handleProductChange(idx, "productName", e.target.value)
@@ -274,6 +274,7 @@ const UpdateOrder = () => {
                   required
                   type="number"
                   min="1"
+                   readOnly
                   value={item.quantity}
                   onChange={(e) =>
                     handleProductChange(
@@ -292,6 +293,7 @@ const UpdateOrder = () => {
                   type="number"
                   min="0.01"
                   step="0.01"
+                   readOnly
                   value={item.price}
                   onChange={(e) =>
                     handleProductChange(
@@ -318,7 +320,7 @@ const UpdateOrder = () => {
                 />
               </div>
 
-              <div className="md:col-span-2 flex justify-center">
+              {/* <div className="md:col-span-2 flex justify-center">
                 <button
                   type="button"
                   onClick={() => removeProduct(idx)}
@@ -329,7 +331,7 @@ const UpdateOrder = () => {
                     className="text-red-600 text-sm"
                   />
                 </button>
-              </div>
+              </div> */}
             </div>
           ))}
         </section>

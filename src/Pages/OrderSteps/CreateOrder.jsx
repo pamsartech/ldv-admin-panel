@@ -125,7 +125,7 @@ const CreateOrder = () => {
 
     try {
       const res = await axios.post(
-        "http://dev-api.payonlive.com/api/order/create-order",
+        "https://dev-api.payonlive.com/api/order/create-order",
         payload,
         { headers: { "Content-Type": "application/json" } }
       );
@@ -143,12 +143,14 @@ const CreateOrder = () => {
         // }, 1500);
       } else {
         showAlert("Failed to create order. Please try again.", "error");
+        setLoading(false);
         // setPopupMessage(res.data.message || "Failed to create order ❌");
         // setShowPopup(true);
       }
     } catch (err) {
       console.error("Sever Error  while creating order:", err);
       showAlert("Server error. Please try again.", "error");
+      setLoading(false);
       // setPopupMessage("Server error — please try again.");
       // setShowPopup(true);
     }
@@ -505,6 +507,7 @@ const CreateOrder = () => {
             >
               <option value="">Select shipping status</option>
               {/* <option>Shipped</option> */}
+              <option>Pending</option>
               <option>Processing</option>
               {/* <option>Delivered</option> */}
             </select>

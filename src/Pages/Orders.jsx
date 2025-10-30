@@ -1,10 +1,14 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import Navbar from "../Components/Navbar";
 // import TopButton from "../Components/TopButton";
 import { useNavigate } from "react-router-dom";
 import OrdersDataTable from "../Components/OrderDataTable";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faDownload, faUpload, faPlus } from "@fortawesome/free-solid-svg-icons";
+import {
+  faDownload,
+  faUpload,
+  faPlus,
+} from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
 
 function Orders() {
@@ -12,7 +16,6 @@ function Orders() {
 
   // Export state
   const [exporting, setExporting] = useState(false);
-  const [exportError, setExportError] = useState(null);
 
   // Import state
   const fileInputRef = useRef(null);
@@ -20,42 +23,59 @@ function Orders() {
   const [importProgress, setImportProgress] = useState(0); // 0-100
   const [importResult, setImportResult] = useState(null);
   const [importError, setImportError] = useState(null);
+  const [selectedOrders, setSelectedOrders] = useState([]);
+  const [fadeOut, setFadeOut] = useState(false);
+
+  useEffect(() => {
+    if (importResult?.failedOrders?.length > 0) {
+      setFadeOut(false);
+      const fadeTimer = setTimeout(() => setFadeOut(true), 2500); // start fade after 2.5s
+      const removeTimer = setTimeout(() => setImportResult(null), 3000); // remove after 3s
+
+      return () => {
+        clearTimeout(fadeTimer);
+      };
+    }
+  }, [importResult]);
 
   // Click handler for export - downloads file returned from server
   const handleExport = async () => {
     try {
-      console.log("Export triggered");
-      setExportError(null);
       setExporting(true);
 
-      const url = "http://dev-api.payonlive.com/api/order/export-orders"; // update as needed
+      const payload =
+        selectedOrders.length > 0
+          ? { orderIds: selectedOrders }
+          : { orderIds: [] };
 
-      const response = await axios.get(url, {
-        responseType: "blob",
+      const response = await axios.post(
+        "https://dev-api.payonlive.com/api/order/export-orders",
+        payload, // :white_check_mark: Body for POST
+        {
+          headers: { "Content-Type": "application/json" },
+          responseType: "blob",
+        }
+      );
+
+      console.log("Export API Response:", response);
+
+      // ✅ Create and trigger download
+      const blob = new Blob([response.data], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
-
-      console.log("Export API response headers:", response.headers);
-
-      let filename = "orders_export.xlsx";
-      const disposition = response.headers["content-disposition"];
-      if (disposition) {
-        const filenameMatch = disposition.match(/filename="?(.+)"?/);
-        if (filenameMatch && filenameMatch[1]) filename = filenameMatch[1];
-      }
-
-      const urlBlob = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
-      link.href = urlBlob;
-      link.setAttribute("download", filename);
+      link.href = URL.createObjectURL(blob);
+      link.download = "orders_export.xlsx";
       document.body.appendChild(link);
       link.click();
-      link.parentNode.removeChild(link);
-      window.URL.revokeObjectURL(urlBlob);
-
-      console.log("Export download started:", filename);
-    } catch (err) {
-      console.error("Export failed:", err);
-      setExportError("Failed to export orders. See console for details.");
+      link.remove();
+    } catch (error) {
+      console.error("❌ Error exporting orders:", error);
+      if (error.response) {
+        console.error("Response data:", error.response.data);
+        console.error("Response status:", error.response.status);
+      }
+      alert("Failed to export orders");
     } finally {
       setExporting(false);
     }
@@ -66,7 +86,7 @@ function Orders() {
     const file = e.target.files?.[0];
     if (!file) return;
     // optional client-side validation
-    const allowed = [ ".xlsx", ".xls", ".csv" ];
+    const allowed = [".xlsx", ".xls", ".csv"];
     const ext = file.name.slice(file.name.lastIndexOf(".")).toLowerCase();
     if (!allowed.includes(ext)) {
       alert("Please upload an .xlsx, .xls or .csv file");
@@ -84,12 +104,10 @@ function Orders() {
   const uploadImportFile = async (file) => {
     try {
       console.log("Import initiated for file:", file.name);
-      setImportError(null);
       setImportResult(null);
       setImporting(true);
-      setImportProgress(0);
 
-      const url = "https://la-dolce-vita.onrender.com/api/order/import-orders"; // update as needed
+      const url = "https://dev-api.payonlive.com/api/order/import-orders"; // update as needed
       const formData = new FormData();
       formData.append("file", file);
 
@@ -99,7 +117,9 @@ function Orders() {
         },
         onUploadProgress: (progressEvent) => {
           if (progressEvent.total) {
-            const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            const percent = Math.round(
+              (progressEvent.loaded * 100) / progressEvent.total
+            );
             setImportProgress(percent);
             console.log("Import upload progress:", percent, "%");
           }
@@ -112,9 +132,13 @@ function Orders() {
       if (response.data && response.data.success) {
         setImportResult(response.data);
         // show success toast / message
-        console.log(`Import completed: ${response.data.successCount} successes, ${response.data.failedCount} failed.`);
+        console.log(
+          `Import completed: ${response.data.successCount} successes, ${response.data.failedCount} failed.`
+        );
       } else {
-        setImportError(response.data?.message || "Import failed - unknown response");
+        setImportError(
+          response.data?.message || "Import failed - unknown response"
+        );
         console.warn("Import returned false success flag:", response.data);
       }
     } catch (err) {
@@ -128,7 +152,6 @@ function Orders() {
       setImportError(message);
     } finally {
       setImporting(false);
-      setImportProgress(0);
     }
   };
 
@@ -161,23 +184,6 @@ function Orders() {
             />
           </label>
 
-          {/* Import progress / result info */}
-          {importing && (
-            <div className="text-sm text-gray-600 ml-2">
-              Uploading: {importProgress}% 
-            </div>
-          )}
-          {importResult && (
-            <div className="ml-2 text-sm text-green-600">
-              Imported: {importResult.successCount} | Failed: {importResult.failedCount}
-            </div>
-          )}
-          {importError && (
-            <div className="ml-2 text-sm text-red-600">
-              Import error: {importError}
-            </div>
-          )}
-
           {/* Export Button (wired to API) */}
           <button
             onClick={handleExport}
@@ -187,11 +193,6 @@ function Orders() {
             <FontAwesomeIcon icon={faUpload} className="text-gray-600" />
             {exporting ? "Exporting..." : "Export"}
           </button>
-
-          {/* Export error message (simple inline) */}
-          {exportError && (
-            <span className="text-red-500 text-sm ml-2">{exportError}</span>
-          )}
 
           {/* Add Product Button */}
           <button
@@ -206,12 +207,20 @@ function Orders() {
 
       {/* Show failed orders details (if any) */}
       {importResult?.failedOrders && importResult.failedOrders.length > 0 && (
-        <div className="p-4 mx-6 bg-white rounded shadow mt-3">
+        <div
+          className={`p-2 mx-2 bg-white rounded shadow mt-3 transition-opacity duration-500 ease-in-out ${
+            fadeOut
+              ? "opacity-0 translate-y-[-10px] h-0 p-0 m-0 overflow-hidden"
+              : "opacity-100 translate-y-0"
+          }`}
+        >
           <h4 className="font-medium mb-2">Failed Orders ({importResult.failedOrders.length})</h4>
           <div className="text-xs text-gray-700 space-y-2 max-h-48 overflow-auto">
             {importResult.failedOrders.map((f, idx) => (
               <div key={idx} className="border-b pb-2">
-                <div><strong>{f.customerName || f.orderKey}</strong></div>
+                <div>
+                  <strong>{f.customerName || f.orderKey}</strong>
+                </div>
                 <div className="text-gray-600">Email: {f.email}</div>
                 <div className="text-red-600">Error: {f.error}</div>
               </div>
@@ -220,7 +229,7 @@ function Orders() {
         </div>
       )}
 
-      <OrdersDataTable />
+      <OrdersDataTable onSelectionChange={setSelectedOrders} />
     </div>
   );
 }

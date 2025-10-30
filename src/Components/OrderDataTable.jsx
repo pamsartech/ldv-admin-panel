@@ -27,7 +27,7 @@ const statusColors = {
   "Out for delivery": "bg-orange-100 text-orange-700 border border-orange-300",
 };
 
-export default function OrdersDataTable() {
+export default function OrdersDataTable({ onSelectionChange }) {
   const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -38,10 +38,19 @@ export default function OrdersDataTable() {
   const [filterPayment, setFilterPayment] = useState("all");
   const [sortAsc, setSortAsc] = useState(true);
   const [search, setSearch] = useState("");
+  const [selectAll, setSelectAll] = useState(false);
   const [selectedRows, setSelectedRows] = useState([]);
   const [deleting, setDeleting] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const ordersPerPage = 8;
+  
+  useEffect(() => {
+  if (onSelectionChange) {
+    onSelectionChange(selectedRows);
+  }
+}, [selectedRows, onSelectionChange]);
+
+
+const ordersPerPage = 8;
 
   const [averageData, setAverageData] = useState({
     averageOrder: 0,
@@ -55,7 +64,7 @@ export default function OrdersDataTable() {
       setError(null);
       try {
         const response = await axios.get(
-          "http://dev-api.payonlive.com/api/order/order-list"
+          "https://dev-api.payonlive.com/api/order/order-list"
         );
         const apiOrders = response.data.orders || response.data.data || [];
         const formattedOrders = apiOrders.map((o) => ({
@@ -87,7 +96,7 @@ export default function OrdersDataTable() {
     const fetchAverageData = async () => {
       try {
         const res = await axios.get(
-          "http://dev-api.payonlive.com/api/order/orders-average"
+          "https://dev-api.payonlive.com/api/order/orders-average"
         );
         if (res.data.success) {
           setAverageData({
@@ -147,55 +156,61 @@ export default function OrdersDataTable() {
     setSelectedRows((prev) =>
       prev.includes(id) ? prev.filter((row) => row !== id) : [...prev, id]
     );
+   
   };
 
   const handleSelectAll = () => {
-    if (selectedRows.length === currentOrders.length) {
-      setSelectedRows([]);
-    } else {
-      setSelectedRows(currentOrders.map((o) => o.id));
-    }
-  };
+  let newSelected = [];
 
-  const handleOpenConfirm = () => {
-    if (selectedRows.length === 0) return;
-    setConfirmOpen(true);
-  };
+  if (!selectAll) {
+    newSelected = currentOrders.map((o) => o.id);
+  }
 
+  setSelectedRows(newSelected);
+  setSelectAll(!selectAll);
+};
+
+  // const handleSelectAll = () => {
+
+  //    let newSelected = [];
+  //   if (!selectAll) newSelected = currentOrders.map((o) => o.id);
+  //   setSelectedRows(newSelected);
+  //   setSelectAll(!selectAll);
+  //   onSelectionChange(newSelected);
+
+  //   if (selectedRows.length === currentOrders.length) {
+  //     setSelectedRows([]);
+  //   } else {
+  //     setSelectedRows(currentOrders.map((o) => o.id));
+  //   }
+  // };
+
+  // const handleOpenConfirm = () => {
+  //   if (selectedRows.length === 0) return;
+  //   setConfirmOpen(true);
+  // };
+
+  // const handleCloseConfirm = () => setConfirmOpen(false);
+  const handleOpenConfirm = () => setConfirmOpen(true);
   const handleCloseConfirm = () => setConfirmOpen(false);
-
+  
   const handleBulkDelete = async () => {
+  setDeleting(true);
   try {
-    setDeleting(true);
+    await axios.post("https://dev-api.payonlive.com/api/order/bulk-delete", {
+      order_ids: selectedRows.map(String),
+    });
 
-    console.log("Deleting order IDs:", selectedRows); // Debug log
-
-    const response = await axios.post(
-      "http://dev-api.payonlive.com/api/order/bulk-delete",
-      { order_ids: selectedRows }, // ✅ Correct key name
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    if (response.data.success) {
-      // ✅ Remove deleted orders locally
-      setOrders((prev) => prev.filter((o) => !selectedRows.includes(o.id)));
-      setSelectedRows([]);
-      setConfirmOpen(false);
-    } else {
-      console.error("Delete failed:", response.data);
-      alert(response.data.message || "Failed to delete selected orders.");
-    }
-  } catch (error) {
-    console.error("Bulk delete error:", error.response || error);
-    alert("Failed to delete selected orders. Check console for details.");
+    setOrders((prev) => prev.filter((o) => !selectedRows.includes(o.id)));
+    setSelectedRows([]);
+    handleCloseConfirm(); // ✅ Matches the same closing logic
+  } catch (err) {
+    console.error("Bulk delete failed", err);
   } finally {
     setDeleting(false);
   }
 };
+
 
 
   // ✅ Skeletons

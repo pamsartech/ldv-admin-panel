@@ -43,7 +43,7 @@ export default function ViewOrder() {
     const fetchOrder = async () => {
       try {
         const response = await axios.get(
-          `http://dev-api.payonlive.com/api/order/order-details/${orderId}`
+          `https://dev-api.payonlive.com/api/order/order-details/${orderId}`
         );
         if (response.data.success && response.data.data) {
           setOrder(response.data.data);
@@ -111,7 +111,7 @@ export default function ViewOrder() {
     try {
       setIsDeleting(true);
       const response = await axios.delete(
-        `http://dev-api.payonlive.com/api/order/delete-order/${orderId}`
+        `https://dev-api.payonlive.com/api/order/delete-order/${orderId}`
       );
 
       if (response.data.success) {
@@ -214,7 +214,7 @@ export default function ViewOrder() {
 
                 <div className="flex justify-between items-center">
                   <span>Payment Status</span>
-                  <span className="inline-block bg-green-100 text-green-600 text-xs font-semibold rounded-full px-3 py-1">
+                  <span className="inline-block">
                     {order.paymentStatus}
                   </span>
                 </div>
@@ -273,6 +273,7 @@ export default function ViewOrder() {
 
                       <div className="flex-1">
                         <div className="font-medium">{item.productName}</div>
+                        <div className="text-xs font-medium"> Qty: {item.quantity} x  €{item.price} </div>
                       </div>
                       <div className="text-sm">€{item.price}</div>
                     </div>

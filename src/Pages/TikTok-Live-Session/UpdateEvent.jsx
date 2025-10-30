@@ -82,7 +82,7 @@ function UpdateEvent() {
       const payload = { eventDetails, hostInformation: hostInfo };
       console.log(payload);
       const response = await axios.put(
-        `http://dev-api.payonlive.com/api/event/update-event/${eventId}`,
+        `https://dev-api.payonlive.com/api/event/update-event/${eventId}`,
         payload
       );
 

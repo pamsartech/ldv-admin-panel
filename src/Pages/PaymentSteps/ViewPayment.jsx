@@ -26,7 +26,7 @@ function ViewPayment() {
     const fetchPayment = async () => {
       try {
         const response = await axios.get(
-          `http://dev-api.payonlive.com/api/payment/${paymentId}/details`
+          `https://dev-api.payonlive.com/api/payment/${paymentId}/details`
         );
 
         if (response.data?.success) {
@@ -57,7 +57,7 @@ function ViewPayment() {
     try {
       setIsDeleting(true);
       const response = await axios.delete(
-        `http://dev-api.payonlive.com/api/payment/delete-payment/${paymentId}`
+        `https://dev-api.payonlive.com/api/payment/delete-payment/${paymentId}`
       );
 
       if (response.data.success) {

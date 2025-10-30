@@ -38,7 +38,7 @@ const UpdateCustomer = () => {
   const fetchCustomer = async () => {
     try {
       const res = await axios.get(
-        `http://dev-api.payonlive.com/api/user/user-details/${customerId}`
+        `https://dev-api.payonlive.com/api/user/user-details/${customerId}`
       );
 
       const user = res.data?.data?.user || {};
@@ -107,7 +107,7 @@ const UpdateCustomer = () => {
 
     try {
       const res = await axios.put(
-        `http://dev-api.payonlive.com/api/user/update-customer/${customerId}`,
+        `https://dev-api.payonlive.com/api/user/update-customer/${customerId}`,
         payload
       );
 

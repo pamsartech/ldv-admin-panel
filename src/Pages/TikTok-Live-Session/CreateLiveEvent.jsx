@@ -81,7 +81,7 @@ function CreateLiveEvent() {
 
     try {
       const response = await axios.get(
-        `http://dev-api.payonlive.com/api/product/product-code/${trimmedId}`
+        `https://dev-api.payonlive.com/api/product/product-code/${trimmedId}`
       );
       if (response.data.success) {
         const productData = response.data.data;
@@ -92,6 +92,7 @@ function CreateLiveEvent() {
         }
       } else {
         showAlert(response.data.message || "Product not found.", "error");
+        console.log(response)
       }
     } catch (error) {
       console.error("❌ Error fetching product:", error);
@@ -146,50 +147,53 @@ function CreateLiveEvent() {
   // ----------------------
   // Submit Event
   // ----------------------
-  const handleSave = async (e) => {
-    e.preventDefault();
-    if (!validate()) return;
-    
-    setBtnLoading(true);
-    setLoading(true);
+ const handleSave = async (e) => {
+  e.preventDefault();
+  if (!validate()) return;
 
-    const payload = {
-      eventDetails: {
-        ...eventDetails,
-        status: eventDetails.status.toLowerCase(),
-        startDateTime: new Date(eventDetails.startDateTime).toISOString(),
-        endDateTime: new Date(eventDetails.endDateTime).toISOString(),
-      },
-      products: products.map((p) => ({ productId: p._id })),
-      hostInformation: {
-        ...hostInfo,
-        hostPhoneNumber: String(hostInfo.hostPhoneNumber),
-      },
-    };
+  setBtnLoading(true);
+  setLoading(true);
 
-    try {
-      const response = await axios.post(
-        "http://dev-api.payonlive.com/api/event/create-live-event",
-        payload,
-        {
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-
-      if (response.data?.success || response.status === 200) {
-        showAlert("Event created successfully!", "success", () => {
-          navigate("/user/tiktok");
-        });
-      } else {
-        showAlert(response.data.message || "Failed to create event.", "error");
-      }
-    } catch (error) {
-      console.error("❌ Error creating event:", error);
-      showAlert("Server error - Please try again.", "error");
-    } finally {
-      setLoading(false);
-    }
+  const payload = {
+    eventDetails: {
+      ...eventDetails,
+      status: eventDetails.status.toLowerCase(),
+      startDateTime: new Date(eventDetails.startDateTime).toISOString(),
+      endDateTime: new Date(eventDetails.endDateTime).toISOString(),
+    },
+    products: products.map((p) => ({ productId: p._id })),
+    hostInformation: {
+      ...hostInfo,
+      hostPhoneNumber: String(hostInfo.hostPhoneNumber),
+    },
   };
+
+  try {
+    const response = await axios.post(
+      "https://dev-api.payonlive.com/api/event/create-live-event",
+      payload,
+      {
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+
+    if (response.data?.success || response.status === 200) {
+      showAlert("Event created successfully!", "success", () => {
+        navigate("/user/tiktok");
+      });
+    } else {
+      showAlert(response.data.message || "Failed to create event.", "error");
+    }
+  } catch (error) {
+    console.error("❌ Error creating event:", error);
+    showAlert("Server error - Please try again.", "error");
+  } finally {
+    // ✅ Always stop spinner regardless of success or failure
+    setBtnLoading(false);
+    setLoading(false);
+  }
+};
+
 
   // ----------------------
   // Popup auto-hide

@@ -67,7 +67,7 @@ const CreateCustomer = () => {
 
   try {
     const res = await axios.post(
-      "http://dev-api.payonlive.com/api/user/create-customer",
+      "https://dev-api.payonlive.com/api/user/create-customer",
       payload
     );
 
@@ -77,6 +77,7 @@ const CreateCustomer = () => {
   } catch (err) {
     console.error("❌ Error creating customer:", err.response?.data || err.message);
       showAlert("Failed to create customer. Please try again.", "error");
+      setLoading(false);
     // alert("Failed to create customer. Please check the console for details.");
   }
 };
