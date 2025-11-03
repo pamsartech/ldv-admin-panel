@@ -45,7 +45,7 @@ function Dashboard() {
           totalSales: totalSalesRes.data.totalSales ?? 0,
           pendingOrders: pendingOrdersRes.data.pendingOrderCount ?? 0,
           totalProducts: totalProductsRes.data.totalProducts ?? 0,
-          activeTikTokSales: activeTikTokRes.data.activeEventCount ?? 0,
+          activeTikTokSales: activeTikTokRes.data.totalActiveEvents ?? 0,
         });
       } catch (err) {
         console.error("Error fetching dashboard data:", err);

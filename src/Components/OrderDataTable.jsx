@@ -13,7 +13,16 @@ import {
   faTimes,
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
-import { Skeleton, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button } from "@mui/material";
+import {
+  Skeleton,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Button,
+} from "@mui/material";
 
 const statusColors = {
   Pending: "bg-yellow-100 text-yellow-700 border border-yellow-300",
@@ -42,15 +51,14 @@ export default function OrdersDataTable({ onSelectionChange }) {
   const [selectedRows, setSelectedRows] = useState([]);
   const [deleting, setDeleting] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
-  
+
   useEffect(() => {
-  if (onSelectionChange) {
-    onSelectionChange(selectedRows);
-  }
-}, [selectedRows, onSelectionChange]);
+    if (onSelectionChange) {
+      onSelectionChange(selectedRows);
+    }
+  }, [selectedRows, onSelectionChange]);
 
-
-const ordersPerPage = 8;
+  const ordersPerPage = 8;
 
   const [averageData, setAverageData] = useState({
     averageOrder: 0,
@@ -156,19 +164,18 @@ const ordersPerPage = 8;
     setSelectedRows((prev) =>
       prev.includes(id) ? prev.filter((row) => row !== id) : [...prev, id]
     );
-   
   };
 
   const handleSelectAll = () => {
-  let newSelected = [];
+    let newSelected = [];
 
-  if (!selectAll) {
-    newSelected = currentOrders.map((o) => o.id);
-  }
+    if (!selectAll) {
+      newSelected = currentOrders.map((o) => o.id);
+    }
 
-  setSelectedRows(newSelected);
-  setSelectAll(!selectAll);
-};
+    setSelectedRows(newSelected);
+    setSelectAll(!selectAll);
+  };
 
   // const handleSelectAll = () => {
 
@@ -193,25 +200,23 @@ const ordersPerPage = 8;
   // const handleCloseConfirm = () => setConfirmOpen(false);
   const handleOpenConfirm = () => setConfirmOpen(true);
   const handleCloseConfirm = () => setConfirmOpen(false);
-  
+
   const handleBulkDelete = async () => {
-  setDeleting(true);
-  try {
-    await axios.post("https://dev-api.payonlive.com/api/order/bulk-delete", {
-      order_ids: selectedRows.map(String),
-    });
+    setDeleting(true);
+    try {
+      await axios.post("https://dev-api.payonlive.com/api/order/bulk-delete", {
+        order_ids: selectedRows.map(String),
+      });
 
-    setOrders((prev) => prev.filter((o) => !selectedRows.includes(o.id)));
-    setSelectedRows([]);
-    handleCloseConfirm(); // ✅ Matches the same closing logic
-  } catch (err) {
-    console.error("Bulk delete failed", err);
-  } finally {
-    setDeleting(false);
-  }
-};
-
-
+      setOrders((prev) => prev.filter((o) => !selectedRows.includes(o.id)));
+      setSelectedRows([]);
+      handleCloseConfirm(); // ✅ Matches the same closing logic
+    } catch (err) {
+      console.error("Bulk delete failed", err);
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   // ✅ Skeletons
   const skeletonRows = Array.from({ length: ordersPerPage }).map((_, idx) => (
@@ -228,9 +233,24 @@ const ordersPerPage = 8;
     <div className="bg-white rounded-lg shadow p-6 border">
       <Skeleton animation="wave" variant="text" width="50%" height={30} />
       <div className="flex gap-4 mt-4">
-        <Skeleton animation="wave" variant="rectangular" width={50} height={30} />
-        <Skeleton animation="wave" variant="rectangular" width={50} height={30} />
-        <Skeleton animation="wave" variant="rectangular" width={50} height={30} />
+        <Skeleton
+          animation="wave"
+          variant="rectangular"
+          width={50}
+          height={30}
+        />
+        <Skeleton
+          animation="wave"
+          variant="rectangular"
+          width={50}
+          height={30}
+        />
+        <Skeleton
+          animation="wave"
+          variant="rectangular"
+          width={50}
+          height={30}
+        />
       </div>
     </div>
   );
@@ -316,31 +336,34 @@ const ordersPerPage = 8;
             Sort {sortAsc ? "A→Z" : "Z→A"}
           </button>
 
-            {/* bulk delete button */}
-           <button
-                onClick={handleOpenConfirm}
-                disabled={selectedRows.length === 0 || deleting}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-white transition ${
-                  selectedRows.length === 0 || deleting
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-red-600 hover:bg-red-700"
-                }`}
-              >
-                {deleting ? (
-                  <CircularProgress size={18} color="inherit" />
-                ) : (
-                  <>
-                    <FontAwesomeIcon icon={faTrash} />
-                    Delete Selected ({selectedRows.length})
-                  </>
-                )}
-              </button>
+          {/* bulk delete button */}
+          <button
+            onClick={handleOpenConfirm}
+            disabled={selectedRows.length === 0 || deleting}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-white transition ${
+              selectedRows.length === 0 || deleting
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-red-600 hover:bg-red-700"
+            }`}
+          >
+            {deleting ? (
+              <CircularProgress size={18} color="inherit" />
+            ) : (
+              <>
+                <FontAwesomeIcon icon={faTrash} />
+                Delete Selected ({selectedRows.length})
+              </>
+            )}
+          </button>
         </div>
       </div>
 
       {/* Search bar */}
       <div className="flex gap-2 mx-6 relative mt-5">
-        <FontAwesomeIcon icon={faSearch} className="absolute left-3 top-3 text-gray-400" />
+        <FontAwesomeIcon
+          icon={faSearch}
+          className="absolute left-3 top-3 text-gray-400"
+        />
         <input
           type="text"
           placeholder="Search"
@@ -361,8 +384,6 @@ const ordersPerPage = 8;
               selectedOrder ? "col-span-9" : "col-span-12"
             }`}
           >
-           
-
             <table className="w-full text-sm text-left border-collapse">
               <thead>
                 <tr className="border-b text-gray-600">
@@ -385,63 +406,64 @@ const ordersPerPage = 8;
                 </tr>
               </thead>
               <tbody>
-                {loading
-                  ? skeletonRows
-                  : currentOrders.length > 0
-                  ? currentOrders.map((order) => (
-                      <tr
-                        key={order.id}
-                        className={`border-b hover:bg-gray-50 ${
-                          selectedRows.includes(order.id)
-                            ? "bg-red-50"
-                            : ""
-                        }`}
-                      >
-                        <td className="py-3 px-4">
-                          <input
-                            type="checkbox"
-                            checked={selectedRows.includes(order.id)}
-                            onChange={() => handleSelectRow(order.id)}
-                          />
-                        </td>
-                        <td className="py-3 px-4 font-medium">{order.id}</td>
-                        <td className="py-3 px-4">{order.customer}</td>
-                        <td className="py-3 px-4">{order.product}</td>
-                        <td className="py-3 px-4">
-                          <span
-                            className={`px-3 py-1 rounded-full text-xs font-medium ${
-                              statusColors[order.payment]
-                            }`}
-                          >
-                            {order.payment}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4">
-                          <span
-                            className={`px-3 py-1 rounded-full text-xs font-medium ${
-                              statusColors[order.shipping]
-                            }`}
-                          >
-                            {order.shipping}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 text-gray-500">
-                          <button
-                            onClick={() => setSelectedOrder(order)}
-                            className="hover:text-black"
-                          >
-                            <FontAwesomeIcon icon={faAngleRight} />
-                          </button>
-                        </td>
-                      </tr>
-                    ))
-                  : (
-                    <tr>
-                      <td colSpan="7" className="text-center py-6 text-gray-500 italic">
-                        No matching results
+                {loading ? (
+                  skeletonRows
+                ) : currentOrders.length > 0 ? (
+                  currentOrders.map((order) => (
+                    <tr
+                      key={order.id}
+                      className={`border-b hover:bg-gray-50 ${
+                        selectedRows.includes(order.id) ? "bg-red-50" : ""
+                      }`}
+                    >
+                      <td className="py-3 px-4">
+                        <input
+                          type="checkbox"
+                          checked={selectedRows.includes(order.id)}
+                          onChange={() => handleSelectRow(order.id)}
+                        />
+                      </td>
+                      <td className="py-3 px-4 font-medium">{order.id}</td>
+                      <td className="py-3 px-4">{order.customer}</td>
+                      <td className="py-3 px-4">{order.product}</td>
+                      <td className="py-3 px-4">
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-medium ${
+                            statusColors[order.payment]
+                          }`}
+                        >
+                          {order.payment}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4">
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-medium ${
+                            statusColors[order.shipping]
+                          }`}
+                        >
+                          {order.shipping}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-gray-500">
+                        <button
+                          onClick={() => setSelectedOrder(order)}
+                          className="hover:text-black"
+                        >
+                          <FontAwesomeIcon icon={faAngleRight} />
+                        </button>
                       </td>
                     </tr>
-                  )}
+                  ))
+                ) : (
+                  <tr>
+                    <td
+                      colSpan="7"
+                      className="text-center py-6 text-gray-500 italic"
+                    >
+                      No matching results
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
 
@@ -479,15 +501,14 @@ const ordersPerPage = 8;
             </div>
 
             {/* Bottom Cards */}
-            <div className="grid grid-cols-2 lg:w-3xl gap-6 mt-16 mx-auto">
+            <div className="flex justify-center mt-16">
               {loading ? (
                 <>
-                  {skeletonCard}
                   {skeletonCard}
                 </>
               ) : (
                 <>
-                  <div className="bg-white rounded-lg shadow p-6 border">
+                  {/* <div className="bg-white rounded-lg shadow p-6 border">
                     <h3 className="font-semibold text-gray-800">
                       TikTok Live Event
                     </h3>
@@ -496,9 +517,9 @@ const ordersPerPage = 8;
                       <button className="hover:text-black">Week</button>
                       <button className="hover:text-black">Month</button>
                     </div>
-                  </div>
+                  </div> */}
 
-                  <div className="bg-white rounded-lg shadow p-6 border flex items-center justify-between">
+                  <div className="bg-white rounded-lg shadow p-6 border flex items-center justify-between max-w-xl">
                     <div>
                       <h3 className="font-semibold text-sm text-gray-800 mb-2">
                         Average Order value
@@ -559,11 +580,21 @@ const ordersPerPage = 8;
                     </p>
                     <p>
                       <strong>Date:</strong>{" "}
-                      {selectedOrder.date || "20/08/2025"}
+                      {selectedOrder?.date
+                        ? new Date(selectedOrder.date).toLocaleString("en-GB", {
+                            day: "2-digit",
+                            month: "numeric", // shows "Oct" instead of "10"
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: true, // shows AM/PM instead of 24-hour time
+                          })
+                        : "20/08/2025"}
                     </p>
+
                     <p>
                       <strong>Order amount:</strong> €{" "}
-                      {selectedOrder.amount || "28.23"}
+                      {selectedOrder.amount.toFixed(2) || "28.23"}
                     </p>
                     <p>
                       <strong>Status:</strong> {selectedOrder.payment}
@@ -641,4 +672,3 @@ const ordersPerPage = 8;
     </div>
   );
 }
-

@@ -26,7 +26,7 @@ import axios from "axios";
 import { Skeleton } from "@mui/material";
 import namer from "color-namer";
 
-export default function ProductTable({onSelectionChange}) {
+export default function ProductTable({ onSelectionChange }) {
   const navigate = useNavigate();
 
   const [products, setProducts] = useState([]);
@@ -50,10 +50,11 @@ export default function ProductTable({onSelectionChange}) {
 
   const getImageUrl = (img) => {
     if (!img) return "/placeholder-image.png";
-    return img.startsWith("https") ? img : `https://dev-api.payonlive.com${img}`;
+    return img.startsWith("https")
+      ? img
+      : `https://dev-api.payonlive.com${img}`;
     // `httpss://la-dolce-vita.onrender.com${img}`;
   };
-
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -100,14 +101,40 @@ export default function ProductTable({onSelectionChange}) {
     Inactive: "bg-red-100 text-red-700 border border-red-300",
   };
 
-  const hexToColorName = (hex) => {
-    if (!hex) return "Unknown";
-    try {
-      const result = namer(hex);
-      return result.basic[0]?.name || hex;
-    } catch {
-      return hex;
+  // const hexToColorName = (hex) => {
+  //   if (!hex) return "Unknown";
+  //   try {
+  //     const result = namer(hex);
+  //     return result.basic[0]?.name || hex;
+  //   } catch {
+  //     return hex;
+  //   }
+  // };
+
+  const hexToColorName = (color) => {
+    if (!color) return "Unknown";
+
+    // ✅ Ensure it's always a string
+    const colorStr = String(color).trim().toLowerCase();
+
+    // ✅ If it's already a named color (like "white", "red"), just return it
+    if (!colorStr.startsWith("#") && /^[a-z]+$/.test(colorStr)) {
+      return colorStr.charAt(0).toUpperCase() + colorStr.slice(1);
     }
+
+    // ✅ If it's a valid hex color (like #fff or #ffffff)
+    const isHex = /^#([0-9A-F]{3}){1,2}$/i.test(colorStr);
+    if (isHex) {
+      try {
+        const result = namer(colorStr);
+        return result.basic[0]?.name || colorStr;
+      } catch {
+        return colorStr;
+      }
+    }
+
+    // Fallback (for rgb(), rgba(), or unknown formats)
+    return colorStr.charAt(0).toUpperCase() + colorStr.slice(1);
   };
 
   if (activeTab !== "all") {
@@ -148,15 +175,14 @@ export default function ProductTable({onSelectionChange}) {
     startIndex + rowsPerPage
   );
 
-   const toggleSelectAll = () => {
-  let newSelected = [];
-  if (!allSelected) newSelected = currentProducts.map((p) => p._id);
-  setSelected(newSelected);
-  onSelectionChange(newSelected)
-};
+  const toggleSelectAll = () => {
+    let newSelected = [];
+    if (!allSelected) newSelected = currentProducts.map((p) => p._id);
+    setSelected(newSelected);
+    onSelectionChange(newSelected);
+  };
 
   const toggleSelect = (id) => {
-   
     let newSelected;
     if (selected.includes(id)) {
       newSelected = selected.filter((x) => x !== id);
@@ -213,7 +239,7 @@ export default function ProductTable({onSelectionChange}) {
       await axios.post(
         "https://dev-api.payonlive.com/api/product/bulk-delete",
         {
-         product_ids: selected,
+          product_ids: selected,
         }
       );
 
@@ -360,8 +386,7 @@ export default function ProductTable({onSelectionChange}) {
                 )}
               </div>
 
-
-             {/* bulk delete button */}
+              {/* bulk delete button */}
               <div className=" relative">
                 <button
                   onClick={handleOpenConfirm}
@@ -480,7 +505,7 @@ export default function ProductTable({onSelectionChange}) {
                       />
                     </td>
                     <td className="p-3">{item.productName}</td>
-                    <td className="p-3">{item.price}</td>
+                    <td className="p-3">€ {item.price.toFixed(2)}</td>
                     <td className="p-3">{item.category}</td>
                     <td className="p-3">{item.productCode}</td>
                     <td className="p-3">{item.size}</td>

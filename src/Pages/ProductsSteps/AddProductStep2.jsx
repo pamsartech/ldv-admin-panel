@@ -16,9 +16,9 @@ function AddProductStep2({ formData, setFormData, prevStep, nextStep }) {
 
   // States
   const [selectedGender, setSelectedGender] = useState(formData.gender || "Men");
-  const [selectedSize, setSelectedSize] = useState(formData.size || "M");
+  const [selectedSize, setSelectedSize] = useState(formData.size || []); // changed from single
   const [colors, setColors] = useState(["#FF0000", "#2563EB", "#8B5CF6", "#6B7280"]);
-  const [selectedColor, setSelectedColor] = useState(formData.color || "#B21E1E");
+  const [selectedColor, setSelectedColor] = useState(formData.color || []);  // changed from single
   const [showColorPicker, setShowColorPicker] = useState(false);
 
   // New enable/disable toggles
@@ -34,17 +34,19 @@ function AddProductStep2({ formData, setFormData, prevStep, nextStep }) {
     }));
   }, [enableGender, selectedGender, setFormData]);
 
+  // for select color
   useEffect(() => {
     setFormData((prev) => ({
       ...prev,
-      color: enableColor ? selectedColor : "N/A",
+      color: enableColor ? selectedColor : [],
     }));
   }, [enableColor, selectedColor, setFormData]);
 
+  // for select size
   useEffect(() => {
     setFormData((prev) => ({
       ...prev,
-      size: enableSize ? selectedSize : "N/A",
+      size: enableSize ? selectedSize : [],
     }));
   }, [enableSize, selectedSize, setFormData]);
 
@@ -52,6 +54,24 @@ function AddProductStep2({ formData, setFormData, prevStep, nextStep }) {
     const newColor = color.hex;
     if (!colors.includes(newColor)) setColors((p) => [...p, newColor]);
     setSelectedColor(newColor);
+  };
+
+  // Toggle color selection
+  const toggleColor = (color) => {
+    setSelectedColor((prev) =>
+      prev.includes(color)
+        ? prev.filter((c) => c !== color)
+        : [...prev, color]
+    );
+  };
+
+  // Toggle size selection
+  const toggleSize = (size) => {
+    setSelectedSize((prev) =>
+      prev.includes(size)
+        ? prev.filter((s) => s !== size)
+        : [...prev, size]
+    );
   };
 
   return (
@@ -155,10 +175,10 @@ function AddProductStep2({ formData, setFormData, prevStep, nextStep }) {
                   <div
                     key={idx}
                     className={`w-6 h-6 rounded-full border cursor-pointer transition-all ${
-                      selectedColor === color && enableColor ? "ring-2 ring-purple-600 scale-110" : ""
+                      selectedColor.includes(color) && enableColor ? "ring-2 ring-purple-600 scale-110" : ""
                     } ${!enableColor ? "opacity-50 cursor-not-allowed" : ""}`}
                     style={{ backgroundColor: color }}
-                    onClick={() => enableColor && setSelectedColor(color)}
+                    onClick={() => enableColor && toggleColor(color)}
                   />
                 ))}
                 <button
@@ -184,29 +204,29 @@ function AddProductStep2({ formData, setFormData, prevStep, nextStep }) {
               )}
             </div>
 
-            {/* Size */}
+           {/* Size */}
             <div className="mt-8">
-              <div className="flex  mb-2">
+              <div className="flex mb-2">
                 <h3 className="font-semibold text-gray-800">Size</h3>
                 <label className="flex items-center mx-9 gap-2 text-sm">
                   <input
                     type="checkbox"
                     checked={enableSize}
                     onChange={(e) => setEnableSize(e.target.checked)}
-                    className=" cursor-pointer "
+                    className="cursor-pointer"
                   />
                   Enable selection
                 </label>
               </div>
-              <div className="flex gap-3">
+              <div className="flex gap-3 flex-wrap">
                 {["XS", "S", "M", "L", "XL"].map((size) => (
                   <button
                     type="button"
                     key={size}
                     disabled={!enableSize}
-                    onClick={() => enableSize && setSelectedSize(size)}
+                    onClick={() => enableSize && toggleSize(size)}
                     className={`px-4 py-2 rounded-lg border transition ${
-                      selectedSize === size && enableSize
+                      selectedSize.includes(size) && enableSize
                         ? "bg-[#6750A4] text-white "
                         : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
                     } ${!enableSize ? "opacity-50 cursor-not-allowed" : ""}`}

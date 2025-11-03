@@ -193,6 +193,7 @@ export default function CreatePayment() {
             <label className="block text-sm font-medium mb-1">Delivery Status</label>
             <select
               value={deliveryStatus}
+               disabled // ✅ make it non-editable
               onChange={(e) => setDeliveryStatus(e.target.value)}
               className="w-full border border-gray-400 text-gray-600 rounded-lg px-3 py-2 text-sm"
             >

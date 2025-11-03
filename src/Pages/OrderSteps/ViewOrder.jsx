@@ -189,6 +189,7 @@ export default function ViewOrder() {
                 <div className="flex justify-between">
                   <span>Date</span>
                   <span>{new Date(order.createdAt).toLocaleDateString()}</span>
+                   {/* {new Date(ordercreatedAt).toLocaleString()} */}
                 </div>
 
                 <div className="flex justify-between">
@@ -381,7 +382,7 @@ export default function ViewOrder() {
       className="absolute left-6 top-0 w-[2px] bg-green-500 transition-all duration-700"
       style={{
         height:
-          orderStatus?.toLowerCase() === "shipped"
+          orderStatus?.toLowerCase() === "shipped" || "delivered"
             ? "100%"
             : orderStatus?.toLowerCase() === "in_progress" ||
               orderStatus?.toLowerCase() === "processing"

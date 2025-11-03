@@ -19,7 +19,16 @@ const CreateOrder = () => {
 
   // 🔹 State for order items
   const [orderItems, setOrderItems] = useState([
-    { productName: "", quantity: 1, price: 0 },
+    {
+      productCode: "",
+      productName: "",
+      quantity: 1,
+      price: 0,
+      color: "",
+      size: "",
+      availableColors: [],
+      availableSizes: [],
+    },
   ]);
 
   // 🔹 State for payment & shipping
@@ -32,6 +41,10 @@ const CreateOrder = () => {
   const [errors, setErrors] = useState({});
   const [showPopup, setShowPopup] = useState(false);
   const [popupMessage, setPopupMessage] = useState("");
+
+  // for check user email exist or not
+  const [userExists, setUserExists] = useState(false);
+  const [userChecked, setUserChecked] = useState(false);
 
   useEffect(() => {
     if (showPopup) {
@@ -86,7 +99,7 @@ const CreateOrder = () => {
     // Validate order items
     orderItems.forEach((item, idx) => {
       if (!item.productName.trim())
-        newErrors[`product_${idx}`] = `Product name is required for item ${
+        newErrors[`product_${idx}`] = `Product code is required for item ${
           idx + 1
         }`;
       if (item.price <= 0)
@@ -100,57 +113,184 @@ const CreateOrder = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  // 🔹 Handle form submit
-  const handleSubmit = async (e) => {
-  e.preventDefault();
+  // 🔍 Fetch user by email and autofill details
+  const fetchUserByEmail = async (email) => {
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return;
 
-  setLoading(true);
+    try {
+      setLoading(true);
+      console.log(`🔍 Searching user by email: ${email}`);
 
-  const isValid = validate();
-  if (!isValid) {
-    setLoading(false); // ✅ Stop spinner if validation fails
-    return;
-  }
+      const res = await axios.post(
+        "https://dev-api.payonlive.com/api/user/search",
+        { email },
+        { headers: { "Content-Type": "application/json" } }
+      );
 
-  const payload = {
-    customerName,
-    email,
-    phoneNumber,
-    address,
-    orderItems,
-    paymentMethod,
-    paymentStatus,
-    shippingMethod,
-    shippingStatus,
-    orderTotal: total,
+      if (res.data.success && res.data.data) {
+        const user = res.data.data;
+        console.log("✅ User found:", user);
+        setCustomerName(user.customerName || "");
+        setphoneNumber(user.phoneNumber || "");
+        // ✅ Combine full address into one line
+        if (user.address) {
+          const { street, city, state, zipcode, country } = user.address;
+          const fullAddress = [street, city, state, zipcode, country]
+            .filter(Boolean)
+            .join(", ");
+          setAddress(fullAddress || "");
+          console.log("address", fullAddress);
+        }
+        setUserExists(true);
+        setUserChecked(true);
+        showAlert("User details loaded successfully!", "success");
+      } else {
+        // ✅ User not found (no crash)
+        console.warn("⚠️ User not found:", res.data);
+        setUserExists(false);
+        setUserChecked(true);
+        setCustomerName("");
+        setphoneNumber("");
+        setAddress("");
+        showAlert(
+          "User does not exist. Please create the user first.",
+          "warning"
+        );
+      }
+    } catch (error) {
+      // ✅ Handle server-side 404 or network issues gracefully
+      console.error("❌ Error fetching user:", error);
+
+      setUserExists(false);
+      setUserChecked(true);
+      setCustomerName("");
+      setphoneNumber("");
+      setAddress("");
+
+      // Show warning instead of error for user not found
+      if (error.response && error.response.status === 404) {
+        showAlert(
+          "User does not exist. Please create the user first.",
+          "warning"
+        );
+      } else {
+        showAlert("Error fetching user details. Please try again.", "error");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
-  console.log("📤 Sending order:", payload);
+  // 🔹 Handle form submit
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  try {
-    const res = await axios.post(
-      "https://dev-api.payonlive.com/api/order/create-order",
-      payload,
-      { headers: { "Content-Type": "application/json" } }
-    );
-
-    console.log("✅ Order created:", res.data);
-
-    if (res.data?.success || res.status === 200) {
-      showAlert("Order created successfully!", "success");
-      navigate("/user/Orders");
-    } else {
-      showAlert("Failed to create order. Please try again.", "error");
+    // 🔒 Block order creation if user not found
+    if (!userExists && userChecked) {
+      showAlert("User does not exist. Please create the user first.", "error");
+      return;
     }
-  } catch (err) {
-    console.error("Server Error while creating order:", err);
-    showAlert("Server error. Please try again.", "error");
-  } finally {
-    // ✅ Always stop the spinner — success or fail
-    setLoading(false);
-  }
-};
 
+    setLoading(true);
+
+    const isValid = validate();
+    if (!isValid) {
+      setLoading(false); // ✅ Stop spinner if validation fails
+      return;
+    }
+
+    const formattedItems = orderItems.map((item) => ({
+      ...item,
+      color: Array.isArray(item.color)
+        ? item.color
+        : item.color
+        ? [item.color]
+        : [],
+      size: Array.isArray(item.size) ? item.size : item.size ? [item.size] : [],
+    }));
+
+    const payload = {
+      customerName,
+      email,
+      phoneNumber,
+      address,
+      orderItems: formattedItems,
+      paymentMethod,
+      paymentStatus,
+      shippingMethod,
+      shippingStatus,
+      orderTotal: total,
+    };
+
+    console.log("📤 Sending order:", payload);
+
+    try {
+      const res = await axios.post(
+        "https://dev-api.payonlive.com/api/order/create-order",
+        payload,
+        { headers: { "Content-Type": "application/json" } }
+      );
+
+      console.log("✅ Order created:", res.data);
+
+      if (res.data?.success || res.status === 200) {
+        showAlert("Order created successfully!", "success");
+        navigate("/user/Orders");
+      } else {
+        showAlert("Failed to create order. Please try again.", "error");
+      }
+    } catch (err) {
+      console.error("Server Error while creating order:", err);
+      showAlert("Server error. Please try again.", "error");
+    } finally {
+      // ✅ Always stop the spinner — success or fail
+      setLoading(false);
+    }
+  };
+
+  // Fetch product details by product code
+  const fetchProductByCode = async (index, code) => {
+    if (!code) return;
+
+    try {
+      console.log(`🔍 Fetching product for code: ${code}`);
+      const res = await axios.get(
+        `https://dev-api.payonlive.com/api/product/product-code/${code}`
+      );
+
+      if (res.data.success) {
+        const product = res.data.data;
+        console.log("✅ Product fetched:", product);
+
+        const newItems = [...orderItems];
+        newItems[index].productCode = code;
+        newItems[index].productName = product.productName || "";
+        newItems[index].price = product.price || 0;
+        newItems[index].availableColors = product.color || [];
+        newItems[index].availableSizes = product.size || [];
+        newItems[index].color = "";
+        newItems[index].size = "";
+        setOrderItems(newItems);
+      } else {
+        console.warn("⚠️ Product not found for code:", code);
+      }
+    } catch (error) {
+      console.error("❌ Error fetching product:", error);
+    }
+  };
+
+  const handleColorSelect = (index, color) => {
+    const newItems = [...orderItems];
+    newItems[index].color = color;
+    setOrderItems(newItems);
+  };
+
+  // ✅ Handle size click
+  const handleSizeSelect = (index, size) => {
+    const newItems = [...orderItems];
+    newItems[index].size = size;
+    setOrderItems(newItems);
+  };
 
   // calculate
   const subtotal = orderItems.reduce(
@@ -208,7 +348,14 @@ const CreateOrder = () => {
               <label className="block mb-1 text-sm font-medium">Email</label>
               <input
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                // onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setUserChecked(false);
+                  setUserExists(false);
+                }}
+                // onBlur={() => fetchUserByEmail(email)}
+                onBlur={(e) => fetchUserByEmail(e.target.value)}
                 type="email"
                 placeholder="customer@email.com"
                 className="w-full rounded-lg border px-3 py-2 text-sm"
@@ -340,14 +487,20 @@ const CreateOrder = () => {
                   </p>
                 )}
               </div> */}
-              <div className="md:col-span-4">
+              <div className="md:col-span-3">
                 <label className="block mb-1 text-sm font-medium">
                   Product Name
                 </label>
                 <input
                   value={item.productName}
-                  onChange={(e) => handleProductChange(idx, e.target.value)}
-                  placeholder="enter product name"
+                  // onChange={(e) => handleProductChange(idx, e.target.value)}
+                  onChange={(e) => {
+                    const newItems = [...orderItems];
+                    newItems[idx].productName = e.target.value;
+                    setOrderItems(newItems);
+                  }}
+                  onBlur={() => fetchProductByCode(idx, item.productName)}
+                  placeholder="enter product code"
                   className="w-full text-sm  rounded-xl border px-2 py-2"
                 />
                 {errors.address && (
@@ -357,8 +510,101 @@ const CreateOrder = () => {
                 )}
               </div>
 
+              {/* Color Dropdown */}
+              {/* <div className="md:col-span-2">
+                <label className="block mb-1 text-sm font-medium">Color</label>
+                <select
+                  value={item.color || ""}
+                  onChange={(e) => {
+                    const newItems = [...orderItems];
+                    newItems[idx].color = e.target.value;
+                    setOrderItems(newItems);
+                  }}
+                  className="w-full text-sm border rounded-lg px-2 py-2"
+                >
+                  <option value="">Select color</option>
+                  {(item.availableColors || []).map((clr, cidx) => (
+                    <option key={cidx} value={clr}>
+                      {clr}
+                    </option>
+                  ))}
+                </select>
+              </div> */}
+
+              {/* Color Section */}
+              <div className="md:col-span-2">
+                <label className="block mb-1 text-sm font-medium">Color</label>
+
+                {/* ✅ If product has colors → show color circles */}
+                {Array.isArray(item.availableColors) &&
+                item.availableColors.length > 0 ? (
+                  <div className="flex flex-wrap items-center gap-2 mt-1">
+                    {item.availableColors.map((c, i) => (
+                      <span
+                        key={i}
+                        // onClick={() => {
+                        //   const newItems = [...orderItems];
+                        //   newItems[idx].color = [c];
+                        //   setOrderItems(newItems);
+                        // }}
+                        onClick={() => handleColorSelect(idx, c)}
+                        className={`w-7 h-7 rounded-full border border-gray-300 cursor-pointer shadow-sm transition ${
+                          item.color === c ? "ring-2 ring-gray-800" : ""
+                        }`}
+                        style={{ backgroundColor: c }}
+                        title={c} // shows color name on hover
+                      ></span>
+                    ))}
+                  </div>
+                ) : (
+                  // ⚙️ Fallback: Show dropdown if backend has no colors
+                  <select
+                    value={item.color || ""}
+                    onChange={(e) => {
+                      const newItems = [...orderItems];
+                      newItems[idx].color = e.target.value;
+                      setOrderItems(newItems);
+                    }}
+                    className="w-full text-sm border rounded-lg px-2 py-2"
+                  >
+                    <option value="">Select color</option>
+                    <option value="Red">Red</option>
+                    <option value="Blue">Blue</option>
+                    <option value="Black">Black</option>
+                    {/* <option value="White">White</option>
+                    <option value="Green">Green</option> */}
+                  </select>
+                )}
+              </div>
+
+              {/* Size Selector */}
+              <div className="md:col-span-2">
+                <label className="block mb-1 text-sm font-medium">Size</label>
+                <div className="flex flex-wrap items-center gap-2 mt-1">
+                  {["S", "M", "L", "XL"].map((sz) => (
+                    <span
+                      key={sz}
+                      // onClick={() => {
+                      //   const newItems = [...orderItems];
+                      //   newItems[idx].size = [sz];
+                      //   setOrderItems(newItems);
+                      // }}
+                      onClick={() => handleSizeSelect(idx, sz)}
+                      className={`w-8 h-8 flex items-center justify-center text-sm rounded-full cursor-pointer border transition 
+                ${
+                  item.size === sz
+                    ? "bg-gray-900 text-white border-gray-900"
+                    : "bg-white text-gray-800 border-gray-300 hover:bg-gray-100"
+                }`}
+                    >
+                      {sz}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
               {/* Quantity dropdown */}
-              <div className="md:col-span-2 text-center">
+              <div className="md:col-span-1 text-center">
                 <label className="block mb-1 text-start text-sm font-medium">
                   Quantity
                 </label>
@@ -380,31 +626,25 @@ const CreateOrder = () => {
               </div>
 
               {/* Price input */}
-              <div className="md:col-span-2 text-center">
+              <div className="md:col-span-1 text-center">
                 <label className="block mb-1 text-start text-sm font-medium">
                   Price
                 </label>
                 <input
-                  required
+                  readOnly
                   type="number"
-                  
                   value={item.price}
-                  onChange={(e) => {
-                    const newItems = [...orderItems];
-                    newItems[idx].price = parseFloat(e.target.value) || 0;
-                    setOrderItems(newItems);
-                  }}
                   className="w-full text-sm border rounded-lg px-2 py-2 text-center"
                 />
-                {errors[`price_${idx}`] && (
+                {/* {errors[`price_${idx}`] && (
                   <p className="text-red-500 text-sm">
                     {errors[`price_${idx}`]}
                   </p>
-                )}
+                )} */}
               </div>
 
               {/* Total auto-calculated (read-only) */}
-              <div className="md:col-span-2 text-center">
+              <div className="md:col-span-1 text-center">
                 <label className="block mb-1 text-start text-sm font-medium">
                   Total
                 </label>
@@ -565,7 +805,6 @@ const CreateOrder = () => {
           </button>
         </div>
       </form>
-    
     </div>
   );
 };
