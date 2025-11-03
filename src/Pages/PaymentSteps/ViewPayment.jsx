@@ -314,7 +314,7 @@ function ViewPayment() {
               </div>
               <div className="grid grid-cols-2">
                 <span className="font-medium text-gray-700">Amount</span>
-                <span className="text-gray-900 text-right">€ {orderTotal}</span>
+                <span className="text-gray-900 text-right">€ {orderTotal.toFixed(2)}</span>
               </div>
             </div>
 

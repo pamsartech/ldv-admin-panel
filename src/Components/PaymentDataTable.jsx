@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate , useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -13,7 +13,16 @@ import {
   faChevronDown,
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
-import { Skeleton } from "@mui/material";
+import {
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Button,
+  Skeleton,
+  CircularProgress,
+} from "@mui/material";
 
 const statusStyles = {
   Pending: "bg-yellow-100 text-yellow-700 border border-yellow-300",
@@ -40,6 +49,7 @@ export default function PaymentDataTable({ onSelectionChange }) {
   const [selectAll, setSelectAll] = useState(false);
   const [search, setSearch] = useState("");
   const [deleting, setDeleting] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const paymentsPerPage = 8;
 
@@ -73,8 +83,10 @@ export default function PaymentDataTable({ onSelectionChange }) {
 
   // ---- Filtering ----
   let tabFiltered = payments;
-  if (activeTab === "Paid") tabFiltered = payments.filter((p) => p.status === "Paid");
-  if (activeTab === "Refunded") tabFiltered = payments.filter((p) => p.status === "Refunded");
+  if (activeTab === "Paid")
+    tabFiltered = payments.filter((p) => p.status === "Paid");
+  if (activeTab === "Refunded")
+    tabFiltered = payments.filter((p) => p.status === "Refunded");
 
   if (search.trim()) {
     const term = search.toLowerCase();
@@ -103,13 +115,13 @@ export default function PaymentDataTable({ onSelectionChange }) {
   );
 
   // ---- Select / Deselect ----
-    const handleSelectAll = () => {
-  let newSelected = [];
-  if (!selectAll) newSelected = currentPayments.map((p) => p.id);
-  setSelectedRows(newSelected);
-  setSelectAll(!selectAll);
-  onSelectionChange(newSelected); // ✅ Notify parent
-};
+  const handleSelectAll = () => {
+    let newSelected = [];
+    if (!selectAll) newSelected = currentPayments.map((p) => p.id);
+    setSelectedRows(newSelected);
+    setSelectAll(!selectAll);
+    onSelectionChange(newSelected); // ✅ Notify parent
+  };
   // const handleSelectAll = () => {
   //   if (selectAll) {
   //     setSelectedRows([]);
@@ -120,47 +132,63 @@ export default function PaymentDataTable({ onSelectionChange }) {
   // };
 
   const handleSelectRow = (id) => {
-  let newSelected;
-  if (selectedRows.includes(id)) {
-    newSelected = selectedRows.filter((r) => r !== id);
-  } else {
-    newSelected = [...selectedRows, id];
-  }
-  setSelectedRows(newSelected);
-  onSelectionChange(newSelected); // ✅ Notify parent
-};
+    let newSelected;
+    if (selectedRows.includes(id)) {
+      newSelected = selectedRows.filter((r) => r !== id);
+    } else {
+      newSelected = [...selectedRows, id];
+    }
+    setSelectedRows(newSelected);
+    onSelectionChange(newSelected); // ✅ Notify parent
+  };
   // const handleSelectRow = (id) => {
   //   setSelectedRows((prev) =>
   //     prev.includes(id) ? prev.filter((r) => r !== id) : [...prev, id]
   //   );
   // };
 
+  // ✅ Open confirmation dialog
+  const handleOpenConfirm = () => {
+    if (selectedRows.length === 0) {
+      alert("Please select at least one payment to delete.");
+      return;
+    }
+    setConfirmOpen(true);
+  };
+
+  // ✅ Close dialog
+  const handleCloseConfirm = () => {
+    setConfirmOpen(false);
+  };
 
   // ---- Bulk Delete Functionality ----
   const handleBulkDelete = async () => {
-    if (selectedRows.length === 0) {
-      alert("Please select at least one item to delete.");
-      return;
-    }
+    // if (selectedRows.length === 0) {
+    //   alert("Please select at least one item to delete.");
+    //   return;
+    // }
 
-    const confirmDelete = window.confirm(
-      `Are you sure you want to delete ${selectedRows.length} selected payments?`
-    );
-    if (!confirmDelete) return;
+    // const confirmDelete = window.confirm(
+    //   `Are you sure you want to delete ${selectedRows.length} selected payments?`
+    // );
+    // if (!confirmDelete) return;
 
     try {
       setDeleting(true);
 
       // Example API call (replace with your delete endpoint)
-      await axios.delete(`https://dev-api.payonlive.com/api/payment/delete-payment/${paymentId}`, {
-        ids: selectedRows,
-      });
+      await axios.post(
+        "https://dev-api.payonlive.com/api/payment/bulk-delete",
+        {
+          payment_ids: selectedRows,
+        }
+      );
 
       // Remove from UI
       setPayments((prev) => prev.filter((p) => !selectedRows.includes(p.id)));
       setSelectedRows([]);
       setSelectAll(false);
-      alert("Selected payments deleted successfully.");
+      setConfirmOpen(false);
     } catch (error) {
       console.error("Bulk delete failed:", error);
       alert("Error deleting selected payments.");
@@ -174,7 +202,11 @@ export default function PaymentDataTable({ onSelectionChange }) {
     <tr key={idx} className="border-b">
       {Array.from({ length: 9 }).map((_, i) => (
         <td key={i} className="p-3">
-          <Skeleton variant="rectangular" width={i === 0 ? 20 : "100%"} height={20} />
+          <Skeleton
+            variant="rectangular"
+            width={i === 0 ? 20 : "100%"}
+            height={20}
+          />
         </td>
       ))}
     </tr>
@@ -244,7 +276,7 @@ export default function PaymentDataTable({ onSelectionChange }) {
             </div>
           )}
 
-           {/* Sort Button */}
+          {/* Sort Button */}
           <button
             onClick={() => setSortOrder(sortOrder === "desc" ? "asc" : "desc")}
             className="flex items-center gap-2 border border-gray-400 px-3 py-1.5 rounded-md text-sm text-gray-900 hover:bg-gray-100 transition"
@@ -253,8 +285,8 @@ export default function PaymentDataTable({ onSelectionChange }) {
             Sort by Date {sortOrder === "desc" ? "↓" : "↑"}
           </button>
 
-         {/* bulk delete button */}
-         {/* <button
+          {/* bulk delete button */}
+          {/* <button
           onClick={handleBulkDelete}
           disabled={selectedRows.length === 0 || deleting}
           className={`flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-red-700 transition ${
@@ -264,48 +296,46 @@ export default function PaymentDataTable({ onSelectionChange }) {
           <FontAwesomeIcon icon={faTrashAlt} />
           {deleting ? "Deleting..." : `Delete Selected (${selectedRows.length})`}
         </button> */}
-          
+
           <button
-  onClick={handleBulkDelete}
-  disabled={selectedRows.length === 0 || deleting}
-  className={`flex items-center gap-2 px-3 py-2 rounded-md text-white transition ${
-    selectedRows.length === 0 || deleting
-      ? "bg-gray-400 cursor-not-allowed"
-      : "bg-red-600 hover:bg-red-700"
-  }`}
->
-  {deleting ? (
-    <CircularProgress size={18} color="inherit" />
-  ) : (
-    <>
-      <FontAwesomeIcon icon={faTrash} />
-      Delete Selected ({selectedRows.length})
-    </>
-  )}
-</button>
-
-
+            // onClick={handleBulkDelete}
+            onClick={handleOpenConfirm}
+            disabled={selectedRows.length === 0 || deleting}
+            className={`flex items-center gap-2 px-3 py-2 rounded-md text-white transition ${
+              selectedRows.length === 0 || deleting
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-red-600 hover:bg-red-700"
+            }`}
+          >
+            {deleting ? (
+              <CircularProgress size={18} color="inherit" />
+            ) : (
+              <>
+                <FontAwesomeIcon icon={faTrash} />
+                Delete Selected ({selectedRows.length})
+              </>
+            )}
+          </button>
         </div>
       </div>
 
-   
-       {/* search bar code */}
-            <div className="flex gap-2  relative my-5">
-              <FontAwesomeIcon
-                icon={faSearch}
-                className="absolute left-3 top-3 text-gray-400"
-              />
-              <input
-                type="text"
-                placeholder="Search"
-                value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  setCurrentPage(1);
-                }}
-                className="w-full pl-10 pr-4 py-2 rounded-md border border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+      {/* search bar code */}
+      <div className="flex gap-2  relative my-5">
+        <FontAwesomeIcon
+          icon={faSearch}
+          className="absolute left-3 top-3 text-gray-400"
+        />
+        <input
+          type="text"
+          placeholder="Search"
+          value={search}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setCurrentPage(1);
+          }}
+          className="w-full pl-10 pr-4 py-2 rounded-md border border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
 
       {/* Table */}
       <div className="overflow-x-auto rounded-lg bg-white shadow">
@@ -331,52 +361,54 @@ export default function PaymentDataTable({ onSelectionChange }) {
             </tr>
           </thead>
           <tbody>
-            {loading
-              ? skeletonRows
-              : currentPayments.length > 0
-              ? currentPayments.map((p) => (
-                  <tr
-                    key={p.id}
-                    className={`border-b hover:bg-gray-50 ${
-                      selectedRows.includes(p.id) ? "bg-red-50" : ""
-                    }`}
-                  >
-                    <td className="p-3">
-                      <input
-                        type="checkbox"
-                        checked={selectedRows.includes(p.id)}
-                        onChange={() => handleSelectRow(p.id)}
-                      />
-                    </td>
-                    <td className="p-3">{p.amount}</td>
-                    <td className="p-3">{p.transactionId}</td>
-                    <td className="p-3">{p.orderId}</td>
-                    <td className="p-3">{p.email}</td>
-                    <td className="p-3">{p.date.toLocaleString()}</td>
-                    <td className="p-3">{p.method}</td>
-                    <td className="p-3">
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          statusStyles[p.status]
-                        }`}
-                      >
-                        {p.status}
-                      </span>
-                    </td>
-                    <td className="p-3 text-left">
-                      <button onClick={() => navigate(`/user/view-payment/${p.id}`)}>
-                        <FontAwesomeIcon icon={faAngleRight} />
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              : (
-                <tr>
-                  <td colSpan="9" className="p-6 text-center text-gray-500">
-                    No payments found.
+            {loading ? (
+              skeletonRows
+            ) : currentPayments.length > 0 ? (
+              currentPayments.map((p) => (
+                <tr
+                  key={p.id}
+                  className={`border-b hover:bg-gray-50 ${
+                    selectedRows.includes(p.id) ? "bg-red-50" : ""
+                  }`}
+                >
+                  <td className="p-3">
+                    <input
+                      type="checkbox"
+                      checked={selectedRows.includes(p.id)}
+                      onChange={() => handleSelectRow(p.id)}
+                    />
+                  </td>
+                  <td className="p-3">{p.amount}</td>
+                  <td className="p-3">{p.transactionId}</td>
+                  <td className="p-3">{p.orderId}</td>
+                  <td className="p-3">{p.email}</td>
+                  <td className="p-3">{p.date.toLocaleString()}</td>
+                  <td className="p-3">{p.method}</td>
+                  <td className="p-3">
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        statusStyles[p.status]
+                      }`}
+                    >
+                      {p.status}
+                    </span>
+                  </td>
+                  <td className="p-3 text-left">
+                    <button
+                      onClick={() => navigate(`/user/view-payment/${p.id}`)}
+                    >
+                      <FontAwesomeIcon icon={faAngleRight} />
+                    </button>
                   </td>
                 </tr>
-              )}
+              ))
+            ) : (
+              <tr>
+                <td colSpan="9" className="p-6 text-center text-gray-500">
+                  No payments found.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
@@ -403,6 +435,41 @@ export default function PaymentDataTable({ onSelectionChange }) {
           </button>
         ))}
 
+        {/* Material UI Confirmation Dialog */}
+        <Dialog
+          open={confirmOpen}
+          onClose={handleCloseConfirm}
+          aria-labelledby="confirm-delete-title"
+        >
+          <DialogTitle id="confirm-delete-title">
+            Confirm Bulk Delete
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              Are you sure you want to delete{" "}
+              <strong>{selectedRows.length}</strong> selected payment(s)? This
+              action cannot be undone.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseConfirm} color="inherit">
+              Cancel
+            </Button>
+            <Button
+              onClick={handleBulkDelete}
+              color="error"
+              variant="contained"
+              disabled={deleting}
+            >
+              {deleting ? (
+                <CircularProgress size={20} color="inherit" />
+              ) : (
+                "Delete"
+              )}
+            </Button>
+          </DialogActions>
+        </Dialog>
+
         <button
           className="px-3 py-1 border rounded disabled:opacity-50"
           disabled={currentPage === totalPages}
@@ -412,7 +479,7 @@ export default function PaymentDataTable({ onSelectionChange }) {
         </button>
       </div>
 
-       {/* Summary Cards */}
+      {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-4 md:w-3xl lg:w-3xl border-1 rounded-lg px-2 mt-6 mx-auto">
         <div className="bg-white border-r-1 border-gray-400 shadow p-6 text-center">
           <h3 className="text-gray-800 text-xl">Total revenue</h3>

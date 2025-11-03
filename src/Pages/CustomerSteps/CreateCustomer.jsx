@@ -9,7 +9,7 @@ import { useAlert } from "../../Components/AlertContext";
 const CreateCustomer = () => {
   const navigate = useNavigate();
   const { showAlert } = useAlert();
-   const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   // 🟢 State for basic info & address
   const [formData, setFormData] = useState({
@@ -34,6 +34,17 @@ const CreateCustomer = () => {
 
   // handle input change
   const handleChange = (e) => {
+    const { id, value } = e.target;
+
+    if (id === "dob") {
+      // Check if the user entered a valid date and the year is 4 digits
+      const year = value.split("-")[0];
+      if (year && year.length > 4) {
+        // alert("Year cannot be more than 4 digits");
+        return; // Stop updating the state
+      }
+    }
+
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
 
@@ -44,64 +55,65 @@ const CreateCustomer = () => {
 
   // submit handler
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  setLoading(true);
+    e.preventDefault();
+    setLoading(true);
 
-  // ✅ Basic validation (optional)
-  if (
-    !formData.customerName ||
-    !formData.email ||
-    !formData.phoneNumber ||
-    !formData.password
-  ) {
-    showAlert("Please fill in all required fields.", "error");
-    setLoading(false); // stop spinner if validation fails
-    return;
-  }
-
-  // ✅ Construct payload
-  const payload = {
-    customerName: formData.customerName.trim(),
-    email: formData.email.trim(),
-    phoneNumber: String(formData.phoneNumber),
-    dob: formData.dob,
-    password: formData.password,
-    address: {
-      street: formData.street,
-      city: formData.city,
-      state: formData.state,
-      zipcode: String(formData.zipcode),
-      country: formData.country,
-    },
-    isActive: statusActive,
-    communicationMethod: communicationMethod.toLowerCase(),
-  };
-
-  try {
-    const res = await axios.post(
-      "https://dev-api.payonlive.com/api/user/create-customer",
-      payload,
-      { headers: { "Content-Type": "application/json" } }
-    );
-
-    console.log("✅ Customer created:", res.data);
-
-    if (res.data?.success || res.status === 200) {
-      showAlert("Customer created successfully!", "success");
-      navigate("/user/Customers");
-    } else {
-      showAlert("Failed to create customer. Please try again.", "error");
+    // ✅ Basic validation (optional)
+    if (
+      !formData.customerName ||
+      !formData.email ||
+      !formData.phoneNumber ||
+      !formData.password
+    ) {
+      showAlert("Please fill in all required fields.", "error");
+      setLoading(false); // stop spinner if validation fails
+      return;
     }
-  } catch (err) {
-    console.error("❌ Error creating customer:", err.response?.data || err.message);
-    showAlert("Server error. Please try again.", "error");
-  } finally {
-    // ✅ Always stop spinner no matter what
-    setLoading(false);
-  }
-};
 
+    // ✅ Construct payload
+    const payload = {
+      customerName: formData.customerName.trim(),
+      email: formData.email.trim(),
+      phoneNumber: String(formData.phoneNumber),
+      dob: formData.dob,
+      password: formData.password,
+      address: {
+        street: formData.street,
+        city: formData.city,
+        state: formData.state,
+        zipcode: String(formData.zipcode),
+        country: formData.country,
+      },
+      isActive: statusActive,
+      communicationMethod: communicationMethod.toLowerCase(),
+    };
 
+    try {
+      const res = await axios.post(
+        "https://dev-api.payonlive.com/api/user/create-customer",
+        payload,
+        { headers: { "Content-Type": "application/json" } }
+      );
+
+      console.log("✅ Customer created:", res.data);
+
+      if (res.data?.success || res.status === 200) {
+        showAlert("Customer created successfully!", "success");
+        navigate("/user/Customers");
+      } else {
+        showAlert("Failed to create customer. Please try again.", "error");
+      }
+    } catch (err) {
+      console.error(
+        "❌ Error creating customer:",
+        err.response?.data || err.message
+      );
+      showAlert("Server error. Please try again.", "error");
+    } finally {
+      // ✅ Always stop spinner no matter what
+      setLoading(false);
+    }
+  };
 
   return (
     <div>
@@ -119,7 +131,7 @@ const CreateCustomer = () => {
             size="lg"
             className="text-red-700 px-2"
           />
-          Discard 
+          Discard
         </button>
       </div>
 
@@ -457,22 +469,21 @@ const CreateCustomer = () => {
             Save
           </button>
         </div> */}
-         <div className="flex justify-end mt-4">
-            <button
-              type="submit"
-              disabled={loading}
-              className="bg-[#02B978] text-white px-6 py-2 rounded-lg hover:bg-[#04D18C] flex items-center gap-2"
-            >
-              {loading && (
-                <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-              )}
-              {loading ? "Saving..." : "Save"}
-            </button>
-          </div>
+        <div className="flex justify-end mt-4">
+          <button
+            type="submit"
+            disabled={loading}
+            className="bg-[#02B978] text-white px-6 py-2 rounded-lg hover:bg-[#04D18C] flex items-center gap-2"
+          >
+            {loading && (
+              <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+            )}
+            {loading ? "Saving..." : "Save"}
+          </button>
+        </div>
       </form>
     </div>
   );
 };
 
 export default CreateCustomer;
-

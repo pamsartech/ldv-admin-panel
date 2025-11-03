@@ -64,7 +64,6 @@ function AddProductStep1({ formData, setFormData, nextStep }) {
                 TikTok session
               </label>
               <input
-                required
                 name="tiktokSessionId"
                 type="text"
                 placeholder="Clothing code 2025"

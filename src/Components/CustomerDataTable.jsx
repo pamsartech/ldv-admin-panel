@@ -58,7 +58,7 @@ export default function CustomersTable({ onSelectionChange }) {
         const formatted = customersArray.map((item) => ({
           id: item._id,
           name: item.name || "N/A",
-          spend: item.totalSpent ? `€${item.totalSpent}` : "€0",
+          spend: item.totalSpent ? ` € ${item.totalSpent.toFixed(2)}` : "€0",
           date: item.dateJoined
             ? new Date(item.dateJoined).toLocaleDateString()
             : "N/A",
