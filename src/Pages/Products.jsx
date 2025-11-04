@@ -217,7 +217,7 @@ function Products() {
                   />
                   <div>
                     <p className="font-medium">
-                      {product.productCategory || "N/A"}
+                      {product.productName || "N/A"}
                     </p>
                     <p className="text-sm text-gray-500">
                       {product.productCode || "N/A"}

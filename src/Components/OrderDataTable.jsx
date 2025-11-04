@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
+  faUpDown,
   faSearch,
   faAngleRight,
   faCircleCheck,
@@ -51,6 +52,8 @@ export default function OrdersDataTable({ onSelectionChange }) {
   const [selectedRows, setSelectedRows] = useState([]);
   const [deleting, setDeleting] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [sortByDateAsc, setSortByDateAsc] = useState(true);
+
 
   useEffect(() => {
     if (onSelectionChange) {
@@ -146,12 +149,12 @@ export default function OrdersDataTable({ onSelectionChange }) {
       result = result.filter((o) => o.payment === filterPayment);
     }
     result.sort((a, b) => {
-      const nameA = a.customer || "";
-      const nameB = b.customer || "";
-      return sortAsc ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
+       const dateA = new Date(a.date);
+      const dateB = new Date(b.date);
+      return sortByDateAsc ? dateA - dateB : dateB - dateA;
     });
     return result;
-  }, [orders, activeTab, filterPayment, sortAsc, search]);
+  }, [orders, activeTab, filterPayment, sortAsc, search,sortByDateAsc]);
 
   const totalPages = Math.ceil(filteredOrders.length / ordersPerPage);
   const currentOrders = filteredOrders.slice(
@@ -176,26 +179,6 @@ export default function OrdersDataTable({ onSelectionChange }) {
     setSelectedRows(newSelected);
     setSelectAll(!selectAll);
   };
-
-  // const handleSelectAll = () => {
-
-  //    let newSelected = [];
-  //   if (!selectAll) newSelected = currentOrders.map((o) => o.id);
-  //   setSelectedRows(newSelected);
-  //   setSelectAll(!selectAll);
-  //   onSelectionChange(newSelected);
-
-  //   if (selectedRows.length === currentOrders.length) {
-  //     setSelectedRows([]);
-  //   } else {
-  //     setSelectedRows(currentOrders.map((o) => o.id));
-  //   }
-  // };
-
-  // const handleOpenConfirm = () => {
-  //   if (selectedRows.length === 0) return;
-  //   setConfirmOpen(true);
-  // };
 
   // const handleCloseConfirm = () => setConfirmOpen(false);
   const handleOpenConfirm = () => setConfirmOpen(true);
@@ -330,10 +313,11 @@ export default function OrdersDataTable({ onSelectionChange }) {
           </select>
 
           <button
-            onClick={() => setSortAsc(!sortAsc)}
+            onClick={() => setSortByDateAsc((prev) => !prev)}
             className="border border-gray-400 px-3 py-1.5 rounded-md text-sm text-gray-900 hover:bg-gray-100"
           >
-            Sort {sortAsc ? "A→Z" : "Z→A"}
+            <FontAwesomeIcon icon={faUpDown} />   
+                         Sort by Date
           </button>
 
           {/* bulk delete button */}
@@ -400,6 +384,7 @@ export default function OrdersDataTable({ onSelectionChange }) {
                   <th className="py-3 px-4">Order ID</th>
                   <th className="py-3 px-4">Customer</th>
                   <th className="py-3 px-4">Product</th>
+                  <th className="py-3 px-4">Date</th>
                   <th className="py-3 px-4">Payment Status</th>
                   <th className="py-3 px-4">Shipping Status</th>
                   <th className="py-3 px-4">Action</th>
@@ -426,6 +411,7 @@ export default function OrdersDataTable({ onSelectionChange }) {
                       <td className="py-3 px-4 font-medium">{order.id}</td>
                       <td className="py-3 px-4">{order.customer}</td>
                       <td className="py-3 px-4">{order.product}</td>
+                      <td className="py-3 px-4"> {new Date(order.date).toLocaleDateString('en-GB')}</td>
                       <td className="py-3 px-4">
                         <span
                           className={`px-3 py-1 rounded-full text-xs font-medium ${

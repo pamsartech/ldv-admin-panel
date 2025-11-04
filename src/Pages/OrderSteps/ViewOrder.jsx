@@ -73,9 +73,19 @@ export default function ViewOrder() {
             {/* LEFT COLUMN SKELETON */}
             <div className="w-full lg:w-1/2 space-y-5">
               <Stack spacing={2}>
-                <Skeleton variant="text" width={200} height={30} animation="wave" />
+                <Skeleton
+                  variant="text"
+                  width={200}
+                  height={30}
+                  animation="wave"
+                />
                 <Skeleton variant="rectangular" height={100} animation="wave" />
-                <Skeleton variant="text" width={160} height={25} animation="wave" />
+                <Skeleton
+                  variant="text"
+                  width={160}
+                  height={25}
+                  animation="wave"
+                />
                 <Skeleton variant="rectangular" height={120} animation="wave" />
                 <Skeleton variant="rectangular" height={150} animation="wave" />
               </Stack>
@@ -84,9 +94,19 @@ export default function ViewOrder() {
             {/* RIGHT COLUMN SKELETON */}
             <div className="w-full lg:w-1/2 space-y-5">
               <Stack spacing={2}>
-                <Skeleton variant="text" width={180} height={30} animation="wave" />
+                <Skeleton
+                  variant="text"
+                  width={180}
+                  height={30}
+                  animation="wave"
+                />
                 <Skeleton variant="rectangular" height={100} animation="wave" />
-                <Skeleton variant="text" width={150} height={25} animation="wave" />
+                <Skeleton
+                  variant="text"
+                  width={150}
+                  height={25}
+                  animation="wave"
+                />
                 <Skeleton variant="rectangular" height={200} animation="wave" />
                 <Skeleton variant="rectangular" height={180} animation="wave" />
               </Stack>
@@ -189,7 +209,7 @@ export default function ViewOrder() {
                 <div className="flex justify-between">
                   <span>Date</span>
                   <span>{new Date(order.createdAt).toLocaleDateString()}</span>
-                   {/* {new Date(ordercreatedAt).toLocaleString()} */}
+                  {/* {new Date(ordercreatedAt).toLocaleString()} */}
                 </div>
 
                 <div className="flex justify-between">
@@ -215,9 +235,7 @@ export default function ViewOrder() {
 
                 <div className="flex justify-between items-center">
                   <span>Payment Status</span>
-                  <span className="inline-block">
-                    {order.paymentStatus}
-                  </span>
+                  <span className="inline-block">{order.paymentStatus}</span>
                 </div>
 
                 <div className="flex justify-between items-center">
@@ -227,7 +245,7 @@ export default function ViewOrder() {
                       icon={faFileInvoice}
                       className="text-gray-600"
                     /> */}
-                     <button className="ml-2 text-xs text-gray-500 hover:text-gray-700">
+                    <button className="ml-2 text-xs text-gray-500 hover:text-gray-700">
                       <FontAwesomeIcon icon={faCopy} />
                     </button>
                     <span className="truncate max-w-[160px]">
@@ -274,7 +292,10 @@ export default function ViewOrder() {
 
                       <div className="flex-1">
                         <div className="font-medium">{item.productName}</div>
-                        <div className="text-xs font-medium"> Qty: {item.quantity} x  €{item.price} </div>
+                        <div className="text-xs font-medium">
+                          {" "}
+                          Qty: {item.quantity} x €{item.price}{" "}
+                        </div>
                       </div>
                       <div className="text-sm">€{item.price}</div>
                     </div>
@@ -323,7 +344,7 @@ export default function ViewOrder() {
                       icon={faEnvelope}
                       className="text-gray-600"
                     /> */}
-                     <button className="ml-2 text-xs text-gray-500 hover:text-gray-700">
+                    <button className="ml-2 text-xs text-gray-500 hover:text-gray-700">
                       <FontAwesomeIcon icon={faCopy} />
                     </button>
 
@@ -340,13 +361,12 @@ export default function ViewOrder() {
                   <span>Phone</span>
                   <div className="flex items-center gap-3">
                     {/* <FontAwesomeIcon icon={faPhone} className="text-gray-600" /> */}
-                     <button className="ml-2 text-xs text-gray-500 hover:text-gray-700">
+                    <button className="ml-2 text-xs text-gray-500 hover:text-gray-700">
                       <FontAwesomeIcon icon={faCopy} />
                     </button>
                     <span className="truncate max-w-[220px]">
                       {order.phoneNumber}
                     </span>
-                    
                   </div>
                 </div>
               </div>
@@ -368,165 +388,172 @@ export default function ViewOrder() {
             </section>
 
             {/* Activity */}
-          {/* Activity */}
-<section className="p-6 mx-10">
-  <h3 className="font-medium mb-4">Activity</h3>
+            {/* Activity */}
+            <section className="p-6 mx-10">
+              <h3 className="font-medium mb-4">Activity</h3>
 
-  {/* Timeline container */}
-  <div className="relative">
-    {/* Full gray line */}
-    <div className="absolute left-6 top-0 bottom-0 w-[2px] bg-gray-300"></div>
+              {/* Timeline container */}
+              <div className="relative">
+                {/* Full gray line */}
+                <div className="absolute left-6 top-0 bottom-0 w-[2px] bg-gray-300"></div>
 
-    {/* Dynamic green progress line */}
-    <div
-      className="absolute left-6 top-0 w-[2px] bg-green-500 transition-all duration-700"
-      style={{
-        height:
-          orderStatus?.toLowerCase() === "shipped" || "delivered"
-            ? "100%"
-            : orderStatus?.toLowerCase() === "in_progress" ||
-              orderStatus?.toLowerCase() === "processing"
-            ? "50%"
-            : "15%",
-      }}
-    ></div>
+                {/* Dynamic green progress line */}
+                <div
+                  className="absolute left-6 top-0 w-[2px] bg-green-500 transition-all duration-700"
+                  style={{
+                    height:
+                      orderStatus?.toLowerCase() === "shipped" || "delivered"
+                        ? "100%"
+                        : orderStatus?.toLowerCase() === "in_progress" ||
+                          orderStatus?.toLowerCase() === "processing"
+                        ? "50%"
+                        : "15%",
+                  }}
+                ></div>
 
-    <ul className="space-y-8 relative z-10">
-      {/* Order Placed */}
-      <li className="relative">
-        <span
-          className={`absolute left-6 top-0 -translate-x-1/2 w-8 h-8 rounded-full flex items-center justify-center shadow-sm border
+                <ul className="space-y-8 relative z-10">
+                  {/* Order Placed */}
+                  <li className="relative">
+                    <span
+                      className={`absolute left-6 top-0 -translate-x-1/2 w-8 h-8 rounded-full flex items-center justify-center shadow-sm border
             ${
-              ["pending", "in_progress", "processing", "shipped"].includes(
+              ["pending", "in_progress", "processing", "shipped","delivered"].includes(
                 orderStatus?.toLowerCase()
               )
                 ? "bg-green-500 border-green-500 text-white"
                 : "bg-white border-gray-300 text-gray-400"
             }`}
-        >
-          <FontAwesomeIcon icon={faCheckCircle} />
-        </span>
-        <div className="pl-16">
-          <h4 className="font-medium">Order Placed</h4>
-          <p className="text-xs text-gray-500">
-            {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : "—"}
-          </p>
-        </div>
-      </li>
+                    >
+                      <FontAwesomeIcon icon={faCheckCircle} />
+                    </span>
+                    <div className="pl-16">
+                      <h4 className="font-medium">Order Placed</h4>
+                      <p className="text-xs text-gray-500">
+                        {order.createdAt
+                          ? new Date(order.createdAt).toLocaleDateString()
+                          : "—"}
+                      </p>
+                    </div>
+                  </li>
 
-      {/* Processing */}
-      <li className="relative">
-        <span
-          className={`absolute left-6 top-0 -translate-x-1/2 w-8 h-8 rounded-full flex items-center justify-center shadow-sm border
+                  {/* Processing */}
+                  <li className="relative">
+                    <span
+                      className={`absolute left-6 top-0 -translate-x-1/2 w-8 h-8 rounded-full flex items-center justify-center shadow-sm border
             ${
-              ["in_progress", "processing", "shipped"].includes(
+              ["in_progress", "processing", "shipped","delivered"].includes(
                 orderStatus?.toLowerCase()
               )
                 ? "bg-green-500 border-green-500 text-white"
                 : "bg-white border-gray-300 text-gray-400"
             }`}
-        >
-          <FontAwesomeIcon icon={faHourglassHalf} />
-        </span>
-        <div className="pl-16">
-          <h4 className="font-medium">Processing</h4>
-          <p className="text-xs text-gray-500">
-            {["in_progress", "processing", "shipped"].includes(orderStatus?.toLowerCase())
-              ? order.updatedAt
-                ? new Date(order.updatedAt).toLocaleDateString()
-                : "—"
-              : "—"}
-          </p>
-        </div>
-      </li>
+                    >
+                      <FontAwesomeIcon icon={faHourglassHalf} />
+                    </span>
+                    <div className="pl-16">
+                      <h4 className="font-medium">Processing</h4>
+                      <p className="text-xs text-gray-500">
+                        {["in_progress", "processing", "shipped", "delivered"].includes(
+                          orderStatus?.toLowerCase()
+                        )
+                          ? order.updatedAt
+                            ? new Date(order.updatedAt).toLocaleDateString()
+                            : "—"
+                          : "—"}
+                      </p>
+                    </div>
+                  </li>
 
-      {/* Order Packed */}
-      <li className="relative">
-        <span
-          className={`absolute left-6 top-0 -translate-x-1/2 w-8 h-8 rounded-full flex items-center justify-center shadow-sm border
+                  {/* Order Packed */}
+                  <li className="relative">
+                    <span
+                      className={`absolute left-6 top-0 -translate-x-1/2 w-8 h-8 rounded-full flex items-center justify-center shadow-sm border
             ${
-              orderStatus?.toLowerCase() === "shipped"
+              orderStatus?.toLowerCase() === "shipped" || "delivered"
                 ? "bg-green-500 border-green-500 text-white"
                 : "bg-white border-gray-300 text-gray-400"
             }`}
-        >
-          <FontAwesomeIcon icon={faBoxOpen} />
-        </span>
-        <div className="pl-16">
-          <h4 className="font-medium">Order Packed</h4>
-          <p className="text-xs text-gray-500">
-            {orderStatus?.toLowerCase() === "shipped" && order.updatedAt
-              ? new Date(order.updatedAt).toLocaleDateString()
-              : "—"}
-          </p>
-        </div>
-      </li>
+                    >
+                      <FontAwesomeIcon icon={faBoxOpen} />
+                    </span>
+                    <div className="pl-16">
+                      <h4 className="font-medium">Order Packed</h4>
+                      <p className="text-xs text-gray-500">
+                        {orderStatus?.toLowerCase() === "shipped" || "delivered" &&
+                        order.updatedAt
+                          ? new Date(order.updatedAt).toLocaleDateString()
+                          : "—"}
+                      </p>
+                    </div>
+                  </li>
 
-      {/* Shipped */}
-      <li className="relative">
-        <span
-          className={`absolute left-6 top-0 -translate-x-1/2 w-10 h-10 rounded-full flex items-center justify-center shadow-sm border
+                  {/* Shipped */}
+                  <li className="relative">
+                    <span
+                      className={`absolute left-6 top-0 -translate-x-1/2 w-10 h-10 rounded-full flex items-center justify-center shadow-sm border
             ${
-              orderStatus?.toLowerCase() === "shipped"
+              orderStatus?.toLowerCase() === "shipped" || "delivered"
                 ? "bg-green-500 border-green-500 text-white"
                 : "bg-white border-gray-300 text-gray-400"
             }`}
-        >
-          <FontAwesomeIcon icon={faTruck} />
-        </span>
-        <div className="pl-16">
-          <div className="flex items-center gap-3">
-            <h4 className="font-medium">Shipped</h4>
-            <span className="text-xs text-gray-500">
-              {orderStatus?.toLowerCase() === "shipped" ? "Just now" : "—"}
-            </span>
-          </div>
+                    >
+                      <FontAwesomeIcon icon={faTruck} />
+                    </span>
+                    <div className="pl-16">
+                      <div className="flex items-center gap-3">
+                        <h4 className="font-medium">Shipped</h4>
+                        <span className="text-xs text-gray-500">
+                          {orderStatus?.toLowerCase() === "shipped" || "delivered"
+                            ? "Just now"
+                            : "—"}
+                        </span>
+                      </div>
 
-          {orderStatus?.toLowerCase() === "shipped" && (
-            <div className="mt-2 inline-flex items-center gap-3 p-2 rounded-md border border-gray-300 bg-white">
-              <span className="text-xs text-gray-700">
-                Order No: {order._id}
-              </span>
-              <button className="ml-3 text-xs text-blue-600 font-medium px-2 py-1 rounded border border-gray-300">
-                Track
-              </button>
-            </div>
-          )}
-        </div>
-      </li>
+                      {orderStatus?.toLowerCase() === "shipped" || "delivered" && (
+                        <div className="mt-2 inline-flex items-center gap-3 p-2 rounded-md border border-gray-300 bg-white">
+                          <span className="text-xs text-gray-700">
+                            Order No: {order._id}
+                          </span>
+                          <button className="ml-3 text-xs text-blue-600 font-medium px-2 py-1 rounded border border-gray-300">
+                            Track
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </li>
 
-      {/* Email Sent */}
-      <li className="relative">
-        <span
-          className={`absolute left-6 top-0 -translate-x-1/2 w-8 h-8 rounded-full flex items-center justify-center shadow-sm border
+                  {/* Email Sent */}
+                  <li className="relative">
+                    <span
+                      className={`absolute left-6 top-0 -translate-x-1/2 w-8 h-8 rounded-full flex items-center justify-center shadow-sm border
             ${
-              orderStatus?.toLowerCase() === "shipped"
+              orderStatus?.toLowerCase() === "shipped" || "delivered"
                 ? "bg-green-500 border-green-500 text-white"
                 : "bg-white border-gray-300 text-gray-400"
             }`}
-        >
-          <FontAwesomeIcon icon={faEnvelope} />
-        </span>
-        <div className="pl-16">
-          <h4 className="font-medium">Email Sent to customer</h4>
-          <p className="text-xs text-gray-500">
-            {orderStatus?.toLowerCase() === "shipped" && order.updatedAt
-              ? new Date(order.updatedAt).toLocaleDateString()
-              : "—"}
-          </p>
+                    >
+                      <FontAwesomeIcon icon={faEnvelope} />
+                    </span>
+                    <div className="pl-16">
+                      <h4 className="font-medium">Email Sent to customer</h4>
+                      <p className="text-xs text-gray-500">
+                        {orderStatus?.toLowerCase() === "shipped"  || "delivered" &&
+                        order.updatedAt
+                          ? new Date(order.updatedAt).toLocaleDateString()
+                          : "—"}
+                      </p>
 
-          <div className="mt-2 p-3 border-gray-300 border rounded-md bg-gray-50 text-xs text-gray-700">
-            <p>Shipped Order No: {order._id}</p>
-            <p>Shiprocket: your order has been successfully shipped</p>
-          </div>
-        </div>
-      </li>
-    </ul>
-  </div>
-</section>
-
-
-
+                      <div className="mt-2 p-3 border-gray-300 border rounded-md bg-gray-50 text-xs text-gray-700">
+                        <p>Shipped Order No: {order._id}</p>
+                        <p>
+                          Shiprocket: your order has been successfully shipped
+                        </p>
+                      </div>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </section>
           </div>
         </div>
       </div>

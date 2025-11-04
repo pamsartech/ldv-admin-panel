@@ -19,7 +19,16 @@ const CreateOrder = () => {
 
   // 🔹 State for order items
   const [orderItems, setOrderItems] = useState([
-    { productCode: "", productName: "", quantity: 1, price: 0 },
+    {
+      productCode: "",
+      productName: "",
+      quantity: 1,
+      price: 0,
+      color: "",
+      size: "",
+      availableColors: [],
+      availableSizes: [],
+    },
   ]);
 
   // 🔹 State for payment & shipping
@@ -112,9 +121,10 @@ const CreateOrder = () => {
       setLoading(true);
       console.log(`🔍 Searching user by email: ${email}`);
 
-      const res = await axios.get(
+      const res = await axios.post(
         "https://dev-api.payonlive.com/api/user/search",
-        { params: { email } }
+        { email },
+        { headers: { "Content-Type": "application/json" } }
       );
 
       if (res.data.success && res.data.data) {
@@ -129,37 +139,43 @@ const CreateOrder = () => {
             .filter(Boolean)
             .join(", ");
           setAddress(fullAddress || "");
-          console.log('address', fullAddress)
+          console.log("address", fullAddress);
         }
         setUserExists(true);
         setUserChecked(true);
         showAlert("User details loaded successfully!", "success");
       } else {
         // ✅ User not found (no crash)
-      console.warn("⚠️ User not found:", res.data);
+        console.warn("⚠️ User not found:", res.data);
+        setUserExists(false);
+        setUserChecked(true);
+        setCustomerName("");
+        setphoneNumber("");
+        setAddress("");
+        showAlert(
+          "User does not exist. Please create the user first.",
+          "warning"
+        );
+      }
+    } catch (error) {
+      // ✅ Handle server-side 404 or network issues gracefully
+      console.error("❌ Error fetching user:", error);
+
       setUserExists(false);
       setUserChecked(true);
       setCustomerName("");
       setphoneNumber("");
       setAddress("");
-      showAlert("User does not exist. Please create the user first.", "warning");
+
+      // Show warning instead of error for user not found
+      if (error.response && error.response.status === 404) {
+        showAlert(
+          "User does not exist. Please create the user first.",
+          "warning"
+        );
+      } else {
+        showAlert("Error fetching user details. Please try again.", "error");
       }
-    } catch (error) {
-     // ✅ Handle server-side 404 or network issues gracefully
-    console.error("❌ Error fetching user:", error);
-
-    setUserExists(false);
-    setUserChecked(true);
-    setCustomerName("");
-    setphoneNumber("");
-    setAddress("");
-
-    // Show warning instead of error for user not found
-    if (error.response && error.response.status === 404) {
-      showAlert("User does not exist. Please create the user first.", "warning");
-    } else {
-      showAlert("Error fetching user details. Please try again.", "error");
-    }
     } finally {
       setLoading(false);
     }
@@ -183,12 +199,22 @@ const CreateOrder = () => {
       return;
     }
 
+    const formattedItems = orderItems.map((item) => ({
+      ...item,
+      color: Array.isArray(item.color)
+        ? item.color
+        : item.color
+        ? [item.color]
+        : [],
+      size: Array.isArray(item.size) ? item.size : item.size ? [item.size] : [],
+    }));
+
     const payload = {
       customerName,
       email,
       phoneNumber,
       address,
-      orderItems,
+      orderItems: formattedItems,
       paymentMethod,
       paymentStatus,
       shippingMethod,
@@ -240,6 +266,10 @@ const CreateOrder = () => {
         newItems[index].productCode = code;
         newItems[index].productName = product.productName || "";
         newItems[index].price = product.price || 0;
+        newItems[index].availableColors = product.color || [];
+        newItems[index].availableSizes = product.size || [];
+        newItems[index].color = "";
+        newItems[index].size = "";
         setOrderItems(newItems);
       } else {
         console.warn("⚠️ Product not found for code:", code);
@@ -247,6 +277,19 @@ const CreateOrder = () => {
     } catch (error) {
       console.error("❌ Error fetching product:", error);
     }
+  };
+
+  const handleColorSelect = (index, color) => {
+    const newItems = [...orderItems];
+    newItems[index].color = color;
+    setOrderItems(newItems);
+  };
+
+  // ✅ Handle size click
+  const handleSizeSelect = (index, size) => {
+    const newItems = [...orderItems];
+    newItems[index].size = size;
+    setOrderItems(newItems);
   };
 
   // calculate
@@ -444,7 +487,7 @@ const CreateOrder = () => {
                   </p>
                 )}
               </div> */}
-              <div className="md:col-span-4">
+              <div className="md:col-span-3">
                 <label className="block mb-1 text-sm font-medium">
                   Product Name
                 </label>
@@ -467,8 +510,101 @@ const CreateOrder = () => {
                 )}
               </div>
 
+              {/* Color Dropdown */}
+              {/* <div className="md:col-span-2">
+                <label className="block mb-1 text-sm font-medium">Color</label>
+                <select
+                  value={item.color || ""}
+                  onChange={(e) => {
+                    const newItems = [...orderItems];
+                    newItems[idx].color = e.target.value;
+                    setOrderItems(newItems);
+                  }}
+                  className="w-full text-sm border rounded-lg px-2 py-2"
+                >
+                  <option value="">Select color</option>
+                  {(item.availableColors || []).map((clr, cidx) => (
+                    <option key={cidx} value={clr}>
+                      {clr}
+                    </option>
+                  ))}
+                </select>
+              </div> */}
+
+              {/* Color Section */}
+              <div className="md:col-span-2">
+                <label className="block mb-1 text-sm font-medium">Color</label>
+
+                {/* ✅ If product has colors → show color circles */}
+                {Array.isArray(item.availableColors) &&
+                item.availableColors.length > 0 ? (
+                  <div className="flex flex-wrap items-center gap-2 mt-1">
+                    {item.availableColors.map((c, i) => (
+                      <span
+                        key={i}
+                        // onClick={() => {
+                        //   const newItems = [...orderItems];
+                        //   newItems[idx].color = [c];
+                        //   setOrderItems(newItems);
+                        // }}
+                        onClick={() => handleColorSelect(idx, c)}
+                        className={`w-7 h-7 rounded-full border border-gray-300 cursor-pointer shadow-sm transition ${
+                          item.color === c ? "ring-2 ring-gray-800" : ""
+                        }`}
+                        style={{ backgroundColor: c }}
+                        title={c} // shows color name on hover
+                      ></span>
+                    ))}
+                  </div>
+                ) : (
+                  // ⚙️ Fallback: Show dropdown if backend has no colors
+                  <select
+                    value={item.color || ""}
+                    onChange={(e) => {
+                      const newItems = [...orderItems];
+                      newItems[idx].color = e.target.value;
+                      setOrderItems(newItems);
+                    }}
+                    className="w-full text-sm border rounded-lg px-2 py-2"
+                  >
+                    <option value="">Select color</option>
+                    <option value="Red">Red</option>
+                    <option value="Blue">Blue</option>
+                    <option value="Black">Black</option>
+                    {/* <option value="White">White</option>
+                    <option value="Green">Green</option> */}
+                  </select>
+                )}
+              </div>
+
+              {/* Size Selector */}
+              <div className="md:col-span-2">
+                <label className="block mb-1 text-sm font-medium">Size</label>
+                <div className="flex flex-wrap items-center gap-2 mt-1">
+                  {["S", "M", "L", "XL"].map((sz) => (
+                    <span
+                      key={sz}
+                      // onClick={() => {
+                      //   const newItems = [...orderItems];
+                      //   newItems[idx].size = [sz];
+                      //   setOrderItems(newItems);
+                      // }}
+                      onClick={() => handleSizeSelect(idx, sz)}
+                      className={`w-8 h-8 flex items-center justify-center text-sm rounded-full cursor-pointer border transition 
+                ${
+                  item.size === sz
+                    ? "bg-gray-900 text-white border-gray-900"
+                    : "bg-white text-gray-800 border-gray-300 hover:bg-gray-100"
+                }`}
+                    >
+                      {sz}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
               {/* Quantity dropdown */}
-              <div className="md:col-span-2 text-center">
+              <div className="md:col-span-1 text-center">
                 <label className="block mb-1 text-start text-sm font-medium">
                   Quantity
                 </label>
@@ -490,7 +626,7 @@ const CreateOrder = () => {
               </div>
 
               {/* Price input */}
-              <div className="md:col-span-2 text-center">
+              <div className="md:col-span-1 text-center">
                 <label className="block mb-1 text-start text-sm font-medium">
                   Price
                 </label>
@@ -508,7 +644,7 @@ const CreateOrder = () => {
               </div>
 
               {/* Total auto-calculated (read-only) */}
-              <div className="md:col-span-2 text-center">
+              <div className="md:col-span-1 text-center">
                 <label className="block mb-1 text-start text-sm font-medium">
                   Total
                 </label>

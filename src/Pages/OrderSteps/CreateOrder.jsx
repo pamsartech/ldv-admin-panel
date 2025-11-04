@@ -5,6 +5,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faTrash, faXmark } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
 import { useAlert } from "../../Components/AlertContext";
+import { colors } from "@mui/material";
 
 const CreateOrder = () => {
   const navigate = useNavigate();
@@ -129,7 +130,7 @@ const CreateOrder = () => {
 
       if (res.data.success && res.data.data) {
         const user = res.data.data;
-        console.log("✅ User found:", user);
+        console.log(" User found:", user);
         setCustomerName(user.customerName || "");
         setphoneNumber(user.phoneNumber || "");
         // ✅ Combine full address into one line
@@ -182,71 +183,140 @@ const CreateOrder = () => {
   };
 
   // 🔹 Handle form submit
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+
+  //   // 🔒 Block order creation if user not found
+  //   if (!userExists && userChecked) {
+  //     showAlert("User does not exist. Please create the user first.", "error");
+  //     return;
+  //   }
+
+  //   setLoading(true);
+
+  //   const isValid = validate();
+  //   if (!isValid) {
+  //     setLoading(false); // ✅ Stop spinner if validation fails
+  //     return;
+  //   }
+
+  //   const formattedItems = orderItems.map((item) => ({
+  //     ...item,
+  //     color: Array.isArray(item.color)
+  //       ? item.color
+  //       : item.color
+  //       ? [item.color]
+  //       : [],
+  //     size: Array.isArray(item.size) ? item.size : item.size ? [item.size] : [],
+  //   }));
+
+  //   const payload = {
+  //     customerName,
+  //     email,
+  //     phoneNumber,
+  //     address,
+  //     orderItems: formattedItems,
+  //     paymentMethod,
+  //     paymentStatus,
+  //     shippingMethod,
+  //     shippingStatus,
+  //     orderTotal: total,
+  //   };
+
+  //   console.log("📤 Sending order:", payload);
+
+  //   try {
+  //     const res = await axios.post(
+  //       "https://dev-api.payonlive.com/api/order/create-order",
+  //       payload,
+  //       { headers: { "Content-Type": "application/json" } }
+  //     );
+
+  //     console.log("✅ Order created:", res.data);
+
+  //     if (res.data?.success || res.status === 200) {
+  //       showAlert("Order created successfully!", "success");
+  //       navigate("/user/Orders");
+  //     } else {
+  //       showAlert("Failed to create order. Please try again.", "error");
+  //     }
+  //   } catch (err) {
+  //     console.error("Server Error while creating order:", err);
+  //     showAlert("Server error. Please try again.", "error");
+  //   } finally {
+  //     // ✅ Always stop the spinner — success or fail
+  //     setLoading(false);
+  //   }
+  // };
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    // 🔒 Block order creation if user not found
-    if (!userExists && userChecked) {
-      showAlert("User does not exist. Please create the user first.", "error");
-      return;
-    }
+  setLoading(true);
 
-    setLoading(true);
+  if (!validate()) {
+    setLoading(false);
+    return;
+  }
 
-    const isValid = validate();
-    if (!isValid) {
-      setLoading(false); // ✅ Stop spinner if validation fails
-      return;
-    }
+  // ✅ Format order items (remove unwanted keys)
+  const formattedItems = orderItems.map((item) => ({
+    productCode: item.productCode?.trim(),
+    quantity: Number(item.quantity),
+    size: item.size,
+    color: item.color
+    // size: Array.isArray(item.size)
+    //   ? item.size
+    //   : item.size
+    //   ? [item.size]
+    //   : [],
+    // color: Array.isArray(item.color)
+    //   ? item.color
+    //   : item.color
+    //   ? [item.color]
+    //   : [],
+  }));
 
-    const formattedItems = orderItems.map((item) => ({
-      ...item,
-      color: Array.isArray(item.color)
-        ? item.color
-        : item.color
-        ? [item.color]
-        : [],
-      size: Array.isArray(item.size) ? item.size : item.size ? [item.size] : [],
-    }));
-
-    const payload = {
-      customerName,
-      email,
-      phoneNumber,
-      address,
-      orderItems: formattedItems,
-      paymentMethod,
-      paymentStatus,
-      shippingMethod,
-      shippingStatus,
-      orderTotal: total,
-    };
-
-    console.log("📤 Sending order:", payload);
-
-    try {
-      const res = await axios.post(
-        "https://dev-api.payonlive.com/api/order/create-order",
-        payload,
-        { headers: { "Content-Type": "application/json" } }
-      );
-
-      console.log("✅ Order created:", res.data);
-
-      if (res.data?.success || res.status === 200) {
-        showAlert("Order created successfully!", "success");
-        navigate("/user/Orders");
-      } else {
-        showAlert("Failed to create order. Please try again.", "error");
-      }
-    } catch (err) {
-      console.error("Server Error while creating order:", err);
-      showAlert("Server error. Please try again.", "error");
-    } finally {
-      // ✅ Always stop the spinner — success or fail
-      setLoading(false);
-    }
+  // ✅ Final payload matching backend
+  const payload = {
+    customerName,
+    email,
+    phoneNumber,
+    address,
+    orderItems: formattedItems,
+    paymentMethod,
+    paymentStatus,
+    shippingMethod,
+    shippingStatus,
   };
+
+  console.log("📤 Clean Payload Sent to Backend:", payload);
+
+  try {
+    const res = await axios.post(
+      "https://dev-api.payonlive.com/api/order/create-order",
+      payload,
+      {
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+
+    if (res.data?.success) {
+      showAlert("Order created successfully!", "success");
+      navigate("/user/Orders");
+    } else {
+      showAlert(
+        res.data?.message || "Failed to create order. Please try again.",
+        "error"
+      );
+    }
+  } catch (err) {
+    console.error("❌ Server Error:", err);
+    showAlert("Server error. Please try again later.", "error");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   // Fetch product details by product code
   const fetchProductByCode = async (index, code) => {
@@ -266,8 +336,8 @@ const CreateOrder = () => {
         newItems[index].productCode = code;
         newItems[index].productName = product.productName || "";
         newItems[index].price = product.price || 0;
-        newItems[index].availableColors = product.color || [];
-        newItems[index].availableSizes = product.size || [];
+        // newItems[index].availableColors = product.color || [];
+        // newItems[index].availableSizes = product.size || [];
         newItems[index].color = "";
         newItems[index].size = "";
         setOrderItems(newItems);
@@ -568,11 +638,10 @@ const CreateOrder = () => {
                     className="w-full text-sm border rounded-lg px-2 py-2"
                   >
                     <option value="">Select color</option>
+                    <option value="White">White</option>
                     <option value="Red">Red</option>
-                    <option value="Blue">Blue</option>
                     <option value="Black">Black</option>
-                    {/* <option value="White">White</option>
-                    <option value="Green">Green</option> */}
+                    <option value="Brown">Brown</option> 
                   </select>
                 )}
               </div>
@@ -725,7 +794,7 @@ const CreateOrder = () => {
             >
               <option value="">Select Shipping method</option>
               <option>Flat Rate</option>
-              <option>Free Shipping</option>
+              <option>Express</option>
               <option>Local Pickup</option>
             </select>
             {errors.shippingMethod && (
@@ -742,10 +811,10 @@ const CreateOrder = () => {
               className="w-full rounded-lg border px-3 py-2 text-sm"
             >
               <option value="">Select shipping status</option>
-              {/* <option>Shipped</option> */}
+              <option>Shipped</option>
               <option>Pending</option>
               <option>Processing</option>
-              {/* <option>Delivered</option> */}
+              <option>Delivered</option>
             </select>
             {errors.shippingStatus && (
               <p className="text-red-500 text-sm">{errors.shippingStatus}</p>
