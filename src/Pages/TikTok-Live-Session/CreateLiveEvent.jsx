@@ -109,27 +109,70 @@ function CreateLiveEvent() {
     const newErrors = {};
     const {
       eventName,
+      sessionID,
       eventDescription,
       startDateTime,
       endDateTime,
       eventLink,
       eventCategory,
+      status,
     } = eventDetails;
 
     const { hostName, hostEmailAddress, hostPhoneNumber } = hostInfo;
 
+    // Event Name
     if (!eventName.trim()) newErrors.eventName = "Event name is required.";
+    else if (eventName.length < 3)
+      newErrors.eventName = "Event name must be at least 3 characters long.";
+    else if (eventName.length > 50)
+      newErrors.eventName = "Event name cannot exceed 50 characters.";
+
+    // Event Description
     if (!eventDescription.trim())
       newErrors.eventDescription = "Event description is required.";
+    else if (eventDescription.length < 10)
+      newErrors.eventDescription =
+        "Description should be at least 10 characters.";
+    else if (eventDescription.length > 500)
+      newErrors.eventDescription = "Description cannot exceed 500 characters.";
+
+    // Session ID
+    if (!sessionID.trim()) newErrors.sessionID = "Session ID is required.";
+    // else if (sessionID.includes(sessionID.trim()))
+    //   newErrors.sessionID = "Session ID already exists.";
+
+    // Status
+    const validStatuses = ["active", "inactive", "about to come", "suspended"];
+    if (!status.trim()) newErrors.status = "Status is required.";
+    else if (!validStatuses.includes(status))
+      newErrors.status = "Invalid status selected.";
+
+     // Start & End Date
     if (!startDateTime.trim())
       newErrors.startDateTime = "Start date & time is required.";
     if (!endDateTime.trim())
       newErrors.endDateTime = "End date & time is required.";
+    else if (
+      startDateTime &&
+      endDateTime &&
+      new Date(endDateTime) <= new Date(startDateTime)
+    )
+      newErrors.endDateTime =
+        "End date and time must be after start date and time.";
+
     if (!eventLink.trim()) newErrors.eventLink = "Event link is required.";
+
     if (!eventCategory.trim())
       newErrors.eventCategory = "Event category is required.";
 
+     // Host Name
     if (!hostName.trim()) newErrors.hostName = "Host name is required.";
+    else if (hostName.length < 3)
+      newErrors.hostName = "Host name must be at least 3 characters long.";
+    else if (hostName.length > 100)
+      newErrors.hostName = "Host name cannot exceed 100 characters.";
+
+
     if (!hostEmailAddress.trim())
       newErrors.hostEmailAddress = "Host email is required.";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(hostEmailAddress))
@@ -196,16 +239,6 @@ function CreateLiveEvent() {
 
 
   // ----------------------
-  // Popup auto-hide
-  // ----------------------
-  useEffect(() => {
-    if (showPopup) {
-      const timer = setTimeout(() => setShowPopup(false), 2500);
-      return () => clearTimeout(timer);
-    }
-  }, [showPopup]);
-
-  // ----------------------
   // Render Component
   // ----------------------
   return (
@@ -250,7 +283,7 @@ function CreateLiveEvent() {
                 className="w-full border border-gray-300 px-4 py-2 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
               />
               {errors.eventName && (
-                <p className="text-red-500 text-sm mt-1">{errors.eventName}</p>
+                <p className="text-red-500 text-sm ">{errors.eventName}</p>
               )}
             </div>
 
@@ -267,7 +300,7 @@ function CreateLiveEvent() {
                 className="w-full border border-gray-300 px-4 py-2 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
               />
               {errors.eventDescription && (
-                <p className="text-red-500 text-sm mt-1">
+                <p className="text-red-500 text-sm ">
                   {errors.eventDescription}
                 </p>
               )}
@@ -285,6 +318,9 @@ function CreateLiveEvent() {
                 onChange={handleEventChange}
                 className="w-full border border-gray-300 px-4 py-2 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
               />
+               {errors.sessionID && (
+              <p className="text-red-500 text-sm">{errors.sessionID}</p>
+            )}
             </div>
 
             {/* Status */}
@@ -301,6 +337,11 @@ function CreateLiveEvent() {
                 <option value="about to come">About to come</option>
                 <option value="suspended">Suspended</option>
               </select>
+               {errors.status && (
+                <p className="text-red-500 text-sm ">
+                  {errors.status}
+                </p>
+              )}
             </div>
 
             {/* Start & End Date */}
@@ -316,7 +357,7 @@ function CreateLiveEvent() {
                 className="w-full border border-gray-300 px-4 py-2 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
               />
               {errors.startDateTime && (
-                <p className="text-red-500 text-sm mt-1">
+                <p className="text-red-500 text-sm ">
                   {errors.startDateTime}
                 </p>
               )}
@@ -334,7 +375,7 @@ function CreateLiveEvent() {
                 className="w-full border border-gray-300 px-4 py-2 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
               />
               {errors.endDateTime && (
-                <p className="text-red-500 text-sm mt-1">
+                <p className="text-red-500 text-sm ">
                   {errors.endDateTime}
                 </p>
               )}
@@ -362,7 +403,7 @@ function CreateLiveEvent() {
                 </button>
               </div>
               {errors.eventLink && (
-                <p className="text-red-500 text-sm mt-1">{errors.eventLink}</p>
+                <p className="text-red-500 text-sm ">{errors.eventLink}</p>
               )}
             </div>
 
@@ -382,6 +423,9 @@ function CreateLiveEvent() {
                 <option value="Beauty">Beauty</option>
                 <option value="Other">Other</option>
               </select>
+               {errors.eventCategory && (
+              <p className="text-red-500 text-sm">{errors.eventCategory}</p>
+            )}
             </div>
           </div>
         </section>
@@ -510,16 +554,6 @@ function CreateLiveEvent() {
 
         <hr className="text-gray-400" />
 
-        {/* <div className="flex justify-end">
-          <button
-            type="submit"
-            disabled={loading}
-            className="bg-[#02B978] text-white px-6 py-2 rounded-lg hover:bg-[#04D18C]"
-          >
-            {loading ? "Saving..." : "Save"}
-          </button>
-        </div> */}
-
          <div className="flex justify-end mt-4">
             <button
               type="submit"
@@ -533,15 +567,6 @@ function CreateLiveEvent() {
             </button>
           </div>
       </form>
-
-      {/* Popup */}
-      {/* {showPopup && (
-        <div className="fixed top-5 left-1/2 transform -translate-x-1/2 z-50">
-          <div className="bg-white text-black font-bold px-8 py-4 rounded-xl shadow-xl min-w-[300px] text-center">
-            {popupMessage}
-          </div>
-        </div>
-      )} */}
     </div>
   );
 }

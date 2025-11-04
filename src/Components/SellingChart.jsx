@@ -18,6 +18,8 @@ import axios
   // ✅ State to store best-selling products (dynamic)
     const [bestSelling, setBestSelling] = useState([]);
 
+     const [salesTrend, setSalesTrend] = useState([]);
+
     // ✅ Best selling products
   useEffect(() => {
     const fetchBestSelling = async () => {
@@ -36,6 +38,33 @@ import axios
     fetchBestSelling();
   }, []);
 
+  // ✅ Fetch weekly order data for sales trend
+  useEffect(() => {
+    const fetchSalesTrend = async () => {
+      try {
+        console.log("📊 Fetching weekly sales trend...");
+        const res = await axios.get(
+          "https://dev-api.payonlive.com/api/order/week-orders"
+        );
+
+        // Transform API response into chart-friendly format
+        const formattedData =
+          res.data?.dailySales?.map((item) => ({
+            name: item.day.slice(0, 3), // e.g., "Mon", "Tue"
+            sales: item.count || 0,
+          })) || [];
+
+
+        console.log("✅ Sales trend data:", formattedData);
+        setSalesTrend(formattedData);
+      } catch (error) {
+        console.error("❌ Failed to fetch sales trend:", error);
+      }
+    };
+
+    fetchSalesTrend();
+  }, []);
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
 
@@ -47,7 +76,7 @@ import axios
         </div>
 
         <ResponsiveContainer width="100%" height={250}>
-          <LineChart data={data}>
+          <LineChart data={salesTrend}>
             <CartesianGrid stroke="#ccc" strokeDasharray="5 5" />
             <XAxis dataKey="name" />
             <YAxis />
@@ -70,7 +99,7 @@ import axios
                   className=" w-10 h-10 border-1 rounded-lg border-gray-400"
                 />
                 <div>
-                  <p className="font-medium">{product.productCategory}</p>
+                  <p className="font-medium">{product.productName}</p>
                   <p className="text-sm text-gray-500">{product.productCode || 'N/A'}</p>
                 </div>
               </div>

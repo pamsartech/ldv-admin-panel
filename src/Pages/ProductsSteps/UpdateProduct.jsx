@@ -415,9 +415,9 @@ function UpdateProduct() {
                   className="w-full bg-gray-50 border border-gray-400 rounded-lg px-3 py-2"
                 >
                   <option value="">Select Category</option>
-                  <option value="Jacket">Clothing</option>
-                  <option value="Shoes">Shoes</option>
-                  <option value="T-shirt">Accessories</option>
+                  <option value="clothing">Clothing</option>
+                  <option value="shoes">Shoes</option>
+                  <option value="accessories">Accessories</option>
                 </select>
               </div>
             </div>
