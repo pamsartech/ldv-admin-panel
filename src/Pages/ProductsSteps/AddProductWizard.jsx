@@ -108,6 +108,8 @@ const handleSubmit = async () => {
         withCredentials: true, // only if cookies/session used
       }
     );
+    console.log("data the data is added"+data);
+    
 
     showAlert("Product created successfully!", "success");
     navigate("/user/Products");
