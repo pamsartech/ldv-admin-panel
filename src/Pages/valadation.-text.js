@@ -1,4 +1,3 @@
-// --- existing imports ---
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../Components/Navbar";
@@ -607,19 +606,19 @@ const CreateOrder = () => {
             >
 
               {/* product code */}
-              <div className="md:col-span-2">
+              {/* <div className="md:col-span-2">
                 <label className="block mb-1 text-sm font-medium">
                   Product Code
                 </label>
                 <input
-                  value={item.productCode}
+                  value={item.productName}
                   // onChange={(e) => handleProductChange(idx, e.target.value)}
                   onChange={(e) => {
                     const newItems = [...orderItems];
-                    newItems[idx].productCode = e.target.value;
+                    newItems[idx].productName = e.target.value;
                     setOrderItems(newItems);
                   }}
-                  onBlur={() => fetchProductByCode(idx, item.productCode)}
+                  onBlur={() => fetchProductByCode(idx, item.productName)}
                   placeholder="enter product code"
                   className="w-full text-sm  rounded-xl border px-2 py-2"
                 />
@@ -628,9 +627,8 @@ const CreateOrder = () => {
                     {errors[`product_${idx}`]}
                   </p>
                 )}
-              </div>
-
-              {/* <div className="md:col-span-2">
+              </div> */}
+              <div className="md:col-span-2">
                 <input
                   placeholder="Product Code"
                   value={item.productCode}
@@ -645,7 +643,7 @@ const CreateOrder = () => {
                 {errors[`product_${idx}`] && (
                   <p className="text-red-500 text-sm">{errors[`product_${idx}`]}</p>
                 )}
-              </div> */}
+              </div>
 
               {/* product name */}
               <div className="md:col-span-2">
@@ -653,7 +651,6 @@ const CreateOrder = () => {
                   Product Name
                 </label>
                 <input
-                readOnly
                   value={item.productName}
                   // onChange={(e) => handleProductChange(idx, e.target.value)}
                   onChange={(e) => {

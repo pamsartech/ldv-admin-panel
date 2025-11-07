@@ -32,42 +32,42 @@ function Sidebar() {
         <NavLink to="/user/dashboard" className={({ isActive }) => `flex items-center gap-3 px-4 py-2 mx-1.5 border-1 border-[#C8C8C8] rounded-md transition-colors ${ isActive ? "bg-[#02B978] text-white" : "hover:bg-[#04D18C] hover:text-white" }`}>
           {/* <FontAwesomeIcon icon={faHome} size="lg" /> */}
             <DashboardOutlinedIcon />
-          {isOpen && <span>Dashboard</span>}
+          {isOpen && <span>Tableau de bord </span>}
         </NavLink>
 
         <NavLink to="/user/products" className={({ isActive }) => `flex items-center gap-3 px-4 py-2 mx-1.5 border-1 border-[#C8C8C8] rounded-md transition-colors ${ isActive ? "bg-[#02B978] text-white" : "hover:bg-[#04D18C] hover:text-white"}`}>
           <FontAwesomeIcon icon={faBoxOpen}  size="lg" />
           {/* <ProductionQuantityLimitsIcon  /> */}
-          {isOpen && <span>Products</span>}
+          {isOpen && <span>	Tableau de bord </span>}
         </NavLink>
 
         <NavLink to="/user/orders" className={({ isActive }) => `flex items-center gap-3 px-4 py-2 mx-1.5 border-1 border-[#C8C8C8] rounded-md transition-colors ${isActive ? "bg-[#02B978] text-white" : "hover:bg-[#04D18C] hover:text-white"}` }>
           {/* <FontAwesomeIcon icon={faFileCircleCheck} size="lg" /> */}
           <DescriptionOutlinedIcon />
-          {isOpen && <span>Orders</span>}
+          {isOpen && <span>Commandes</span>}
         </NavLink>
 
         <NavLink to="/user/customers"  className={({ isActive }) => `flex items-center gap-3 px-4 py-2 mx-1.5 border-1 border-[#C8C8C8] rounded-md transition-colors ${isActive ? "bg-[#02B978] text-white" : "hover:bg-[#04D18C] hover:text-white"}`}>
           <PeopleOutlineOutlinedIcon />
-          {isOpen && <span>Customers</span>}
+          {isOpen && <span>Clients</span>}
         </NavLink>
 
         <NavLink to="/user/payments" className={({ isActive }) => `flex items-center gap-3 px-4 py-2 mx-1.5 border-1 border-[#C8C8C8] rounded-md transition-colors ${isActive ? "bg-[#02B978] text-white" : "hover:bg-[#04D18C] hover:text-white"}`}>
           {/* <FontAwesomeIcon icon={faMoneyCheckDollar} size="lg" /> */}
           <PaymentsOutlinedIcon />
-          {isOpen && <span>Payments</span>}
+          {isOpen && <span>Paiements</span>}
         </NavLink>
 
         <NavLink to="/user/tiktok" className={({ isActive }) => `flex items-center gap-3 px-4 py-2 mx-1.5 border-1 rounded-md border-[#C8C8C8] transition-colors ${isActive ? "bg-[#02B978] text-white" : "hover:bg-[#04D18C] hover:text-white"}`}>
           
           <SignalCellularAltOutlinedIcon />
-          {isOpen && <span>TikTok Live Session</span>}
+          {isOpen && <span>Session TikTok Live</span>}
         </NavLink>
 
         <NavLink to="/user/setting" className={({ isActive }) => `flex items-center gap-3 px-4 py-2 mx-1.5 border-1 border-[#C8C8C8] rounded-md transition-colors ${isActive ? "bg-[#02B978] text-white" : "hover:bg-[#04D18C] hover:text-white"}`}>
           {/* <FontAwesomeIcon icon={faGear} size="lg" /> */}
           <SettingsOutlinedIcon />
-          {isOpen && <span>Setting</span>}
+          {isOpen && <span>Paramètres</span>}
         </NavLink>
         
       </nav>

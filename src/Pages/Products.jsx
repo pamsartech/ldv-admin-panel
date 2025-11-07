@@ -145,10 +145,10 @@ function Products() {
 
   return (
     <div>
-      <Navbar heading="Product Management" />
+      <Navbar heading="Gestion des produits " />
 
       <div className="flex items-center justify-between px-6 mt-5 pb-3">
-        <h2 className="text-lg font-semibold text-gray-800"> My Product </h2>
+        <h2 className="text-lg font-semibold text-gray-800"> Mes produits </h2>
 
         <div className="flex items-center gap-2">
           {/* Import Button */}
