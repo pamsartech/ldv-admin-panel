@@ -1,536 +1,762 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "../../Components/Navbar";
-import { useNavigate, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faArrowLeft,
-  faArrowRotateLeft,
-  faTrashCan,
-  faFileInvoice,
-  faEnvelope,
-  faPhone,
-  faMapMarkerAlt,
-  faTruck,
-  faBoxOpen,
-  faHourglassHalf,
-  faCheckCircle,
-  faCopy,
-} from "@fortawesome/free-solid-svg-icons";
+import { faPlus, faTrash, faXmark } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
+import { useAlert } from "../../Components/AlertContext";
+import { colors } from "@mui/material";
 
-// 🧩 Material UI Skeleton
-import Skeleton from "@mui/material/Skeleton";
-import Stack from "@mui/material/Stack";
-
-export default function ViewOrder() {
+const CreateOrder = () => {
   const navigate = useNavigate();
-  const { orderId } = useParams();
+  const { showAlert } = useAlert();
 
-  const [order, setOrder] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [orderStatus, setOrderStatus] = useState("Pending");
+  // 🔹 State for customer info
+  const [customerName, setCustomerName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phoneNumber, setphoneNumber] = useState("");
+  const [address, setAddress] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  // Fetch order details
+  // 🔹 State for order items
+  const [orderItems, setOrderItems] = useState([
+    {
+      productCode: "",
+      productName: "",
+      quantity: 1,
+      price: 0,
+      color: "",
+      size: "",
+      availableColors: [],
+      availableSizes: [],
+    },
+  ]);
+
+  // 🔹 State for payment & shipping
+  const [paymentMethod, setPaymentMethod] = useState("");
+  const [paymentStatus, setPaymentStatus] = useState("");
+  const [shippingMethod, setShippingMethod] = useState("");
+  const [shippingStatus, setShippingStatus] = useState("");
+
+  // 🔹 Validation errors + popup
+  const [errors, setErrors] = useState({});
+  const [showPopup, setShowPopup] = useState(false);
+  const [popupMessage, setPopupMessage] = useState("");
+
+  // for check user email exist or not
+  const [userExists, setUserExists] = useState(false);
+  const [userChecked, setUserChecked] = useState(false);
+
   useEffect(() => {
-    if (!orderId) {
-      setError("Order ID is missing in the URL.");
-      setLoading(false);
-      return;
+    if (showPopup) {
+      const timer = setTimeout(() => setShowPopup(false), 2500);
+      return () => clearTimeout(timer);
     }
+  }, [showPopup]);
 
-    const fetchOrder = async () => {
-      try {
-        const response = await axios.get(
-          `https://dev-api.payonlive.com/api/order/order-details/${orderId}`
-        );
-        if (response.data.success && response.data.data) {
-          setOrder(response.data.data);
-          setOrderStatus(response.data.data.shippingStatus || "Pending");
-        } else {
-          setError(response.data.message || "Failed to fetch order.");
-        }
-      } catch (err) {
-        setError(
-          err.response?.data?.message || err.message || "Something went wrong."
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Add product row
+  const addProduct = () => {
+    setOrderItems([...orderItems, { productName: "", quantity: 1, price: 0 }]);
+  };
 
-    fetchOrder();
-  }, [orderId]);
+  // Remove product row
+  const removeProduct = (index) => {
+    setOrderItems(orderItems.filter((_, i) => i !== index));
+  };
 
-  // 🦴 Skeleton Loader UI
-  if (loading) {
-    return (
-      <div>
-        <Navbar heading="Order Management" />
-        <div className="max-w-6xl mx-auto mt-10 bg-white rounded-lg shadow-sm p-6">
-          <div className="lg:flex gap-6">
-            {/* LEFT COLUMN SKELETON */}
-            <div className="w-full lg:w-1/2 space-y-5">
-              <Stack spacing={2}>
-                <Skeleton variant="text" width={200} height={30} animation="wave" />
-                <Skeleton variant="rectangular" height={100} animation="wave" />
-                <Skeleton variant="text" width={160} height={25} animation="wave" />
-                <Skeleton variant="rectangular" height={120} animation="wave" />
-                <Skeleton variant="rectangular" height={150} animation="wave" />
-              </Stack>
-            </div>
+  // Update product field
+  const handleProductChange = (index, value) => {
+    const newItems = [...orderItems];
+    newItems[index].productName = value;
+    setOrderItems(newItems);
+  };
 
-            {/* RIGHT COLUMN SKELETON */}
-            <div className="w-full lg:w-1/2 space-y-5">
-              <Stack spacing={2}>
-                <Skeleton variant="text" width={180} height={30} animation="wave" />
-                <Skeleton variant="rectangular" height={100} animation="wave" />
-                <Skeleton variant="text" width={150} height={25} animation="wave" />
-                <Skeleton variant="rectangular" height={200} animation="wave" />
-                <Skeleton variant="rectangular" height={180} animation="wave" />
-              </Stack>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // 🔹 Validation Logic (same style as LiveEvent)
+  const validate = () => {
+    const newErrors = {};
 
-  if (error)
-    return <p className="text-center mt-10 text-red-500">Error: {error}</p>;
-  if (!order) return null;
+    if (!customerName.trim())
+      newErrors.customerName = "Customer name is required.";
+    if (!email.trim()) newErrors.email = "Email is required.";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+      newErrors.email = "Please enter a valid email.";
 
-  // Delete order
-  const handleDelete = async () => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this order?"
-    );
-    if (!confirmDelete) return;
+    if (!phoneNumber.trim())
+      newErrors.phoneNumber = "Phone number is required.";
+    else if (!/^\d{9,15}$/.test(phoneNumber))
+      newErrors.phoneNumber = "Phone number must be 9–15 digits.";
+
+    if (!address.trim()) newErrors.address = "Shipping address is required.";
+
+    if (!paymentMethod.trim())
+      newErrors.paymentMethod = "Select a payment method.";
+    if (!paymentStatus.trim())
+      newErrors.paymentStatus = "Select a payment status.";
+    if (!shippingMethod.trim())
+      newErrors.shippingMethod = "Select a shipping method.";
+    if (!shippingStatus.trim())
+      newErrors.shippingStatus = "Select a shipping status.";
+
+    // Validate order items
+    orderItems.forEach((item, idx) => {
+      if (!item.productName.trim())
+        newErrors[`product_${idx}`] = `Product code is required for item ${
+          idx + 1
+        }`;
+      if (item.price <= 0)
+        newErrors[`price_${idx}`] = `Price must be greater than 0 for item ${
+          idx + 1
+        }`;
+    });
+
+    setErrors(newErrors);
+    console.log("🧾 Validation Errors:", newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // 🔍 Fetch user by email and autofill details
+  const fetchUserByEmail = async (email) => {
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return;
 
     try {
-      setIsDeleting(true);
-      const response = await axios.delete(
-        `https://dev-api.payonlive.com/api/order/delete-order/${orderId}`
+      setLoading(true);
+      console.log(`🔍 Searching user by email: ${email}`);
+
+      const res = await axios.post(
+        "https://dev-api.payonlive.com/api/user/search",
+        { email },
+        { headers: { "Content-Type": "application/json" } }
       );
 
-      if (response.data.success) {
-        alert("Order deleted successfully!");
-        navigate("/user/Orders");
+      if (res.data.success && res.data.data) {
+        const user = res.data.data;
+        console.log(" User found:", user);
+        setCustomerName(user.customerName || "");
+        setphoneNumber(user.phoneNumber || "");
+        // ✅ Combine full address into one line
+        if (user.address) {
+          const { street, city, state, zipcode, country } = user.address;
+          const fullAddress = [street, city, state, zipcode, country]
+            .filter(Boolean)
+            .join(", ");
+          setAddress(fullAddress || "");
+          console.log("address", fullAddress);
+        }
+        setUserExists(true);
+        setUserChecked(true);
+        showAlert("User details loaded successfully!", "success");
       } else {
-        alert(
-          `Failed to delete order: ${response.data.message || "Unknown error"}`
+        // ✅ User not found (no crash)
+        console.warn("⚠️ User not found:", res.data);
+        setUserExists(false);
+        setUserChecked(true);
+        setCustomerName("");
+        setphoneNumber("");
+        setAddress("");
+        showAlert(
+          "User does not exist. Please create the user first.",
+          "warning"
         );
       }
-    } catch (err) {
-      alert(`Error: ${err.response?.data?.message || err.message}`);
+    } catch (error) {
+      // ✅ Handle server-side 404 or network issues gracefully
+      console.error("❌ Error fetching user:", error);
+
+      setUserExists(false);
+      setUserChecked(true);
+      setCustomerName("");
+      setphoneNumber("");
+      setAddress("");
+
+      // Show warning instead of error for user not found
+      if (error.response && error.response.status === 404) {
+        showAlert(
+          "User does not exist. Please create the user first.",
+          "warning"
+        );
+      } else {
+        showAlert("Error fetching user details. Please try again.", "error");
+      }
     } finally {
-      setIsDeleting(false);
+      setLoading(false);
     }
   };
 
-  // ✅ Main UI after data loads
+
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  setLoading(true);
+
+  if (!validate()) {
+    setLoading(false);
+    return;
+  }
+
+  // ✅ Format order items (remove unwanted keys)
+  const formattedItems = orderItems.map((item) => ({
+    productCode: item.productCode?.trim(),
+    quantity: Number(item.quantity),
+    size: item.size,
+    color: item.color
+    // size: Array.isArray(item.size)
+    //   ? item.size
+    //   : item.size
+    //   ? [item.size]
+    //   : [],
+    // color: Array.isArray(item.color)
+    //   ? item.color
+    //   : item.color
+    //   ? [item.color]
+    //   : [],
+  }));
+
+  // ✅ Final payload matching backend
+  const payload = {
+    customerName,
+    email,
+    phoneNumber,
+    address,
+    orderItems: formattedItems,
+    paymentMethod,
+    paymentStatus,
+    shippingMethod,
+    shippingStatus,
+  };
+
+  console.log("📤 Clean Payload Sent to Backend:", payload);
+
+  try {
+    const res = await axios.post(
+      "https://dev-api.payonlive.com/api/order/create-order",
+      payload,
+      {
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+
+    if (res.data?.success) {
+      showAlert("Order created successfully!", "success");
+      navigate("/user/Orders");
+    } else {
+      showAlert(
+        res.data?.message || "Failed to create order. Please try again.",
+        "error"
+      );
+    }
+  } catch (err) {
+    console.error("❌ Server Error:", err);
+    showAlert("Server error. Please try again later.", "error");
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+  // Fetch product details by product code
+  // 🔍 Fetch product details by product code
+const fetchProductByCode = async (index, code) => {
+  if (!code) return;
+
+  try {
+    console.log(`🔍 Fetching product for code: ${code}`);
+    const res = await axios.get(
+      `https://dev-api.payonlive.com/api/product/product-code/${code}`
+    );
+
+    if (res.data.success) {
+      const product = res.data.data;
+      console.log("✅ Product fetched:", product);
+
+      // 🧩 Normalize color and size
+      let normalizedColors = [];
+      let normalizedSizes = [];
+
+      // Handle color
+      if (Array.isArray(product.color)) {
+        normalizedColors = product.color.filter(Boolean);
+      } else if (typeof product.color === "string" && product.color.trim() !== "") {
+        // Sometimes color is comma-separated or single value
+        if (product.color.includes(",")) {
+          normalizedColors = product.color.split(",").map((c) => c.trim());
+        } else {
+          normalizedColors = [product.color.trim()];
+        }
+      }
+
+      // Handle size
+      if (Array.isArray(product.size)) {
+        normalizedSizes = product.size.filter(Boolean);
+      } else if (typeof product.size === "string" && product.size.trim() !== "") {
+        if (product.size.includes(",")) {
+          normalizedSizes = product.size.split(",").map((s) => s.trim());
+        } else {
+          normalizedSizes = [product.size.trim()];
+        }
+      }
+
+      const newItems = [...orderItems];
+      newItems[index] = {
+        ...newItems[index],
+        productCode: code,
+        productName: product.productName || "",
+        price: product.price || 0,
+        availableColors: normalizedColors,
+        availableSizes: normalizedSizes,
+        color: "",
+        size: "",
+      };
+
+      setOrderItems(newItems);
+    } else {
+      console.warn("⚠️ Product not found for code:", code);
+    }
+  } catch (error) {
+    console.error("❌ Error fetching product:", error);
+  }
+};
+
+
+
+  const handleColorSelect = (index, color) => {
+    const newItems = [...orderItems];
+    newItems[index].color = color;
+    setOrderItems(newItems);
+  };
+
+  // ✅ Handle size click
+  const handleSizeSelect = (index, size) => {
+    const newItems = [...orderItems];
+    newItems[index].size = size;
+    setOrderItems(newItems);
+  };
+
+  // calculate
+  const subtotal = orderItems.reduce(
+    (acc, item) => acc + item.price * item.quantity,
+    0
+  );
+  const tax = subtotal * 0.1; // Example 10%
+  const shippingFee = shippingMethod === "Free Shipping" ? 0 : 7;
+  const total = subtotal + tax + shippingFee;
+
   return (
     <div>
       <Navbar heading="Order Management" />
 
-      {/* Top Buttons */}
+      {/* discard button */}
       <div className="flex justify-between mt-5 mx-10">
-        <h1 className="font-medium text-lg">My Orders</h1>
-        <div>
-          <button
-            onClick={handleDelete}
-            disabled={isDeleting}
-            className={`px-3 py-1 border rounded-md ${
-              isDeleting
-                ? "bg-gray-300 text-gray-500"
-                : "text-[#B21E1E] bg-red-50 hover:bg-red-100"
-            }`}
-          >
-            <FontAwesomeIcon icon={faTrashCan} className="px-2" />
-            {isDeleting ? "Deleting..." : "Delete order"}
-          </button>
-
-          <button
-            onClick={() =>
-              navigate(`/user/update-order/${orderId}`, {
-                state: { orderData: order },
-              })
-            }
-            className="mx-2 px-3 py-1 border rounded-md text-[#114E9D] bg-blue-50 hover:bg-blue-100"
-          >
-            <FontAwesomeIcon icon={faArrowRotateLeft} className="px-2" />
-            Update
-          </button>
-
-          <button
-            onClick={() => navigate("/user/Orders")}
-            className="px-3 py-1 border rounded-md text-white bg-[#02B978] hover:bg-[#04D18C]"
-          >
-            <FontAwesomeIcon icon={faArrowLeft} className="text-white px-2" />
-            Back to Main View
-          </button>
-        </div>
+        <h1 className="font-medium text-lg">Order Creation</h1>
+        <button
+          onClick={() => navigate("/user/Orders")}
+          className="px-3 py-1 border border-red-700 text-red-700 bg-red-50 rounded-md hover:bg-gray-100"
+        >
+          <FontAwesomeIcon
+            icon={faXmark}
+            size="lg"
+            className="text-red-700 px-2"
+          />
+          Discard
+        </button>
       </div>
 
-      {/* Order Details */}
-      <div className="max-w-6xl mx-5 mt-5 border-t bg-white border-gray-500 overflow-hidden">
-        <div className="lg:flex">
-          {/* LEFT COLUMN */}
-          <div className="w-full lg:w-1/2">
-            {/* Order ID Section */}
-            <section className="p-6 border-b border-gray-500">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="font-medium text-lg">Order ID</h2>
-                <span className="font-medium text-lg">#{order._id}</span>
-              </div>
-
-              <div className="text-sm space-y-3 text-gray-700">
-                <div className="flex justify-between">
-                  <span>Date</span>
-                  <span>{new Date(order.createdAt).toLocaleDateString()}</span>
-                </div>
-
-                <div className="flex justify-between">
-                  <span>Order amount</span>
-                  <span>€{order.orderTotal}</span>
-                </div>
-
-                <div className="flex justify-between items-center">
-                  <span>Shipping Status</span>
-                  <span>{orderStatus}</span>
-                </div>
-              </div>
-            </section>
-
-            {/* Payment Info */}
-            <section className="p-6 border-b border-gray-500">
-              <h3 className="font-medium mb-3">Payment Info</h3>
-              <div className="text-sm text-gray-700 space-y-3">
-                <div className="flex justify-between">
-                  <span>Method</span>
-                  <span>{order.paymentMethod}</span>
-                </div>
-
-                <div className="flex justify-between items-center">
-                  <span>Payment Status</span>
-                  <span className="inline-block">
-                    {order.paymentStatus}
-                  </span>
-                </div>
-
-                <div className="flex justify-between items-center">
-                  <span>Transaction ID</span>
-                  <div className="flex items-center gap-3">
-                    {/* <FontAwesomeIcon
-                      icon={faFileInvoice}
-                      className="text-gray-600"
-                    /> */}
-                     <button className="ml-2 text-xs text-gray-500 hover:text-gray-700">
-                      <FontAwesomeIcon icon={faCopy} />
-                    </button>
-                    <span className="truncate max-w-[160px]">
-                      {order.payment_id || "N/A"}
-                    </span>
-                    {/* <button className="ml-2 text-xs text-gray-500 hover:text-gray-700">
-                      <FontAwesomeIcon icon={faCopy} />
-                    </button> */}
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            {/* TikTok Live Ref */}
-            <section className="p-6 border-b border-gray-500">
-              <h3 className="font-medium mb-3">TikTok Live Ref</h3>
-              <div className="text-sm text-gray-700 space-y-2">
-                <div className="flex justify-between">
-                  <span>Session name</span>
-                  <span>Clothing code</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Session ID</span>
-                  <span>13121232</span>
-                </div>
-              </div>
-            </section>
-
-            {/* Products sold */}
-            <section className="p-6 border-t border-gray-500">
-              <h3 className="font-medium mb-4">Products sold</h3>
-              <div className="flex gap-6">
-                <div className="space-y-3 w-1/2 text-sm text-gray-700">
-                  {order.orderItems.map((item) => (
-                    <div key={item._id} className="flex items-center gap-2">
-                      <img
-                        src={
-                          item.productDetails?.images?.[0] ||
-                          "/placeholder-image.png"
-                        }
-                        alt={item.productName}
-                        className="w-12 h-12 rounded-md object-cover border bg-gray-100"
-                      />
-
-                      <div className="flex-1">
-                        <div className="font-medium">{item.productName}</div>
-                      </div>
-                      <div className="text-sm">€{item.price}</div>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="w-1/2 border-l border-gray-500 pl-6 text-sm text-gray-800">
-                  <div className="flex justify-between mb-1">
-                    <span>Subtotal :</span>
-                    <span>
-                      €
-                      {order.orderItems.reduce(
-                        (acc, item) => acc + item.total,
-                        0
-                      )}
-                    </span>
-                  </div>
-                  <div className="flex justify-between mb-1">
-                    <span>Shipping :</span>
-                    <span>{order.shippingMethod || "Standard"}</span>
-                  </div>
-                  <div className="flex justify-between font-semibold">
-                    <span>Total :</span>
-                    <span>€{order.orderTotal}</span>
-                  </div>
-                </div>
-              </div>
-            </section>
-          </div>
-
-          {/* RIGHT COLUMN */}
-          <div className="w-full lg:w-1/2 border-l border-gray-500">
-            {/* Customer Info */}
-            <section className="p-6 pb-7 border-b border-gray-500">
-              <h3 className="font-medium text-lg mb-3 mx-10">Customer Info</h3>
-              <div className="text-sm text-gray-700 mx-10 space-y-3">
-                <div className="flex justify-between">
-                  <span>Name</span>
-                  <span className="font-medium">{order.customerName}</span>
-                </div>
-
-                <div className="flex justify-between items-start">
-                  <span>Email</span>
-                  <div className="flex items-center gap-3">
-                    {/* <FontAwesomeIcon
-                      icon={faEnvelope}
-                      className="text-gray-600"
-                    /> */}
-                     <button className="ml-2 text-xs text-gray-500 hover:text-gray-700">
-                      <FontAwesomeIcon icon={faCopy} />
-                    </button>
-
-                    <span className="truncate max-w-[220px]">
-                      {order.email}
-                    </span>
-                    {/* <button className="ml-2 text-xs text-gray-500 hover:text-gray-700">
-                      <FontAwesomeIcon icon={faCopy} />
-                    </button> */}
-                  </div>
-                </div>
-
-                <div className="flex justify-between items-start">
-                  <span>Phone</span>
-                  <div className="flex items-center gap-3">
-                    {/* <FontAwesomeIcon icon={faPhone} className="text-gray-600" /> */}
-                     <button className="ml-2 text-xs text-gray-500 hover:text-gray-700">
-                      <FontAwesomeIcon icon={faCopy} />
-                    </button>
-                    <span className="truncate max-w-[220px]">
-                      {order.phoneNumber}
-                    </span>
-                    
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            {/* Shipping Info */}
-            <section className="p-6 mx-10">
-              <h3 className="font-medium mb-3">Shipping Info</h3>
-              <div className="flex items-start gap-3 text-sm text-gray-700">
-                <FontAwesomeIcon
-                  icon={faMapMarkerAlt}
-                  className="text-gray-600 mt-0.5"
-                />
-                <div>
-                  <div className="mb-1">Shipping Address</div>
-                  <div className="text-sm text-gray-600">{order.address}</div>
-                </div>
-              </div>
-            </section>
-
-            {/* Activity */}
-          {/* Activity */}
-<section className="p-6 mx-10">
-  <h3 className="font-medium mb-4">Activity</h3>
-
-  {/* Timeline container */}
-  <div className="relative">
-    {/* Full gray line */}
-    <div className="absolute left-6 top-0 bottom-0 w-[2px] bg-gray-300"></div>
-
-    {/* Dynamic green progress line */}
-    <div
-      className="absolute left-6 top-0 w-[2px] bg-green-500 transition-all duration-700"
-      style={{
-        height:
-          orderStatus?.toLowerCase() === "shipped"
-            ? "100%"
-            : orderStatus?.toLowerCase() === "in_progress" ||
-              orderStatus?.toLowerCase() === "processing"
-            ? "50%"
-            : "15%",
-      }}
-    ></div>
-
-    <ul className="space-y-8 relative z-10">
-      {/* Order Placed */}
-      <li className="relative">
-        <span
-          className={`absolute left-6 top-0 -translate-x-1/2 w-8 h-8 rounded-full flex items-center justify-center shadow-sm border
-            ${
-              ["pending", "in_progress", "processing", "shipped"].includes(
-                orderStatus?.toLowerCase()
-              )
-                ? "bg-green-500 border-green-500 text-white"
-                : "bg-white border-gray-300 text-gray-400"
-            }`}
-        >
-          <FontAwesomeIcon icon={faCheckCircle} />
-        </span>
-        <div className="pl-16">
-          <h4 className="font-medium">Order Placed</h4>
-          <p className="text-xs text-gray-500">
-            {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : "—"}
-          </p>
-        </div>
-      </li>
-
-      {/* Processing */}
-      <li className="relative">
-        <span
-          className={`absolute left-6 top-0 -translate-x-1/2 w-8 h-8 rounded-full flex items-center justify-center shadow-sm border
-            ${
-              ["in_progress", "processing", "shipped"].includes(
-                orderStatus?.toLowerCase()
-              )
-                ? "bg-green-500 border-green-500 text-white"
-                : "bg-white border-gray-300 text-gray-400"
-            }`}
-        >
-          <FontAwesomeIcon icon={faHourglassHalf} />
-        </span>
-        <div className="pl-16">
-          <h4 className="font-medium">Processing</h4>
-          <p className="text-xs text-gray-500">
-            {["in_progress", "processing", "shipped"].includes(orderStatus?.toLowerCase())
-              ? order.updatedAt
-                ? new Date(order.updatedAt).toLocaleDateString()
-                : "—"
-              : "—"}
-          </p>
-        </div>
-      </li>
-
-      {/* Order Packed */}
-      <li className="relative">
-        <span
-          className={`absolute left-6 top-0 -translate-x-1/2 w-8 h-8 rounded-full flex items-center justify-center shadow-sm border
-            ${
-              orderStatus?.toLowerCase() === "shipped"
-                ? "bg-green-500 border-green-500 text-white"
-                : "bg-white border-gray-300 text-gray-400"
-            }`}
-        >
-          <FontAwesomeIcon icon={faBoxOpen} />
-        </span>
-        <div className="pl-16">
-          <h4 className="font-medium">Order Packed</h4>
-          <p className="text-xs text-gray-500">
-            {orderStatus?.toLowerCase() === "shipped" && order.updatedAt
-              ? new Date(order.updatedAt).toLocaleDateString()
-              : "—"}
-          </p>
-        </div>
-      </li>
-
-      {/* Shipped */}
-      <li className="relative">
-        <span
-          className={`absolute left-6 top-0 -translate-x-1/2 w-10 h-10 rounded-full flex items-center justify-center shadow-sm border
-            ${
-              orderStatus?.toLowerCase() === "shipped"
-                ? "bg-green-500 border-green-500 text-white"
-                : "bg-white border-gray-300 text-gray-400"
-            }`}
-        >
-          <FontAwesomeIcon icon={faTruck} />
-        </span>
-        <div className="pl-16">
-          <div className="flex items-center gap-3">
-            <h4 className="font-medium">Shipped</h4>
-            <span className="text-xs text-gray-500">
-              {orderStatus?.toLowerCase() === "shipped" ? "Just now" : "—"}
-            </span>
-          </div>
-
-          {orderStatus?.toLowerCase() === "shipped" && (
-            <div className="mt-2 inline-flex items-center gap-3 p-2 rounded-md border border-gray-300 bg-white">
-              <span className="text-xs text-gray-700">
-                Order No: {order._id}
-              </span>
-              <button className="ml-3 text-xs text-blue-600 font-medium px-2 py-1 rounded border border-gray-300">
-                Track
-              </button>
+      {/* Form wrapper */}
+      <form
+        onSubmit={handleSubmit}
+        className="max-w-6xl mx-6 sm:px-6 lg:px-8 py-6 space-y-8 font-sans text-gray-700"
+      >
+        {/* Create New Order */}
+        <section className="border border-gray-400 rounded-lg p-6 space-y-6">
+          <h2 className="text-lg font-semibold pb-3">Create New Order</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div>
+              <label className="block mb-1 text-sm font-medium">
+                Customer Name
+              </label>
+              <input
+                value={customerName}
+                onChange={(e) => setCustomerName(e.target.value)}
+                placeholder="Full name"
+                className="w-full rounded-lg border px-3 py-2 text-sm"
+              />
+              {errors.customerName && (
+                <p className="text-red-500 text-sm">{errors.customerName}</p>
+              )}
             </div>
-          )}
-        </div>
-      </li>
+            <div>
+              <label className="block mb-1 text-sm font-medium">Email</label>
+              <input
+                value={email}
+                // onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setUserChecked(false);
+                  setUserExists(false);
+                }}
+                // onBlur={() => fetchUserByEmail(email)}
+                onBlur={(e) => fetchUserByEmail(e.target.value)}
+                type="email"
+                placeholder="customer@email.com"
+                className="w-full rounded-lg border px-3 py-2 text-sm"
+              />
+              {errors.email && (
+                <p className="text-red-500 text-sm">{errors.email}</p>
+              )}
+            </div>
+            <div>
+              <label className="block mb-1 text-sm font-medium">
+                phoneNumber
+              </label>
+              <input
+                value={phoneNumber}
+                onChange={(e) => setphoneNumber(e.target.value)}
+                type="number"
+                placeholder="+122 2313 3212"
+                className="w-full rounded-lg border px-3 py-2 text-sm"
+              />
+              {errors.phoneNumber && (
+                <p className="text-red-500 text-sm">{errors.phoneNumber}</p>
+              )}
+            </div>
+            <div>
+              <label className="block mb-1 text-sm font-medium">
+                Shipping address
+              </label>
+              <input
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                placeholder="123, main city, state"
+                className="w-full rounded-lg border px-3 py-2 text-sm"
+              />
+              {errors.address && (
+                <p className="text-red-500 text-sm">{errors.address}</p>
+              )}
+            </div>
+          </div>
+        </section>
 
-      {/* Email Sent */}
-      <li className="relative">
+      
+       
+
+        {/* Order Items */}
+        <section className="border border-gray-400 rounded-lg p-6 overflow-x-auto">
+          <div className="flex justify-between items-center pb-3 mb-4">
+            <h2 className="text-lg font-semibold">Order Items</h2>
+            <button
+              onClick={addProduct}
+              className="flex items-center gap-2 bg-green-600 text-white text-[12px] px-3 py-2 rounded-lg hover:bg-green-700"
+              type="button"
+            >
+              <FontAwesomeIcon icon={faPlus} /> Add product
+            </button>
+          </div>
+
+          {orderItems.map((item, idx) => (
+            <div
+              key={idx}
+              className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center py-3 border-b border-gray-400"
+            >
+           
+              <div className="md:col-span-3">
+                <label className="block mb-1 text-sm font-medium">
+                  Product Name
+                </label>
+                <input
+                  value={item.productName}
+                  // onChange={(e) => handleProductChange(idx, e.target.value)}
+                  onChange={(e) => {
+                    const newItems = [...orderItems];
+                    newItems[idx].productName = e.target.value;
+                    setOrderItems(newItems);
+                  }}
+                  onBlur={() => fetchProductByCode(idx, item.productName)}
+                  placeholder="enter product code"
+                  className="w-full text-sm  rounded-xl border px-2 py-2"
+                />
+                {errors.address && (
+                  <p className="text-red-500 text-sm">
+                    {errors[`product_${idx}`]}
+                  </p>
+                )}
+              </div>
+
+           
+            
+            {/* Color Section */}
+<div className="md:col-span-2">
+  <label className="block mb-1 text-sm font-medium">Color</label>
+
+  {Array.isArray(item.availableColors) && item.availableColors.length > 0 ? (
+    <div className="flex flex-wrap items-center gap-2 mt-1">
+      {item.availableColors.map((c, i) => (
         <span
-          className={`absolute left-6 top-0 -translate-x-1/2 w-8 h-8 rounded-full flex items-center justify-center shadow-sm border
-            ${
-              orderStatus?.toLowerCase() === "shipped"
-                ? "bg-green-500 border-green-500 text-white"
-                : "bg-white border-gray-300 text-gray-400"
-            }`}
+          key={i}
+          onClick={() => handleColorSelect(idx, c)}
+          className={`w-7 h-7 rounded-full border border-gray-300 cursor-pointer shadow-sm transition ${
+            item.color === c ? "ring-2 ring-gray-800" : ""
+          }`}
+          style={{
+            backgroundColor:
+              c.startsWith("#") || c.startsWith("rgb") ? c : "#ccc",
+          }}
+          title={c}
+        ></span>
+      ))}
+    </div>
+  ) : (
+    <select
+      value={item.color || ""}
+      onChange={(e) => handleColorSelect(idx, e.target.value)}
+      className="w-full text-sm border rounded-lg px-2 py-2"
+    >
+      <option value="">Select color</option>
+      <option value="White">White</option>
+      <option value="Red">Red</option>
+      <option value="Black">Black</option>
+      <option value="Brown">Brown</option>
+    </select>
+  )}
+</div>
+
+{/* Size Section */}
+<div className="md:col-span-2">
+  <label className="block mb-1 text-sm font-medium">Size</label>
+
+  {Array.isArray(item.availableSizes) && item.availableSizes.length > 0 ? (
+    <div className="flex flex-wrap items-center gap-2 mt-1">
+      {item.availableSizes.map((sz, i) => (
+        <span
+          key={i}
+          onClick={() => handleSizeSelect(idx, sz)}
+          className={`w-8 h-8 flex items-center justify-center text-sm rounded-full cursor-pointer border transition ${
+            item.size === sz
+              ? "bg-gray-900 text-white border-gray-900"
+              : "bg-white text-gray-800 border-gray-300 hover:bg-gray-100"
+          }`}
         >
-          <FontAwesomeIcon icon={faEnvelope} />
+          {sz}
         </span>
-        <div className="pl-16">
-          <h4 className="font-medium">Email Sent to customer</h4>
-          <p className="text-xs text-gray-500">
-            {orderStatus?.toLowerCase() === "shipped" && order.updatedAt
-              ? new Date(order.updatedAt).toLocaleDateString()
-              : "—"}
-          </p>
+      ))}
+    </div>
+  ) : (
+    <div className="flex flex-wrap items-center gap-2 mt-1">
+      {["S", "M", "L", "XL"].map((sz) => (
+        <span
+          key={sz}
+          onClick={() => handleSizeSelect(idx, sz)}
+          className={`w-8 h-8 flex items-center justify-center text-sm rounded-full cursor-pointer border transition ${
+            item.size === sz
+              ? "bg-gray-900 text-white border-gray-900"
+              : "bg-white text-gray-800 border-gray-300 hover:bg-gray-100"
+          }`}
+        >
+          {sz}
+        </span>
+      ))}
+    </div>
+  )}
+</div>
 
-          <div className="mt-2 p-3 border-gray-300 border rounded-md bg-gray-50 text-xs text-gray-700">
-            <p>Shipped Order No: {order._id}</p>
-            <p>Shiprocket: your order has been successfully shipped</p>
+
+             
+
+              {/* Quantity dropdown */}
+              <div className="md:col-span-1 text-center">
+                <label className="block mb-1 text-start text-sm font-medium">
+                  Quantity
+                </label>
+                <select
+                  value={item.quantity}
+                  onChange={(e) => {
+                    const newItems = [...orderItems];
+                    newItems[idx].quantity = parseInt(e.target.value, 10);
+                    setOrderItems(newItems);
+                  }}
+                  className="w-full text-sm border rounded-lg px-2 py-2"
+                >
+                  {[...Array(20)].map((_, i) => (
+                    <option key={i + 1} value={i + 1}>
+                      {i + 1}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Price input */}
+              <div className="md:col-span-1 text-center">
+                <label className="block mb-1 text-start text-sm font-medium">
+                  Price
+                </label>
+                <input
+                  readOnly
+                  type="number"
+                  value={item.price}
+                  className="w-full text-sm border rounded-lg px-2 py-2 text-center"
+                />
+                {/* {errors[`price_${idx}`] && (
+                  <p className="text-red-500 text-sm">
+                    {errors[`price_${idx}`]}
+                  </p>
+                )} */}
+              </div>
+
+              {/* Total auto-calculated (read-only) */}
+              <div className="md:col-span-1 text-center">
+                <label className="block mb-1 text-start text-sm font-medium">
+                  Total
+                </label>
+                <input
+                  type="text"
+                  readOnly
+                  value={(item.price * item.quantity).toFixed(2)}
+                  className="w-full text-sm border rounded-lg px-2 py-2 text-center "
+                />
+              </div>
+
+              {/* Remove button */}
+              <div className="md:col-span-2 flex justify-center">
+                <button
+                  onClick={() => removeProduct(idx)}
+                  className="w-8 h-8 flex justify-center items-center rounded-full hover:bg-red-100"
+                  type="button"
+                >
+                  <FontAwesomeIcon
+                    icon={faTrash}
+                    className="text-red-600 text-sm"
+                  />
+                </button>
+              </div>
+            </div>
+          ))}
+        </section>
+
+        {/* Payment Details */}
+        <section className="border border-gray-400 rounded-lg p-6 grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div>
+            <label className="block mb-1 text-sm font-medium">
+              Payment Method
+            </label>
+            <select
+              value={paymentMethod}
+              onChange={(e) => setPaymentMethod(e.target.value)}
+              className="w-full rounded-lg border px-3 py-2 text-sm"
+            >
+              <option value="">Select Payment method</option>
+              <option>Stripe</option>
+              <option>Paypal</option>
+            </select>
+            {errors.paymentMethod && (
+              <p className="text-red-500 text-sm">{errors.paymentMethod}</p>
+            )}
           </div>
-        </div>
-      </li>
-    </ul>
-  </div>
-</section>
-
-
-
+          <div>
+            <label className="block mb-1 text-sm font-medium">
+              Payment Status
+            </label>
+            <select
+              value={paymentStatus}
+              onChange={(e) => setPaymentStatus(e.target.value)}
+              className="w-full rounded-lg border px-3 py-2 text-sm"
+            >
+              <option value="">Select payment status</option>
+              <option>Paid</option>
+              <option>Pending</option>
+              <option>Failed</option>
+            </select>
+            {errors.paymentStatus && (
+              <p className="text-red-500 text-sm">{errors.paymentStatus}</p>
+            )}
           </div>
+        </section>
+
+        {/* Shipping Details */}
+        <section className="border border-gray-400 rounded-lg p-6 grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div>
+            <label className="block mb-1 text-sm font-medium">
+              Shipping Method
+            </label>
+            <select
+              value={shippingMethod}
+              onChange={(e) => setShippingMethod(e.target.value)}
+              className="w-full rounded-lg border px-3 py-2 text-sm"
+            >
+              <option value="">Select Shipping method</option>
+              <option>Flat Rate</option>
+              <option>Express</option>
+              <option>Local Pickup</option>
+            </select>
+            {errors.shippingMethod && (
+              <p className="text-red-500 text-sm">{errors.shippingMethod}</p>
+            )}
+          </div>
+          <div>
+            <label className="block mb-1 text-sm font-medium">
+              Shipping Status
+            </label>
+            <select
+              value={shippingStatus}
+              onChange={(e) => setShippingStatus(e.target.value)}
+              className="w-full rounded-lg border px-3 py-2 text-sm"
+            >
+              <option value="">Select shipping status</option>
+              <option>Shipped</option>
+              <option>Pending</option>
+              <option>Processing</option>
+              <option>Delivered</option>
+            </select>
+            {errors.shippingStatus && (
+              <p className="text-red-500 text-sm">{errors.shippingStatus}</p>
+            )}
+          </div>
+        </section>
+
+        {/* Order Summary */}
+        <section className="border border-gray-400 rounded-lg p-4 w-full sm:w-80">
+          <h3 className="font-semibold mb-4 text-sm text-gray-700">
+            Order Summary
+          </h3>
+          <div className="text-sm text-gray-700 space-y-2">
+            <div className="flex justify-between">
+              <span>Sub Total</span>
+              <span> € {subtotal} </span>
+            </div>
+            <div className="flex justify-between">
+              <span>Tax</span>
+              <span> € {tax} </span>
+            </div>
+          
+            <div className="flex justify-between">
+              <span>Shipping Fee</span>
+              <span>€ {shippingFee} </span>
+            </div>
+            <div className="border-t border-gray-400 mt-5 pt-2 font-semibold flex justify-between">
+              <span>Total</span>
+              <span>€ {total} </span>
+            </div>
+          </div>
+        </section>
+
+        {/* Submit Button */}
+     
+
+        <div className="flex justify-end mt-4">
+          <button
+            type="submit"
+            disabled={loading}
+            className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2"
+          >
+            {loading && (
+              <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+            )}
+            {loading ? "Submitting..." : "Submit Order"}
+          </button>
         </div>
-      </div>
+      </form>
     </div>
   );
-}
+};
+
+export default CreateOrder;
 
 
 

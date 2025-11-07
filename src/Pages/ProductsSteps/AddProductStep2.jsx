@@ -194,6 +194,25 @@ function AddProductStep2({ formData, setFormData, prevStep, nextStep }) {
               </div>
 
               {enableColor && showColorPicker && (
+  <div className="mt-3">
+    <SketchPicker
+      color={selectedColor[selectedColor.length - 1] || "#000000"} // show last selected color
+      onChangeComplete={(color) => {
+        const newColor = color.hex;
+        if (!colors.includes(newColor)) {
+          setColors((prev) => [...prev, newColor]);
+        }
+        // only add new color if not selected
+        setSelectedColor((prev) =>
+          prev.includes(newColor) ? prev : [...prev, newColor]
+        );
+      }}
+    />
+  </div>
+)}
+
+
+              {/* {enableColor && showColorPicker && (
                 <div className="mt-3">
                   <SketchPicker
                     color={selectedColor}
@@ -201,7 +220,7 @@ function AddProductStep2({ formData, setFormData, prevStep, nextStep }) {
                     onChangeComplete={handleColorCommit}
                   />
                 </div>
-              )}
+              )} */}
             </div>
 
            {/* Size */}
@@ -310,6 +329,3 @@ function AddProductStep2({ formData, setFormData, prevStep, nextStep }) {
 }
 
 export default AddProductStep2;
-
-
-

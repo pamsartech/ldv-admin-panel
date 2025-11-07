@@ -56,15 +56,15 @@ const Login = () => {
 
         {/* Right: Form Section */}
         <div className="w-full md:w-1/2 flex flex-col justify-center p-8 md:p-12 space-y-6">
-          <h2 className="text-[#1b4d1b] text-3xl font-semibold mb-2">SIGN IN</h2>
+          <h2 className="text-[#1b4d1b] text-3xl font-semibold mb-2">Se connecter</h2>
 
           <form onSubmit={handleLogin} className="space-y-6">
             {/* Username Field */}
             <div>
-              <label className="block text-[#1b4d1b] text-sm mb-1">Username</label>
+              <label className="block text-[#1b4d1b] text-sm mb-1">Nom d'utilisateur</label>
               <input
                 type="email"
-                placeholder="Enter your email"
+                placeholder="Saisissez votre adresse e-mail"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -74,10 +74,10 @@ const Login = () => {
 
             {/* Password Field */}
             <div className="relative">
-              <label className="block text-[#1b4d1b] text-sm mb-1">Password</label>
+              <label className="block text-[#1b4d1b] text-sm mb-1">Mot de passe</label>
               <input
                 type={showPassword ? "text" : "password"}
-                placeholder="Enter your password"
+                placeholder="Saisissez votre mot de passe"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -101,10 +101,10 @@ const Login = () => {
             <div className="flex items-center justify-between text-sm text-[#1b4d1b]">
               <label className="flex items-center space-x-2">
                 <input type="checkbox" className="accent-[#1b4d1b]" />
-                <span>Remember me</span>
+                <span>Souviens-toi de moi</span>
               </label>
               <a href="#" className="hover:underline">
-                Forgot password?
+                Mot de passe oublié ?
               </a>
             </div>
 
@@ -140,10 +140,10 @@ const Login = () => {
                       d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
                     ></path>
                   </svg>
-                  <span>Signing in...</span>
+                  <span>Se connecter...</span>
                 </>
               ) : (
-                <span>Sign in</span>
+                <span>Se connecter</span>
               )}
             </button>
           </form>

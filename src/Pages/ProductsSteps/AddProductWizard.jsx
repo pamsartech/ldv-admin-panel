@@ -20,8 +20,8 @@ export default function AddProductWizard() {
     productCode: "",
     status: "",
     gender: "Men",
-    size: "M",
-    color: "#B21E1E",
+    size: [],
+    color: [],
     stock: "",
     category: "",
     images: [], // array of File (index -> file)
@@ -75,51 +75,107 @@ export default function AddProductWizard() {
 //   }
 // };
 
+
+
+// this will work properly for a backup code
+// const handleSubmit = async () => {
+//   try {
+//     const data = new FormData();
+    
+
+//     // append all text fields
+//     data.append("productName", formData.productName || "");
+//     data.append("productCode", formData.productCode || "");
+//     data.append("price", formData.price || "");
+//     data.append("tiktokSessionId", formData.tiktokSessionId || "");
+//     data.append("gender", formData.gender || "Men");
+//     data.append("color", formData.color || "");
+//     data.append("size", formData.size || "");
+//     data.append("stock", formData.stock || "");
+//     data.append("category", formData.category || "");
+//     data.append("status", formData.status || "");
+
+//     // append images (without [])
+//     if (Array.isArray(formData.images)) {
+//       formData.images.forEach((file) => {
+//         if (file) data.append("images", file);
+//       });
+//     }
+
+//     // post request
+//     console.log(data);
+//     const res = await axios.post(
+//       "https://dev-api.payonlive.com/api/product/add-product",
+//       data,
+//       {
+//         withCredentials: true, // only if cookies/session used
+//       }
+//     );
+//     console.log("data the data is added"+data);
+    
+
+//     showAlert("Product created successfully!", "success");
+//     navigate("/user/Products");
+//   } 
+//   catch (err) {
+//     console.error("Backend error:", err.response?.data || err.message);
+//     // window.alert(`❌ Error: ${JSON.stringify(err.response?.data || err.message)}`);
+//     showAlert("Failed to create Product. Please try again.", "error");
+//   }
+// };
+
 const handleSubmit = async () => {
   try {
     const data = new FormData();
-    
 
-    // append all text fields
+    // Append all scalar fields
     data.append("productName", formData.productName || "");
     data.append("productCode", formData.productCode || "");
     data.append("price", formData.price || "");
     data.append("tiktokSessionId", formData.tiktokSessionId || "");
     data.append("gender", formData.gender || "Men");
-    data.append("color", formData.color || "");
-    data.append("size", formData.size || "");
     data.append("stock", formData.stock || "");
     data.append("category", formData.category || "");
     data.append("status", formData.status || "");
 
-    // append images (without [])
-    if (Array.isArray(formData.images)) {
+    // ✅ Append colors as array
+    if (Array.isArray(formData.color) && formData.color.length > 0) {
+      formData.color.forEach((clr) => data.append("color[]", clr));
+    }
+
+    // ✅ Append sizes as array
+    if (Array.isArray(formData.size) && formData.size.length > 0) {
+      formData.size.forEach((sz) => data.append("size[]", sz));
+    }
+
+    // ✅ Append images as array
+    if (Array.isArray(formData.images) && formData.images.length > 0) {
       formData.images.forEach((file) => {
         if (file) data.append("images", file);
       });
     }
 
-    // post request
-    console.log(data);
+    // Debug log to verify FormData contents
+    for (let [key, value] of data.entries()) {
+      console.log(`${key}:`, value);
+    }
+
+    // ✅ Make POST request
     const res = await axios.post(
       "https://dev-api.payonlive.com/api/product/add-product",
       data,
-      {
-        withCredentials: true, // only if cookies/session used
-      }
+      { withCredentials: true }
     );
-    console.log("data the data is added"+data);
-    
 
-    showAlert("Product created successfully!", "success");
+    showAlert("✅ Product created successfully!", "success");
     navigate("/user/Products");
-  } 
-  catch (err) {
+  } catch (err) {
     console.error("Backend error:", err.response?.data || err.message);
-    // window.alert(`❌ Error: ${JSON.stringify(err.response?.data || err.message)}`);
-    showAlert("Failed to create Product. Please try again.", "error");
+    showAlert("❌ Failed to create product. Please try again.", "error");
   }
 };
+
+
 
 
 

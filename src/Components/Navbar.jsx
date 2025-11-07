@@ -15,6 +15,7 @@ function Navbar({ heading }) {
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [markingAll, setMarkingAll] = useState(false);
   const navigate = useNavigate();
 
   // Fetch Notifications
@@ -42,6 +43,57 @@ function Navbar({ heading }) {
       setLoading(false);
     }
   };
+
+  // Mark all as read
+ const markAllAsRead = async () => {
+  try {
+    setMarkingAll(true);
+    setError(null);
+
+    // Retrieve token from localStorage (adjust if stored elsewhere)
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      setError("Authentication token missing");
+      setMarkingAll(false);
+      return;
+    }
+
+    // Send PATCH request to mark all notifications as read
+    const response = await axios.patch(
+      "https://dev-api.payonlive.com/api/notifications/mark-all-read",
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    // Handle successful response
+    if (response.data?.success) {
+      console.log(response.data.message); // "All notifications marked as read"
+
+      // Update local state to mark all as read
+      setNotifications((prev) =>
+        prev.map((n) => ({ ...n, isRead: true }))
+      );
+
+      // Reset unread count
+      setUnreadCount(0);
+    } else {
+      console.error("Unexpected API response:", response.data);
+      setError("Failed to mark notifications as read");
+    }
+  } catch (err) {
+    console.error("Error marking all as read:", err);
+    setError("Failed to mark all as read");
+  } finally {
+    setMarkingAll(false);
+  }
+};
+
 
   useEffect(() => {
     fetchNotifications();
@@ -73,7 +125,7 @@ function Navbar({ heading }) {
           >
             <FontAwesomeIcon icon={faBell} size="lg" />
             {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+              <span className="absolute -top-1 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center">
                 {unreadCount}
               </span>
             )}
@@ -87,13 +139,28 @@ function Navbar({ heading }) {
                 <h3 className="font-semibold text-gray-800 text-sm">
                   Notifications
                 </h3>
-                {loading && (
-                  <FontAwesomeIcon
-                    icon={faSpinner}
-                    spin
-                    className="text-gray-500 text-sm"
-                  />
-                )}
+                <div className="flex items-center gap-2">
+                  {loading && (
+                    <FontAwesomeIcon
+                      icon={faSpinner}
+                      spin
+                      className="text-gray-500 text-sm"
+                    />
+                  )}
+                  {!loading && notifications.length > 0 && (
+                    <button
+                      onClick={markAllAsRead}
+                      disabled={markingAll}
+                      className={`text-xs ${
+                        markingAll
+                          ? "text-gray-400 cursor-not-allowed"
+                          : "text-blue-600 hover:underline"
+                      }`}
+                    >
+                      {markingAll ? "Marking..." : "Mark all as read"}
+                    </button>
+                  )}
+                </div>
               </div>
 
               {/* Error */}
@@ -193,4 +260,5 @@ function Navbar({ heading }) {
 }
 
 export default Navbar;
+
 

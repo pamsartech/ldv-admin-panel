@@ -183,18 +183,22 @@ export default function UpdatePayment() {
           <h2 className="text-lg font-medium mb-4">Customer Details</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <InputField
+              readOnly
               label="Customer Name"
               id="customerName"
               value={paymentData.customerName}
               onChange={handleChange}
+            
             />
             <InputField
+            readOnly
               label="Customer ID"
               id="customerId"
               value={paymentData.customerId}
               onChange={handleChange}
             />
             <InputField
+            readOnly
               label="Email"
               id="email"
               type="email"
@@ -202,6 +206,7 @@ export default function UpdatePayment() {
               onChange={handleChange}
             />
             <InputField
+            readOnly
               label="Phone"
               id="phone"
               value={paymentData.phone}
@@ -215,18 +220,21 @@ export default function UpdatePayment() {
           <h2 className="text-lg font-medium mb-4">Order Details</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <InputField
+            readOnly
               label="Order ID"
               id="orderId"
               value={paymentData.orderId}
               onChange={handleChange}
             />
             <InputField
+            readOnly
               label="Transaction ID"
               id="transactionId"
               value={paymentData.transactionId}
               onChange={handleChange}
             />
             <InputField
+            readOnly
               label="Amount"
               id="amount"
               type="number"
@@ -251,6 +259,7 @@ export default function UpdatePayment() {
               options={["Pending", "Paid", "Failed"]}
             />
             <SelectField
+              readOnly
               label="Delivery Status"
               id="deliveryStatus"
               value={paymentData.deliveryStatus}
@@ -258,6 +267,7 @@ export default function UpdatePayment() {
               options={["Processing", "Shipped", "Delivered", "Cancelled"]}
             />
             <InputField
+            readOnly
               label="Time & Date"
               id="dateTime"
               type="datetime-local"
