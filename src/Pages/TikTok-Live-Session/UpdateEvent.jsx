@@ -81,34 +81,7 @@ function UpdateEvent() {
   // ----------------------
   // Product Search
   // ----------------------
-   const handleSearch = async () => {
-    const trimmedId = productId.trim();
-    if (!trimmedId) return;
-
-    try {
-      const response = await axios.get(
-        `https://dev-api.payonlive.com/api/product/product-code/${trimmedId}`
-      );
-      if (response.data.success) {
-        const productData = response.data.data;
-        if (!products.some((p) => p._id === productData._id)) {
-          setProducts((prev) => [...prev, productData]);
-        } else {
-          showAlert("Product already added.", "info");
-        }
-      } else {
-        showAlert(response.data.message || "Product not found.", "error");
-        console.log(response)
-      }
-    } catch (error) {
-      console.error("❌ Error fetching product:", error);
-      showAlert("Error fetching product. Please try again.", "error");
-    }
-
-    setProductId("");
-  };
-
-
+  
 
   const handleUpdate = async (e) => {
     e.preventDefault();
@@ -317,78 +290,7 @@ function UpdateEvent() {
           </section>
 
           {/* Selected Products */}
-                 <section className="border border-gray-400 rounded-2xl p-6 bg-white shadow-sm space-y-6">
-                   <h2 className="text-xl font-semibold text-gray-900">
-                     Selected products for live
-                   </h2>
-         
-                   <div className="flex flex-col sm:flex-row sm:space-x-4 space-y-3 sm:space-y-0">
-                     <input
-                       type="text"
-                       value={productId}
-                       onChange={(e) => setProductId(e.target.value)}
-                       placeholder="Search by Product Code"
-                       className="flex-grow border border-gray-400 rounded-lg px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-blue-900"
-                     />
-                     <button
-                       type="button"
-                       onClick={handleSearch}
-                       className="bg-[#02B978] text-white rounded-xl px-4 py-2 text-base font-medium hover:bg-[#04D18C] transition"
-                     >
-                       Select Product
-                     </button>
-                   </div>
-         
-                   {/* Products List */}
-                   <div className="space-y-4">
-                     {products.map((item) => {
-                       const productImage =
-                         item.images && item.images.length
-                           ? item.images[0]
-                           : "https://via.placeholder.com/150";
-                       return (
-                         <div
-                           key={item._id}
-                           className="flex flex-col sm:flex-row items-center justify-between bg-white border border-gray-200 rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.06)] p-4 hover:shadow-md transition-all"
-                         >
-                           <div className="flex items-center w-full sm:w-auto space-x-4">
-                             <input
-                               type="checkbox"
-                               checked={true}
-                               readOnly
-                               className="w-4 h-4 accent-blue-600"
-                             />
-                             <img
-                               src={productImage}
-                               alt={item.productName}
-                               className="w-16 h-16 rounded-lg object-cover border border-gray-200"
-                             />
-                             <div>
-                               <h3 className="text-base font-semibold text-gray-900">
-                                 {item.productName}
-                               </h3>
-                               <p className="text-sm text-gray-500">
-                                 SKU: {item.productCode}
-                               </p>
-                             </div>
-                           </div>
-         
-                           <div className="flex items-center justify-end gap-6 mt-4 sm:mt-0 w-full sm:w-auto">
-                             <p className="text-lg font-semibold text-gray-900">
-                               € {item.price}
-                             </p>
-                             <button
-                               onClick={() => removeProduct(item._id)}
-                               className="text-red-500 hover:text-red-700 transition"
-                             >
-                               <FontAwesomeIcon icon={faTrash} />
-                             </button>
-                           </div>
-                         </div>
-                       );
-                     })}
-                   </div>
-                 </section>
+                
 
           {/* Host Information */}
           <section className="border border-gray-400 rounded-2xl p-6 mt-10 space-y-4">
