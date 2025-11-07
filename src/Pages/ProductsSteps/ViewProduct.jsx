@@ -179,14 +179,14 @@ const ViewProduct = () => {
             </div>
 
             {/* Description */}
-            <div className="mt-10">
+            {/* <div className="mt-10">
               <h3 className="text-sm font-semibold mb-2">
                 Product description
               </h3>
               <div className="rounded-xl bg-[#f5f6f7] py-4 text-base text-gray-700 leading-relaxed">
                 <p className="px-5">No description provided.</p>
               </div>
-            </div>
+            </div> */}
           </div>
 
           {/* Right column */}
@@ -202,7 +202,7 @@ const ViewProduct = () => {
             </div>
 
             {/* Color */}
-            <div className="mt-3">
+            {/* <div className="mt-3">
               <span className="text-sm font-semibold mb-2">Color:</span>
               <div className="mt-2 flex flex-wrap gap-4">
                 {Array.isArray(product.color) ? (
@@ -224,7 +224,124 @@ const ViewProduct = () => {
                   </div>
                 )}
               </div>
-            </div>
+            </div> */}
+
+            {/* Color */}
+               {/* Color */}
+<div className="mt-3">
+  <span className="text-sm font-semibold mb-2">Color:</span>
+  <div className="mt-2 flex flex-wrap gap-4">
+    {(() => {
+      // Try to extract tokens from many possible shapes sent by backend.
+      const extractTokens = (item) => {
+        if (item == null) return [];
+        if (typeof item === "object") {
+          // common object shapes: { hex: "#fff" } or { color: "red" } or { value: "#fff" }
+          const val =
+            item.hex || item.color || item.value || item.colour || "";
+          return typeof val === "string" ? val.split(/[,;|/]+/) : [];
+        }
+        if (typeof item === "string") {
+          // split comma/pipe/semicolon/slash separated strings
+          return item.split(/[,;|/]+/);
+        }
+        return [];
+      };
+
+      // sanitize token: remove extra hashes/spaces and normalize hex if needed
+      const sanitizeToken = (t) => {
+        if (!t) return "";
+        let s = String(t).trim();
+
+        // remove stray quotes
+        if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) {
+          s = s.slice(1, -1).trim();
+        }
+
+        // collapse multiple leading # -> single
+        s = s.replace(/^#+/, "#");
+
+        // if looks like hex without # (e.g. "ffffff" or "FFF"), add #
+        if (/^[0-9a-fA-F]{3}$/.test(s)) return `#${s}`;
+        if (/^[0-9a-fA-F]{6}$/.test(s)) return `#${s}`;
+        if (/^[0-9a-fA-F]{8}$/.test(s)) return `#${s}`; // include alpha hex if sent
+
+        // if it's like "#fff" or "#ffffff" keep as-is
+        if (/^#[0-9a-fA-F]{3}$/.test(s)) return s;
+        if (/^#[0-9a-fA-F]{6}$/.test(s)) return s;
+        if (/^#[0-9a-fA-F]{8}$/.test(s)) return s;
+
+        // rgb/rgba or hsl/hsla or color names — keep as-is (trimmed)
+        return s;
+      };
+
+      // validate using browser CSS parser
+      const isValidCssColor = (color) => {
+        if (!color || typeof color !== "string") return false;
+        try {
+          const test = new Option().style;
+          test.color = "";
+          test.color = color;
+          return test.color !== "";
+        } catch (e) {
+          return false;
+        }
+      };
+
+      // normalize product.color into a list of candidate tokens
+      let rawCandidates = [];
+      if (Array.isArray(product.color)) {
+        product.color.forEach((it) => {
+          rawCandidates.push(...extractTokens(it));
+        });
+      } else {
+        rawCandidates.push(...extractTokens(product.color));
+      }
+
+      // sanitize, validate and dedupe
+      const seen = new Set();
+      const validColors = rawCandidates
+        .map((t) => sanitizeToken(t))
+        .map((t) => (t === "#" ? "" : t)) // guard against lone '#'
+        .filter((t) => t && isValidCssColor(t))
+        .map((t) => {
+          // normalize hex to lowercase for display uniqueness, keep rgb/hsl names as-is
+          if (/^#/.test(t)) return t.toLowerCase();
+          return t;
+        })
+        .filter((t) => {
+          if (seen.has(t)) return false;
+          seen.add(t);
+          return true;
+        });
+
+      // fallback: if backend sometimes sends a single scalar non-string (number) — coerce
+      if (validColors.length === 0 && product.color && typeof product.color !== "string" && !Array.isArray(product.color)) {
+        const coerced = String(product.color).trim();
+        const s = sanitizeToken(coerced);
+        if (s && isValidCssColor(s)) validColors.push(s);
+      }
+
+      // Render
+      return validColors.length > 0 ? (
+        validColors.map((c, i) => (
+          <div key={i} className="flex flex-col items-center">
+            <span
+              className="w-6 h-6 rounded-full border border-gray-300 cursor-pointer"
+              style={{ backgroundColor: c }}
+              title={c}
+            />
+            <span className="text-xs text-gray-600 mt-1">{c}</span>
+          </div>
+        ))
+      ) : (
+        <p className="text-gray-500 text-sm">No valid colors available</p>
+      );
+    })()}
+  </div>
+</div>
+
+
 
             {/* Size */}
             <div>

@@ -40,35 +40,86 @@ function UpdateProduct() {
   });
 
   // ✅ Fetch product details
+  // useEffect(() => {
+  //   const fetchProduct = async () => {
+  //     try {
+  //       const res = await axios.get(
+  //         `https://dev-api.payonlive.com/api/product/product-details/${productId}`
+  //       );
+  //       if (res.data.success) {
+  //         const data = res.data.data;
+  //         setProductDetails({
+  //           productName: data.productName || "",
+  //           productCode: data.productCode || "",
+  //           price: data.price || "",
+  //           stock: data.stock || "",
+  //           category: data.category || "",
+  //           status: data.status || "",
+  //         });
+  //         setSelectedGender(data.gender || "Men");
+  //         setSelectedSize(data.size || "M");
+  //         setSelectedColor(data.color || "#FF0000");
+  //         setImages(data.images || []);
+  //       }
+  //     } catch (err) {
+  //       console.error("Error fetching product:", err);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+  //   fetchProduct();
+  // }, [productId]);
+
   useEffect(() => {
-    const fetchProduct = async () => {
-      try {
-        const res = await axios.get(
-          `https://dev-api.payonlive.com/api/product/product-details/${productId}`
-        );
-        if (res.data.success) {
-          const data = res.data.data;
-          setProductDetails({
-            productName: data.productName || "",
-            productCode: data.productCode || "",
-            price: data.price || "",
-            stock: data.stock || "",
-            category: data.category || "",
-            status: data.status || "",
-          });
-          setSelectedGender(data.gender || "Men");
-          setSelectedSize(data.size || "M");
-          setSelectedColor(data.color || "#FF0000");
-          setImages(data.images || []);
+  const fetchProduct = async () => {
+    try {
+      const res = await axios.get(
+        `https://dev-api.payonlive.com/api/product/product-details/${productId}`
+      );
+      if (res.data.success) {
+        const data = res.data.data;
+
+        // ✅ Normalize color
+        let normalizedColor = "#FF0000";
+        if (Array.isArray(data.color)) {
+          // pick first valid color if array
+          normalizedColor = data.color[0] || "#FF0000";
+        } else if (typeof data.color === "string" && data.color.trim() !== "") {
+          normalizedColor = data.color;
         }
-      } catch (err) {
-        console.error("Error fetching product:", err);
-      } finally {
-        setLoading(false);
+
+        // ✅ Normalize size
+        let normalizedSize = "M";
+        if (Array.isArray(data.size)) {
+          // pick first valid size if array
+          normalizedSize = data.size[0] || "M";
+        } else if (typeof data.size === "string" && data.size.trim() !== "") {
+          normalizedSize = data.size;
+        }
+
+        // ✅ Set all states
+        setProductDetails({
+          productName: data.productName || "",
+          productCode: data.productCode || "",
+          price: data.price || "",
+          stock: data.stock || "",
+          category: data.category || "",
+          status: data.status || "",
+        });
+        setSelectedGender(data.gender || "Men");
+        setSelectedSize(normalizedSize);
+        setSelectedColor(normalizedColor);
+        setImages(data.images || []);
       }
-    };
-    fetchProduct();
-  }, [productId]);
+    } catch (err) {
+      console.error("Error fetching product:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+  fetchProduct();
+}, [productId]);
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -94,45 +145,60 @@ function UpdateProduct() {
     setImages((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleUpdate = async (e) => {
-    e.preventDefault();
-    setBtnLoading(true);
+ const handleUpdate = async (e) => {
+  e.preventDefault();
+  setBtnLoading(true);
 
-    const payload = {
-      productName: productDetails.productName,
-      productCode: productDetails.productCode,
-      price: Number(productDetails.price),
-      status: productDetails.status,
-      gender: selectedGender,
-      color: selectedColor,
-      size: selectedSize,
-      stock: Number(productDetails.stock),
-      category: productDetails.category,
-      images: images,
-    };
+  // const payload = {
+  //   productName: productDetails.productName,
+  //   productCode: productDetails.productCode,
+  //   price: Number(productDetails.price),
+  //   status: productDetails.status,
+  //   gender: selectedGender,
+  //   color: selectedColor,
+  //   size: selectedSize,
+  //   stock: Number(productDetails.stock),
+  //   category: productDetails.category,
+  //   images: images,
+  // };
 
-    try {
-      const response = await axios.put(
-        `https://dev-api.payonlive.com/api/product/update-product/${productId}`,
-        payload,
-        { headers: { "Content-Type": "application/json" } }
+  const payload = {
+  productName: productDetails.productName,
+  productCode: productDetails.productCode,
+  price: Number(productDetails.price),
+  status: productDetails.status,
+  gender: selectedGender,
+  color: Array.isArray(selectedColor) ? selectedColor : [selectedColor],
+  size: Array.isArray(selectedSize) ? selectedSize : [selectedSize],
+  stock: Number(productDetails.stock),
+  category: productDetails.category,
+  images: images,
+};
+
+
+  try {
+    const response = await axios.put(
+      `https://dev-api.payonlive.com/api/product/update-product/${productId}`,
+      payload,
+      { headers: { "Content-Type": "application/json" } }
+    );
+
+    if (response.data.success) {
+      showAlert("Product updated successfully!", "success", () =>
+        navigate("/user/products")
       );
-
-      if (response.data.success) {
-        showAlert("Product updated successfully!", "success", () =>
-          navigate("/user/products")
-        );
-      } else {
-        showAlert("Failed to update product.", "error");
-        btnLoading(false);
-      }
-    } catch (error) {
-      console.error("Error updating product:", error);
-      alert(error?.response?.data?.message || "⚠️ Failed to update product.");
+    } else {
       showAlert("Failed to update product.", "error");
-      btnLoading(false);
     }
-  };
+  } catch (error) {
+    console.error("Error updating product:", error);
+    showAlert("Failed to update product.", "error");
+  } finally {
+    // ✅ Always stop the spinner
+    setBtnLoading(false);
+  }
+};
+
 
   // 🧩 Skeleton Loader (replaces plain loading text)
   if (loading)
@@ -438,12 +504,7 @@ function UpdateProduct() {
             Discard Product
           </button></div>
 
-          {/* <button
-            type="submit"
-            className="px-4 py-2 bg-[#114E9D] text-white rounded-lg hover:bg-blue-500"
-          >
-            Update Product
-          </button> */}
+        
 
            <div className=" mt-4">
             <button
