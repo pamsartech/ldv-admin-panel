@@ -70,9 +70,9 @@ export default function LiveOrder() {
       {/* === TikTok Live Orders === */}
       <div className="lg:col-span-3 bg-white shadow-lg rounded-2xl p-4">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-medium">TikTok Live Orders</h2>
+          <h2 className="text-lg font-medium">Commandes TikTok Live </h2>
           <button className="text-sm text-blue-500 hover:underline">
-            View all
+            Voir tout
           </button>
         </div>
 
@@ -138,7 +138,7 @@ export default function LiveOrder() {
 
       {/* === Analytics Chart === */}
       <div className="lg:col-span-2 bg-white shadow-lg rounded-2xl p-4">
-        <h2 className="text-lg font-medium mb-4">Analytics</h2>
+        <h2 className="text-lg font-medium mb-4">Analytique</h2>
 
         {salesData.length > 0 ? (
           <ResponsiveContainer width="100%" height={250}>

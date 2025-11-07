@@ -7,6 +7,7 @@ import {
   faCreditCard,
   faXmark,
   faSpinner,
+  faMagnifyingGlass,
 } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
 import { useAlert } from "../../Components/AlertContext";
@@ -24,50 +25,64 @@ export default function CreatePayment() {
   const [date, setDate] = useState("");
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(false); // 🔹 for autofill spinner
+
+  // 🔹 Auto-fill function (fetch order details)
+  // ✅ UPDATED SECTION ONLY — rest of your component stays the same
+
+// 🔹 Auto-fill function (fetch order details)
+const handleFetchOrderDetails = async () => {
+  if (!orderID.trim()) {
+    showAlert("Please enter an Order ID first.", "error");
+    return;
+  }
+
+  setFetching(true);
+  try {
+    const res = await axios.get(
+      `https://dev-api.payonlive.com/api/order/order-details/${orderID}`
+    );
+
+    const data = res.data?.data;
+    console.log("📦 Order details fetched:", data);
+
+    if (!data) {
+      showAlert("No order found for this ID.", "error");
+      return;
+    }
+
+    // ✅ Match your existing form field states
+    setAmount(data.orderTotal ? data.orderTotal.toString() : "");
+    setPaymentMethod(data.paymentMethod || "");
+    setPaymentStatus(data.paymentStatus || "Pending");
+    setDeliveryStatus(data.shippingStatus || "Processing");
+
+    // ✅ Use order creation date if available
+    if (data.createdAt) {
+      const formattedDate = new Date(data.createdAt)
+        .toISOString()
+        .slice(0, 16);
+      setDate(formattedDate);
+    }
+
+    // ✅ Optional notes (if available in future API)
+    setNotes(data.notes || "");
+
+    showAlert("Order details loaded successfully!", "success");
+  } catch (err) {
+    console.error("❌ Error fetching order details:", err.response?.data || err);
+    showAlert("Order not found or failed to fetch details.", "error");
+  } finally {
+    setFetching(false);
+  }
+};
+
 
   // 🔹 Handle Submit
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-  //   setLoading(true);
-    
-  //   const payload = {
-  //     orderId: orderID,
-  //     amount: parseFloat(amount.replace(/[^0-9.]/g, "")),
-  //     paymentMethod,
-  //     paymentStatus,
-  //     deliveryStatus,
-  //     paymentDate: new Date(date).toISOString(),
-  //     notes,
-  //   };
-
-  //   console.log("📤 Sending payment payload:", payload);
-    
-
-  //   try {
-  //     const res = await axios.post(
-  //       "https://dev-api.payonlive.com/api/payment/create-payment",
-  //       payload,
-  //       {
-  //         headers: { "Content-Type": "application/json" },
-  //       }
-  //     );
-
-  //     console.log("✅ Payment created:", res.data);
-  //     showAlert(res.data.message || "Payment created successfully!", "success");
-  //     navigate("/user/Payments");
-  //   } catch (err) {
-  //     console.error("❌ Error creating payment:", err.response?.data || err);
-  //     showAlert("Failed to create payment. Please try again.", "error");
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
-    const handleSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
-    // ✅ Basic Validation
     if (!orderID || !amount || !paymentMethod || !date) {
       showAlert("Please fill in all required fields.", "error");
       setLoading(false);
@@ -93,8 +108,6 @@ export default function CreatePayment() {
         { headers: { "Content-Type": "application/json" } }
       );
 
-      console.log("✅ Payment created:", res.data);
-
       if (res.data?.success || res.status === 200) {
         showAlert(res.data.message || "Payment created successfully!", "success");
         navigate("/user/Payments");
@@ -105,7 +118,6 @@ export default function CreatePayment() {
       console.error("❌ Error creating payment:", err.response?.data || err);
       showAlert("Server error. Please try again.", "error");
     } finally {
-      // ✅ Stop spinner no matter what
       setLoading(false);
     }
   };
@@ -114,7 +126,7 @@ export default function CreatePayment() {
     <div>
       <Navbar heading="Payment Management" />
 
-      {/* Page Header */}
+      {/* Header */}
       <div className="flex justify-between mt-5 mx-10">
         <h1 className="font-medium text-lg">Create Payment</h1>
         <button
@@ -126,23 +138,75 @@ export default function CreatePayment() {
         </button>
       </div>
 
-      {/* Payment Form */}
+      {/* Form */}
       <form
         onSubmit={handleSubmit}
         className="p-6 max-w-4xl mx-5 mt-6 border border-gray-300 rounded-2xl space-y-6 bg-white shadow-sm"
       >
-        {/* Order ID */}
-        <div>
+        {/* Order ID with Auto-Fill Button */}
+        {/* <div>
           <label className="block text-sm font-medium mb-1">Order ID*</label>
-          <input
-            required
-            type="text"
-            value={orderID}
-            onChange={(e) => setOrderID(e.target.value)}
-            placeholder="e.g. 100007"
-            className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm"
-          />
-        </div>
+          <div className="flex gap-1">
+            <input
+              required
+              type="text"
+              value={orderID}
+              onChange={(e) => setOrderID(e.target.value)}
+              placeholder="e.g. 100007"
+              className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm"
+            />
+            <button
+              type="button"
+              onClick={handleFetchOrderDetails}
+              disabled={fetching || !orderID.trim()}
+              className="flex items-center gap-1 bg-[#114E9D] text-white px-4 py-2 rounded-lg hover:bg-blue-600 disabled:opacity-50"
+            >
+              {fetching ? (
+                <>
+                  <FontAwesomeIcon icon={faSpinner} spin />
+                  Fetching...
+                </>
+              ) : (
+                <>
+                  <FontAwesomeIcon icon={faMagnifyingGlass} />
+                  Auto-Fill
+                </>
+              )}
+            </button>
+          </div>
+        </div> */}
+        <div>
+  <label className="block text-sm font-medium mb-1">Order ID*</label>
+  <div className="flex items-center gap-2">
+    <input
+      required
+      type="text"
+      value={orderID}
+      onChange={(e) => setOrderID(e.target.value)}
+      placeholder="e.g. 100007"
+      className="flex-grow border border-gray-400 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+    />
+    <button
+      type="button"
+      onClick={handleFetchOrderDetails}
+      disabled={fetching || !orderID.trim()}
+      className="flex items-center justify-center gap-2 bg-[#114E9D] text-white px-4 py-2 rounded-lg hover:bg-blue-600 disabled:opacity-50 min-w-[110px] h-[38px]"
+    >
+      {fetching ? (
+        <>
+          <FontAwesomeIcon icon={faSpinner} spin />
+          Fetching...
+        </>
+      ) : (
+        <>
+          <FontAwesomeIcon icon={faMagnifyingGlass} />
+          Auto-Fill
+        </>
+      )}
+    </button>
+  </div>
+</div>
+
 
         {/* Amount */}
         <div>
@@ -193,7 +257,7 @@ export default function CreatePayment() {
             <label className="block text-sm font-medium mb-1">Delivery Status</label>
             <select
               value={deliveryStatus}
-               disabled // ✅ make it non-editable
+              disabled
               onChange={(e) => setDeliveryStatus(e.target.value)}
               className="w-full border border-gray-400 text-gray-600 rounded-lg px-3 py-2 text-sm"
             >
@@ -228,8 +292,9 @@ export default function CreatePayment() {
           ></textarea>
         </div>
 
-        {/* Action Buttons */}
         <hr className="border-gray-300" />
+
+        {/* Buttons */}
         <div className="flex flex-col md:flex-row justify-end gap-4">
           <button
             type="button"
@@ -267,3 +332,4 @@ export default function CreatePayment() {
     </div>
   );
 }
+

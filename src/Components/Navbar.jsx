@@ -225,7 +225,7 @@ function Navbar({ heading }) {
               alt="User"
               className="w-8 h-8 rounded-full"
             />
-            <span className="font-medium text-sm">Louis G</span>
+            <span className="font-medium text-sm">Profil utilisateur</span>
             <FontAwesomeIcon icon={faChevronDown} className="text-gray-500" />
           </button>
 
@@ -242,7 +242,7 @@ function Navbar({ heading }) {
                 onClick={() => setIsOpen(false)}
                 className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
               >
-                Settings
+                Paramètres
               </button>
 
               <button

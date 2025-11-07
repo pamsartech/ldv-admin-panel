@@ -71,8 +71,8 @@ import axios
       {/* Sales Trends */}
       <div className="p-5 shadow-lg rounded-xl bg-white">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-medium">Sales Trends</h3>
-          <button className="text-sm text-blue-500 hover:underline">View</button>
+          <h3 className="text-lg font-medium">Tendances des ventes</h3>
+          <button className="text-sm text-blue-500 hover:underline">Voir</button>
         </div>
 
         <ResponsiveContainer width="100%" height={250}>
@@ -88,7 +88,7 @@ import axios
 
       {/* Best Selling Products */}
       <div className="p-5 shadow-lg rounded-xl bg-white ">
-        <h3 className="text-lg font-medium mb-4">Best-selling Products</h3>
+        <h3 className="text-lg font-medium mb-4">Produits les plus vendus</h3>
         <ul className="space-y-4">
           {bestSelling.map((product, idx) => (
             <li key={idx} className="flex items-center justify-between">

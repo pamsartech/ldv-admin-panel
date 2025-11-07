@@ -66,44 +66,91 @@ const UpdateOrder = () => {
     setOrderItems(orderItems.filter((_, i) => i !== index));
   };
 
-  const handleUpdate = async (e) => {
-    e.preventDefault();
-    setLoading(true);
+  // const handleUpdate = async (e) => {
+  //   e.preventDefault();
+  //   setLoading(true);
 
-    try {
-      // Include _id in payload just in case backend needs it
-      const payload = { ...orderData };
+  //   try {
+  //     // Include _id in payload just in case backend needs it
+  //     const payload = { ...orderData };
 
-      const response = await axios.put(
-        `https://dev-api.payonlive.com/api/order/update-order/${existingOrder._id}`,
-        payload,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            // Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+  //     const response = await axios.put(
+  //       `https://dev-api.payonlive.com/api/order/update-order/${existingOrder._id}`,
+  //       payload,
+  //       {
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           // Authorization: `Bearer ${token}`,
+  //         },
+  //       }
+  //     );
 
-      if (response.status === 200 && response.data.success) {
-        showAlert("Order updated successfully!", "success");
-        navigate("/user/Orders");
-      } else {
-        showAlert("Failed to update order. Please try again.", "error");
-        setLoading(false); // 🔹 Stop spinner on failed response
-      }
-    } catch (err) {
-      console.error("❌ Error updating order:", err);
-      showAlert("Server error. Please try again.", "error");
-      setLoading(false); // 🔹 Stop spinner if an exception occurs
-    }
-  };
+  //     if (response.status === 200 && response.data.success) {
+  //       showAlert("Order updated successfully!", "success");
+  //       navigate("/user/Orders");
+  //     } else {
+  //       showAlert("Failed to update order. Please try again.", "error");
+  //       setLoading(false); // 🔹 Stop spinner on failed response
+  //     }
+  //   } catch (err) {
+  //     console.error("❌ Error updating order:", err);
+  //     showAlert("Server error. Please try again.", "error");
+  //     setLoading(false); // 🔹 Stop spinner if an exception occurs
+  //   }
+  // };
 
   //  const handleCopyLink = () => {
   //     navigator.clipboard.writeText(orderData.trackLink);
   //     setPopupMessage("TikTok live event link copied to clipboard!");
   //     setShowPopup(true);
   //   };
+
+  const handleUpdate = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+
+  const { paymentStatus, shippingStatus } = orderData;
+
+  // ✅ Validation: prevent shipped/delivered if payment not paid
+  if (
+    paymentStatus !== "Paid" &&
+    (shippingStatus === "Shipped" || shippingStatus === "Delivered")
+  ) {
+    showAlert(
+      "You can only mark an order as Shipped or Delivered after payment is completed.",
+      "warning"
+    );
+    setLoading(false);
+    return;
+  }
+
+  try {
+    const payload = { ...orderData };
+
+    const response = await axios.put(
+      `https://dev-api.payonlive.com/api/order/update-order/${existingOrder._id}`,
+      payload,
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (response.status === 200 && response.data.success) {
+      showAlert("Order updated successfully!", "success");
+      navigate("/user/Orders");
+    } else {
+      showAlert("Failed to update order. Please try again.", "error");
+      setLoading(false);
+    }
+  } catch (err) {
+    console.error("❌ Error updating order:", err);
+    showAlert("Server error. Please try again.", "error");
+    setLoading(false);
+  }
+};
+
 
   // Calculate order summary
   const summary = useMemo(() => {
@@ -399,7 +446,47 @@ const UpdateOrder = () => {
               <option>Express</option>
             </select>
           </div>
+
           <div>
+  <label
+    htmlFor="shippingStatus"
+    className="block mb-1 text-sm font-medium text-gray-600"
+  >
+    Shipping Status
+  </label>
+  <select
+    required
+    id="shippingStatus"
+    value={orderData.shippingStatus}
+    onChange={handleChange}
+    className="w-full rounded-lg border border-gray-400 px-3 py-2 text-sm"
+  >
+    <option value="">Select shipping status</option>
+    <option value="Processing">Processing</option>
+    <option
+      value="Shipped"
+      disabled={orderData.paymentStatus !== "Paid"}
+    >
+      Shipped
+    </option>
+    <option
+      value="Delivered"
+      disabled={orderData.paymentStatus !== "Paid"}
+    >
+      Delivered
+    </option>
+  </select>
+
+  {/* 🧩 Optional inline message */}
+  {orderData.paymentStatus !== "Paid" && (
+    <p className="text-xs text-gray-500 mt-1">
+      Complete payment before marking as Shipped or Delivered.
+    </p>
+  )}
+</div>
+
+
+          {/* <div>
             <label
               htmlFor="shippingStatus"
               className="block mb-1 text-sm font-medium text-gray-600"
@@ -417,9 +504,9 @@ const UpdateOrder = () => {
               <option>Processing</option>
               <option>Shipped</option>        
               <option>Delivered</option>
-              {/* <option>Pending</option> */}
+              
             </select>
-          </div>
+          </div> */}
 
           <div className="flex flex-col">
             <label className="mb-1 text-gray-700 font-medium">

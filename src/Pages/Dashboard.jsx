@@ -77,36 +77,36 @@ function Dashboard() {
   return (
     <div className="bg-white min-h-screen">
       {/* Navbar */}
-      <Navbar heading="Dashboard" />
+      <Navbar heading="Tableau de bord" />
 
       {/* Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 p-6">
         {/* Card 1 - Total Sales Today */}
         <div className="p-5 rounded-2xl shadow-md bg-white">
-          <span className="text-gray-700">Total Sales Today</span>
+          <span className="text-gray-700">Ventes totales aujourd’hui </span>
           <p className="text-xl mt-7 font-medium">€{stats.totalSales}</p>
           <p className="text-sm mt-7 text-gray-700">
-            <span className="text-[#02B978]">↑ 4%</span> since yesterday
+            <span className="text-[#02B978]"> 4%</span>  depuis hier
           </p>
         </div>
 
         {/* Card 2 - Pending Orders */}
         <div className="p-5 rounded-2xl shadow-md bg-white flex flex-col justify-between">
-          <span className="text-gray-700">Pending Orders</span>
+          <span className="text-gray-700">Commandes en attente</span>
           <p className="text-xl mt-7 font-medium">{stats.pendingOrders}</p>
           <DescriptionOutlinedIcon className="mt-6 text-8xl text-amber-400" />
         </div>
 
         {/* Card 3 - Total Products */}
         <div className="p-5 rounded-2xl shadow-md bg-white flex flex-col justify-between">
-          <span className="text-gray-500">Total Products</span>
+          <span className="text-gray-500">Produits totaux</span>
           <p className="text-2xl font-medium mt-7">{stats.totalProducts}</p>
           <WarningAmberIcon className="mt-6" />
         </div>
 
         {/* Card 4 - Active TikTok Live Sales */}
         <div className="p-5 rounded-2xl shadow-md bg-white flex flex-col justify-between">
-          <span className="text-gray-500">Active TikTok Live Sales</span>
+          <span className="text-gray-500">Ventes TikTok Live actives</span>
           <p className="text-2xl font-medium mt-7">{stats.activeTikTokSales}</p>
           <DiscountOutlinedIcon className="mt-6" />
         </div>
