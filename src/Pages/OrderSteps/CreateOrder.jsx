@@ -1,4 +1,5 @@
 // --- existing imports ---
+// --- existing imports ---
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../Components/Navbar";
@@ -101,13 +102,11 @@ const CreateOrder = () => {
     // Validate order items
     orderItems.forEach((item, idx) => {
       if (!item.productName.trim())
-        newErrors[`product_${idx}`] = `Product code is required for item ${
-          idx + 1
-        }`;
+        newErrors[`product_${idx}`] = `Product code is required for item ${idx + 1
+          }`;
       if (item.price <= 0)
-        newErrors[`price_${idx}`] = `Price must be greater than 0 for item ${
-          idx + 1
-        }`;
+        newErrors[`price_${idx}`] = `Price must be greater than 0 for item ${idx + 1
+          }`;
     });
 
     setErrors(newErrors);
@@ -421,8 +420,8 @@ const CreateOrder = () => {
           price: product.price || 0,
           availableColors: normalizedColors,
           availableSizes: normalizedSizes,
-          color: [],
-          size: [],
+          color: "",
+          size: "",
         };
 
         setOrderItems(newItems);
@@ -439,34 +438,42 @@ const CreateOrder = () => {
   // ✅ Multi-select color handler
   const handleColorSelect = (index, selectedColor) => {
     const newItems = [...orderItems];
-    const currentColors = Array.isArray(newItems[index].color)
-      ? [...newItems[index].color]
-      : [];
-
-    if (currentColors.includes(selectedColor)) {
-      // remove if already selected
-      newItems[index].color = currentColors.filter((c) => c !== selectedColor);
-    } else {
-      // add new color
-      newItems[index].color = [...currentColors, selectedColor];
-    }
-
+    // const currentColors = Array.isArray(newItems[index].color)
+    //   ? [...newItems[index].color]
+    //   : [];
+    // toggle: deselect if same color clicked again
+    newItems[index].color =
+      newItems[index].color === selectedColor ? "" : selectedColor;
     setOrderItems(newItems);
+
+    // if (currentColors.includes(selectedColor)) {
+    //   // remove if already selected
+    //   newItems[index].color = currentColors.filter((c) => c !== selectedColor);
+    // } else {
+    //   // add new color
+    //   newItems[index].color = [...currentColors, selectedColor];
+    // }
+
+    // setOrderItems(newItems);
   };
 
   // ✅ Multi-select size handler
   const handleSizeSelect = (index, selectedSize) => {
+    // const newItems = [...orderItems];
+    // const currentSizes = Array.isArray(newItems[index].size)
+    //   ? [...newItems[index].size]
+    //   : [];
+
+    // if (currentSizes.includes(selectedSize)) {
+    //   newItems[index].size = currentSizes.filter((s) => s !== selectedSize);
+    // } else {
+    //   newItems[index].size = [...currentSizes, selectedSize];
+    // }
+
+    // setOrderItems(newItems);
     const newItems = [...orderItems];
-    const currentSizes = Array.isArray(newItems[index].size)
-      ? [...newItems[index].size]
-      : [];
-
-    if (currentSizes.includes(selectedSize)) {
-      newItems[index].size = currentSizes.filter((s) => s !== selectedSize);
-    } else {
-      newItems[index].size = [...currentSizes, selectedSize];
-    }
-
+    newItems[index].size =
+      newItems[index].size === selectedSize ? "" : selectedSize;
     setOrderItems(newItems);
   };
 
@@ -605,7 +612,6 @@ const CreateOrder = () => {
               key={idx}
               className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center py-3 border-b border-gray-400"
             >
-
               {/* product code */}
               <div className="md:col-span-2">
                 <label className="block mb-1 text-sm font-medium">
@@ -653,7 +659,7 @@ const CreateOrder = () => {
                   Product Name
                 </label>
                 <input
-                readOnly
+                  readOnly
                   value={item.productName}
                   // onChange={(e) => handleProductChange(idx, e.target.value)}
                   onChange={(e) => {
@@ -678,7 +684,7 @@ const CreateOrder = () => {
                 <label className="block mb-1 text-sm font-medium">Color</label>
 
                 {Array.isArray(item.availableColors) &&
-                item.availableColors.length > 0 ? (
+                  item.availableColors.length > 0 ? (
                   <div className="flex flex-wrap items-center gap-2 mt-1">
                     {/* {item.availableColors.map((c, i) => {
         // normalize color value
@@ -711,9 +717,10 @@ const CreateOrder = () => {
 
                     {item.availableColors.map((c, i) => {
                       const normalizedColor = c?.trim();
-                      const isSelected = Array.isArray(item.color)
-                        ? item.color.includes(normalizedColor)
-                        : false;
+                      // const isSelected = Array.isArray(item.color)
+                      //   ? item.color.includes(normalizedColor)
+                      //   : false;
+                      const isSelected = item.color === normalizedColor
 
                       // ✅ Safely detect color value
                       let bgColor = "#ccc";
@@ -731,9 +738,8 @@ const CreateOrder = () => {
                           onClick={() =>
                             handleColorSelect(idx, normalizedColor)
                           }
-                          className={`w-7 h-7 rounded-full border cursor-pointer shadow-sm transition ${
-                            isSelected ? "ring-2 ring-gray-800 scale-105" : ""
-                          }`}
+                          className={`w-7 h-7 rounded-full border cursor-pointer shadow-sm transition ${isSelected ? "ring-2 ring-gray-800 scale-105" : ""
+                            }`}
                           style={{ backgroundColor: bgColor }}
                           title={normalizedColor}
                         ></span>
@@ -765,21 +771,22 @@ const CreateOrder = () => {
                 <label className="block mb-1 text-sm font-medium">Size</label>
 
                 {Array.isArray(item.availableSizes) &&
-                item.availableSizes.length > 0 ? (
+                  item.availableSizes.length > 0 ? (
                   <div className="flex flex-wrap items-center gap-2 mt-1">
                     {item.availableSizes.map((sz, i) => {
-                      const isSelected = Array.isArray(item.size)
-                        ? item.size.includes(sz)
-                        : false;
+                      // const isSelected = Array.isArray(item.size)
+                      //   ? item.size.includes(sz)
+                      //   : false;
+                      const isSelected = item.size === sz;
+
                       return (
                         <span
                           key={i}
                           onClick={() => handleSizeSelect(idx, sz)}
-                          className={`w-8 h-8 flex items-center justify-center text-sm rounded-full cursor-pointer border transition ${
-                            isSelected
+                          className={`w-8 h-8 flex items-center justify-center text-sm rounded-full cursor-pointer border transition ${isSelected
                               ? "bg-gray-900 text-white border-gray-900"
                               : "bg-white text-gray-800 border-gray-300 hover:bg-gray-100"
-                          }`}
+                            }`}
                         >
                           {sz}
                         </span>
@@ -796,11 +803,10 @@ const CreateOrder = () => {
                         <span
                           key={sz}
                           onClick={() => handleSizeSelect(idx, sz)}
-                          className={`w-8 h-8 flex items-center justify-center text-sm rounded-full cursor-pointer border transition ${
-                            isSelected
+                          className={`w-8 h-8 flex items-center justify-center text-sm rounded-full cursor-pointer border transition ${isSelected
                               ? "bg-gray-900 text-white border-gray-900"
                               : "bg-white text-gray-800 border-gray-300 hover:bg-gray-100"
-                          }`}
+                            }`}
                         >
                           {sz}
                         </span>

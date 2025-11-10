@@ -114,17 +114,17 @@ function Payments() {
 
   return (
     <div>
-      <Navbar heading="Payment Management" />
+      <Navbar heading="Gestion des paiements" />
 
       {/* add payments panel */}
       <div className="flex items-center justify-between px-6 mt-5 pb-3">
-        <h2 className="text-lg font-semibold text-gray-800">Payments</h2>
+        <h2 className="text-lg font-semibold text-gray-800">Paiements</h2>
 
         <div className="flex items-center gap-2">
           {/* Import */}
           <label className="flex items-center gap-2 border border-gray-400 px-3 py-1.5 rounded-md text-sm text-gray-700 hover:bg-gray-100 transition cursor-pointer">
             <FontAwesomeIcon icon={faDownload} className="text-gray-600" />
-            {importing ? "Importing..." : "Import"}
+            {importing ? "Importing..." : "Importer"}
             <input
               type="file"
               accept=".xlsx,.xls"
@@ -140,7 +140,7 @@ function Payments() {
             className="flex items-center gap-2 border border-gray-400 px-3 py-1.5 rounded-md text-sm text-gray-700 hover:bg-gray-100 transition cursor-pointer"
           >
             <FontAwesomeIcon icon={faUpload} className="text-gray-600" />
-            {exporting ? "Exporting..." : "Export"}
+            {exporting ? "Exporting..." : "Exporter"}
           </button>
 
           {/* Create Payment */}
@@ -149,7 +149,7 @@ function Payments() {
             className="flex items-center gap-2 bg-[#02B978] text-white px-4 py-1.5 rounded-md text-sm hover:bg-[#04D18C] transition"
           >
             <FontAwesomeIcon icon={faPlus} className="text-white" />
-            Create Payment
+            Créer un paiement
           </button>
         </div>
       </div>

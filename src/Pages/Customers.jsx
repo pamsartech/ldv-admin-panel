@@ -176,10 +176,10 @@ function Customers() {
 
   return (
     <div>
-      <Navbar heading="Customer Management" />
+      <Navbar heading="Gestion des clients" />
 
       <div className="flex items-center justify-between px-6 mt-5 pb-3">
-        <h2 className="text-lg font-semibold text-gray-800">Customers</h2>
+        <h2 className="text-lg font-semibold text-gray-800">Clients</h2>
 
         <div className="flex items-center gap-2">
           <label
@@ -188,7 +188,7 @@ function Customers() {
             }`}
           >
             <FontAwesomeIcon icon={faDownload} className="text-gray-600" />
-            {importing ? "Importing..." : "Import"}
+            {importing ? "Importing..." : "Importer"}
             <input
               ref={fileInputRef}
               type="file"
@@ -205,7 +205,7 @@ function Customers() {
             disabled={exporting}
           >
             <FontAwesomeIcon icon={faUpload} className="text-gray-600" />
-            {exporting ? "Exporting..." : "Export"}
+            {exporting ? "Exporting..." : "Exporter"}
           </button>
 
           {exportError && (
@@ -217,7 +217,7 @@ function Customers() {
             className="flex items-center gap-2 bg-[#02B978] text-white px-4 py-1.5 rounded-md text-sm hover:bg-[#04D18C] transition"
           >
             <FontAwesomeIcon icon={faPlus} className="text-white" />
-            Add Customer
+            Ajouter un client
           </button>
         </div>
       </div>

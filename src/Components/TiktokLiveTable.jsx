@@ -223,7 +223,7 @@ const sortedData = [...filteredData].sort((a, b) => {
             }`}
           >
             <FontAwesomeIcon icon={faCircleCheck} />
-            All
+            Tous
           </button>
 
           <button
@@ -238,7 +238,7 @@ const sortedData = [...filteredData].sort((a, b) => {
             }`}
           >
             <FontAwesomeIcon icon={faChartLine} />
-            Active
+            Actifs
           </button>
         </div>
 
@@ -249,7 +249,7 @@ const sortedData = [...filteredData].sort((a, b) => {
             className="flex items-center gap-2 border border-gray-400 px-3 py-1.5 rounded-md text-sm text-gray-900 hover:bg-gray-100 transition"
           >
             <img src="/icons/cuida_filter-outline.svg" alt="icon" />
-            {selectedStatus === "All" ? "Filter" : selectedStatus}
+            {selectedStatus === "All" ? "Filtrer" : selectedStatus}
             <FontAwesomeIcon icon={faChevronDown} />
           </button>
 
@@ -284,7 +284,7 @@ const sortedData = [...filteredData].sort((a, b) => {
   className="flex items-center gap-2 border border-gray-400 px-3 py-1.5 rounded-md text-sm text-gray-900 hover:bg-gray-100 transition"
 >
   <img src="/icons/flowbite_sort-outline.svg" alt="icon" />
-  Sort by Date 
+  Trier par date
   {/* {sortAsc ? "Oldest → Newest" : "Newest → Oldest"} */}
 </button>
 
@@ -319,7 +319,7 @@ const sortedData = [...filteredData].sort((a, b) => {
         />
         <input
           type="text"
-          placeholder="Search"
+          placeholder="Recherche"
           value={search}
           onChange={(e) => {
             setSearch(e.target.value);
@@ -343,11 +343,11 @@ const sortedData = [...filteredData].sort((a, b) => {
                     disabled={loading}
                   />
                 </th>
-                <th className="p-3">Event Name</th>
-                <th className="p-3">Session ID</th>
-                <th className="p-3">Start</th>
-                <th className="p-3">End</th>
-                <th className="p-3">Status</th>
+                <th className="p-3">Nom de l’événement</th>
+                <th className="p-3">ID de session</th>
+                <th className="p-3">Début</th>
+                <th className="p-3">Fin</th>
+                <th className="p-3">Statut</th>
                 <th className="p-3">Action</th>
               </tr>
             </thead>
@@ -406,7 +406,7 @@ const sortedData = [...filteredData].sort((a, b) => {
             disabled={currentPage === 1}
             onClick={() => setCurrentPage((prev) => prev - 1)}
           >
-            <FontAwesomeIcon icon={faArrowLeft} /> Previous
+            <FontAwesomeIcon icon={faArrowLeft} /> Précédent
           </button>
 
           {[...Array(totalPages)].map((_, index) => (
@@ -428,7 +428,7 @@ const sortedData = [...filteredData].sort((a, b) => {
             disabled={currentPage === totalPages}
             onClick={() => setCurrentPage((prev) => prev + 1)}
           >
-            Next <FontAwesomeIcon icon={faArrowRight} />
+            Suivant <FontAwesomeIcon icon={faArrowRight} />
           </button>
         </div>
       </div>

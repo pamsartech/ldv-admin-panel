@@ -157,12 +157,12 @@ function Orders() {
 
   return (
     <div>
-      <Navbar heading="Order Management" />
+      <Navbar heading="Gestion des commandes" />
 
       {/* my order panel */}
       <div className="flex items-center justify-between px-6 mt-5 pb-3">
         {/* Left Section - Title */}
-        <h2 className="text-lg font-semibold text-gray-800"> My Order </h2>
+        <h2 className="text-lg font-semibold text-gray-800"> Mes commandes </h2>
 
         {/* Right Section - Buttons */}
         <div className="flex items-center gap-2">
@@ -173,7 +173,7 @@ function Orders() {
             }`}
           >
             <FontAwesomeIcon icon={faDownload} className="text-gray-600" />
-            {importing ? "Importing..." : "Import"}
+            {importing ? "Importing..." : "Importer"}
             <input
               ref={fileInputRef}
               type="file"
@@ -191,7 +191,7 @@ function Orders() {
             disabled={exporting}
           >
             <FontAwesomeIcon icon={faUpload} className="text-gray-600" />
-            {exporting ? "Exporting..." : "Export"}
+            {exporting ? "Exporting..." : "Exporter"}
           </button>
 
           {/* Add Product Button */}
@@ -200,7 +200,7 @@ function Orders() {
             className="flex items-center gap-2 bg-[#02B978] text-white px-4 py-1.5 rounded-md text-sm hover:bg-[#04D18C] transition"
           >
             <FontAwesomeIcon icon={faPlus} className="text-white" />
-            Add Order
+            Ajouter une commande
           </button>
         </div>
       </div>
