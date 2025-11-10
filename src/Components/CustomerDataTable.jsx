@@ -230,7 +230,7 @@ export default function CustomersTable({ onSelectionChange }) {
           />
           <input
             type="text"
-            placeholder="Search"
+            placeholder="Recherche"
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
@@ -249,7 +249,7 @@ export default function CustomersTable({ onSelectionChange }) {
               onClick={() => setShowFilter((prev) => !prev)}
             >
               <FontAwesomeIcon icon={faFilter} />
-              Filter
+              Filtrer
               <FontAwesomeIcon icon={faChevronDown} className="text-xs" />
             </button>
             {showFilter && (
@@ -279,7 +279,7 @@ export default function CustomersTable({ onSelectionChange }) {
             className="flex items-center gap-2 border border-gray-400 px-3 py-2 rounded-md text-sm text-gray-700 hover:bg-gray-100 transition"
           >
             <FontAwesomeIcon icon={faUpDown} />
-            Sort by Date
+            Trier par date
           </button>
 
           {/* <button
@@ -327,13 +327,13 @@ export default function CustomersTable({ onSelectionChange }) {
                   onChange={handleSelectAll}
                 />
               </th>
-              <th className="py-3 px-3">Customer ID</th>
-              <th className="py-3 px-3">Name</th>
-              <th className="py-3 px-3">Total Spend</th>
-              <th className="py-3 px-3">Date Joined</th>
-              <th className="py-3 px-3">Email</th>
-              <th className="py-3 px-3">Total Orders</th>
-              <th className="py-3 px-3">Status</th>
+              <th className="py-3 px-3">ID client</th>
+              <th className="py-3 px-3">Nom</th>
+              <th className="py-3 px-3">Dépenses totales</th>
+              <th className="py-3 px-3">Date d’inscription</th>
+              <th className="py-3 px-3">E-mail</th>
+              <th className="py-3 px-3">Commandes totales</th>
+              <th className="py-3 px-3">Statut</th>
               <th className="py-3 px-3">Action</th>
             </tr>
           </thead>
@@ -399,7 +399,7 @@ export default function CustomersTable({ onSelectionChange }) {
           <p className="px-2">
             Showing <span className="font-medium">{startIndex}</span>–
             <span className="font-medium">{endIndex}</span> of{" "}
-            <span className="font-medium">{filteredData.length}</span> customers
+            <span className="font-medium">{filteredData.length}</span> Clients
           </p>
           <div className="flex items-center space-x-2">
             <button
@@ -407,7 +407,7 @@ export default function CustomersTable({ onSelectionChange }) {
               disabled={currentPage === 1}
               onClick={() => setCurrentPage((prev) => prev - 1)}
             >
-              <FontAwesomeIcon icon={faArrowLeft} /> Previous
+              <FontAwesomeIcon icon={faArrowLeft} /> Précédent
             </button>
             {[...Array(totalPages)].map((_, index) => (
               <button
@@ -427,7 +427,7 @@ export default function CustomersTable({ onSelectionChange }) {
               disabled={currentPage === totalPages}
               onClick={() => setCurrentPage((prev) => prev + 1)}
             >
-              Next <FontAwesomeIcon icon={faArrowRight} />
+              Suivant <FontAwesomeIcon icon={faArrowRight} />
             </button>
           </div>
         </div>

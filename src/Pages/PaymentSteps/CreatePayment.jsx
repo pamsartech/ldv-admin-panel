@@ -248,7 +248,7 @@ const handleFetchOrderDetails = async () => {
               className="w-full border border-gray-400 text-gray-600 rounded-lg px-3 py-2 text-sm"
             >
               <option>Pending</option>
-              <option>Paid</option>
+              <option>Paid</option>  
               <option>Failed</option>
             </select>
           </div>

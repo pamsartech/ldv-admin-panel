@@ -94,6 +94,8 @@ export default function OrdersDataTable({ onSelectionChange }) {
           date: o.createdAt || "",
           phoneNumber: o.phoneNumber || "unknown",
           transactionId: o.payment_id || o.payment_Id || "unknown",
+          // method: o.method || "unknown"
+          paymentMethod: o.paymentMethod || "unknown"
         }));
         setOrders(formattedOrders);
       } catch (err) {
@@ -267,7 +269,7 @@ export default function OrdersDataTable({ onSelectionChange }) {
                 : "text-gray-600 hover:text-black"
             }`}
           >
-            <FontAwesomeIcon icon={faCircleCheck} /> All
+            <FontAwesomeIcon icon={faCircleCheck} /> Toutes
           </button>
           <button
             onClick={() => {
@@ -280,7 +282,7 @@ export default function OrdersDataTable({ onSelectionChange }) {
                 : "text-gray-600 hover:text-black"
             }`}
           >
-            <FontAwesomeIcon icon={faChartLine} /> Active
+            <FontAwesomeIcon icon={faChartLine} /> Actives
           </button>
           <button
             onClick={() => {
@@ -293,7 +295,7 @@ export default function OrdersDataTable({ onSelectionChange }) {
                 : "text-gray-600 hover:text-black"
             }`}
           >
-            <FontAwesomeIcon icon={faBoxArchive} /> Archived
+            <FontAwesomeIcon icon={faBoxArchive} /> Archivées
           </button>
         </div>
 
@@ -306,7 +308,7 @@ export default function OrdersDataTable({ onSelectionChange }) {
             }}
             className="border border-gray-400 px-3 py-1.5 rounded-md text-sm text-gray-900"
           >
-            <option value="all">All Payments</option>
+            <option value="all">Tous les paiements</option>
             <option value="Pending">Pending</option>
             <option value="Paid">Paid</option>
             <option value="Failed">Failed</option>
@@ -317,7 +319,7 @@ export default function OrdersDataTable({ onSelectionChange }) {
             className="border border-gray-400 px-3 py-1.5 rounded-md text-sm text-gray-900 hover:bg-gray-100"
           >
             <FontAwesomeIcon icon={faUpDown} />   
-                         Sort by Date
+                         Trier par date
           </button>
 
           {/* bulk delete button */}
@@ -381,12 +383,12 @@ export default function OrdersDataTable({ onSelectionChange }) {
                       onChange={handleSelectAll}
                     />
                   </th>
-                  <th className="py-3 px-4">Order ID</th>
-                  <th className="py-3 px-4">Customer</th>
-                  <th className="py-3 px-4">Product</th>
+                  <th className="py-3 px-4">ID commande</th>
+                  <th className="py-3 px-4">Client</th>
+                  <th className="py-3 px-4">Produit</th>
                   <th className="py-3 px-4">Date</th>
-                  <th className="py-3 px-4">Payment Status</th>
-                  <th className="py-3 px-4">Shipping Status</th>
+                  <th className="py-3 px-4">Statut du paiement</th>
+                  <th className="py-3 px-4">Statut de livraison</th>
                   <th className="py-3 px-4">Action</th>
                 </tr>
               </thead>
@@ -508,22 +510,22 @@ export default function OrdersDataTable({ onSelectionChange }) {
                   <div className="bg-white rounded-lg shadow p-6 border flex items-center justify-between max-w-xl">
                     <div>
                       <h3 className="font-semibold text-sm text-gray-800 mb-2">
-                        Average Order value
+                        Valeur moyenne des commandes
                       </h3>
                       <p className="text-2xl font-bold mt-2">
                         €{averageData.averageOrder}
                       </p>
                       <p className="text-gray-600 text-sm mt-2">
-                        Average Order value
+                        Valeur moyenne des commandes
                       </p>
                     </div>
 
                     <div className="w-px bg-gray-300 h-16 mx-6"></div>
 
                     <div className="text-sm text-gray-700">
-                      <p className="font-medium">Delivery status</p>
+                      <p className="font-medium">Statut de livraison</p>
                       <p className="mt-8">
-                        Delivered :{" "}
+                        Livraison :{" "}
                         <span className="font-semibold">
                           {averageData.deliveryRate}
                         </span>
@@ -542,7 +544,7 @@ export default function OrdersDataTable({ onSelectionChange }) {
                 <div className="col-span-3 bg-white rounded-lg shadow p-6 transition-all duration-300">
                   <div className="flex justify-between items-center border-b pb-3">
                     <h2 className="text-md font-medium">
-                      Order {selectedOrder.id}
+                      ID commande {selectedOrder.id}
                     </h2>
                     <button
                       className="underline"
@@ -550,7 +552,7 @@ export default function OrdersDataTable({ onSelectionChange }) {
                         navigate(`/user/view-order/${selectedOrder.id}`)
                       }
                     >
-                      View Details
+                      Voir les détails
                     </button>
                     <button
                       onClick={() => setSelectedOrder(null)}
@@ -562,7 +564,7 @@ export default function OrdersDataTable({ onSelectionChange }) {
 
                   <div className="mt-4 text-xs text-gray-700 space-y-2">
                     <p>
-                      <strong>Order ID:</strong> {selectedOrder.id}
+                      <strong>ID commande:</strong> {selectedOrder.id}
                     </p>
                     <p>
                       <strong>Date:</strong>{" "}
@@ -579,11 +581,11 @@ export default function OrdersDataTable({ onSelectionChange }) {
                     </p>
 
                     <p>
-                      <strong>Order amount:</strong> €{" "}
+                      <strong>Montant de la commande:</strong> €{" "}
                       {selectedOrder.amount.toFixed(2) || "28.23"}
                     </p>
                     <p>
-                      <strong>Status:</strong> {selectedOrder.payment}
+                      <strong>Statut:</strong> {selectedOrder.payment}
                     </p>
                   </div>
 
@@ -591,17 +593,17 @@ export default function OrdersDataTable({ onSelectionChange }) {
 
                   <div className="text-xs text-gray-700 space-y-2">
                     <h3 className="font-bold text-sm text-gray-800">
-                      Customer Info
+                      Informations client
                     </h3>
                     <p>
-                      <strong>Name:</strong> {selectedOrder.customer}{" "}
+                      <strong>Nom:</strong> {selectedOrder.customer}{" "}
                     </p>
                     <p>
-                      <strong>Email:</strong>{" "}
+                      <strong>E-mail:</strong>{" "}
                       {selectedOrder.customer.toLowerCase()}@gmail.com
                     </p>
                     <p>
-                      <strong>Phone:</strong> {selectedOrder.phoneNumber}
+                      <strong>Téléphone:</strong> {selectedOrder.phoneNumber}
                     </p>
                   </div>
 
@@ -609,16 +611,16 @@ export default function OrdersDataTable({ onSelectionChange }) {
 
                   <div className="text-xs text-gray-700 space-y-2">
                     <h3 className="font-bold text-sm text-gray-800">
-                      Payment Info
+                      Informations de paiement
                     </h3>
                     <p>
-                      <strong>Method:</strong> Stripe
+                      <strong>Méthode:</strong> {selectedOrder.paymentMethod}
                     </p>
                     <p>
-                      <strong>Status: </strong> {selectedOrder.payment}
+                      <strong>Statut: </strong> {selectedOrder.payment}
                     </p>
                     <p>
-                      <strong>Transaction ID:</strong>{" "}
+                      <strong>ID de transaction:</strong>{" "}
                       {selectedOrder.transactionId}
                     </p>
                   </div>

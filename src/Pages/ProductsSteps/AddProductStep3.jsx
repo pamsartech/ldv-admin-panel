@@ -91,13 +91,13 @@ function AddProductStep3({ formData, setFormData, prevStep, handleSubmit }) {
 
   return (
     <div className="mb-10">
-      <Navbar heading="Product Management" />
+      <Navbar heading="Gestion des produits" />
 
       <h1 className="mt-5 text-start mx-5 font-medium text-lg">
-        Product Creation
+        Création de produits
       </h1>
 
-      <div className="max-w-xl mx-auto mt-10 bg-white p-6 border-0">
+      <div className="max-w-3xl mx-auto mt-10 bg-white p-6 border-0">
         {/* progress indicator */}
         <div className="flex justify-center items-center mt-5 gap-4 mb-5">
           <div className="flex flex-col items-center text-black font-semibold">
@@ -108,8 +108,8 @@ function AddProductStep3({ formData, setFormData, prevStep, handleSubmit }) {
                 className="text-white px-3 "
               />
             </div>
-            <span className="mt-3 text-sm font-bold text-gray-400">
-              Enter Product Info
+            <span className="mt-3 text-sm font-bold text-[#02B978]">
+              Saisir les informations sur le produit
             </span>
           </div>
           <div className="flex-1 pb-5 border-t-3 border-[#02B978]"></div>
@@ -122,7 +122,7 @@ function AddProductStep3({ formData, setFormData, prevStep, handleSubmit }) {
               />
             </div>
             <span className="mt-3 font-bold text-sm text-[#02B978]">
-              Add variations
+              Ajouter des variations
             </span>
           </div>
           <div className="flex-1 pb-5 border-t-3 border-[#02B978]"></div>
@@ -130,7 +130,7 @@ function AddProductStep3({ formData, setFormData, prevStep, handleSubmit }) {
             <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[#02B978] text-white border border-gray-300">
               3
             </div>
-            <span className="mt-3 text-sm text-[#02B978]">Add images</span>
+            <span className="mt-3 text-sm text-[#02B978]">Ajouter des images</span>
           </div>
         </div>
       </div>
@@ -156,7 +156,7 @@ function AddProductStep3({ formData, setFormData, prevStep, handleSubmit }) {
                     className="h-full w-full object-cover rounded-lg"
                   />
                 ) : (
-                  <span className="text-gray-500">No image selected</span>
+                  <span className="text-gray-500">Aucune image sélectionnée</span>
                 )}
               </div>
             </div>
@@ -231,14 +231,14 @@ function AddProductStep3({ formData, setFormData, prevStep, handleSubmit }) {
             onClick={prevStep}
             className="px-4 py-2 bg-gray-900 text-white border rounded-lg hover:bg-gray-700"
           >
-            <FontAwesomeIcon icon={faArrowLeft} /> Prev
+            <FontAwesomeIcon icon={faArrowLeft} /> précédent
           </button>
 
           <button
             type="submit"
             className="px-4 py-2 bg-[#02B978] text-white rounded-lg hover:bg-[#04D18C]"
           >
-            Submit <FontAwesomeIcon icon={faCheck} />
+            Soumettre <FontAwesomeIcon icon={faCheck} />
           </button>
 
         </div>

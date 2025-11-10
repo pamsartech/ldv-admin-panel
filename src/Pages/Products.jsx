@@ -154,7 +154,7 @@ function Products() {
           {/* Import Button */}
             <label className="flex items-center gap-2 border border-gray-400 px-3 py-1.5 rounded-md text-sm text-gray-700 hover:bg-gray-100 transition cursor-pointer">
                      <FontAwesomeIcon icon={faDownload} className="text-gray-600" />
-                     Import
+                     Importer
                      <input
                        type="file"
                        accept=".xlsx,.xls"
@@ -171,7 +171,7 @@ function Products() {
                      className="flex items-center gap-2 border border-gray-400 px-3 py-1.5 rounded-md text-sm text-gray-700 hover:bg-gray-100 transition cursor-pointer"
                    >
                      <FontAwesomeIcon icon={faUpload} className="text-gray-600" />
-                     {exporting ? "Exporting..." : "Export"}
+                     {exporting ? "Exporting..." : "Exporter"}
                    </button>
 
           {/* Add Product */}
@@ -180,7 +180,7 @@ function Products() {
             className="flex items-center gap-2 bg-[#02B978] text-white px-4 py-1.5 rounded-md text-sm hover:bg-[#04D18C] transition"
           >
             <FontAwesomeIcon icon={faPlus} className="text-white" />
-            Add Product
+            Ajouter un produit
           </button>
         </div>
       </div>
@@ -205,7 +205,7 @@ function Products() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
         {/* Best Selling Products */}
         <div className="p-5 shadow-lg border border-gray-400 rounded-xl bg-white ">
-          <h3 className="text-lg font-semibold mb-4">Best-selling Products</h3>
+          <h3 className="text-lg font-semibold mb-4">Produits les plus vendus</h3>
           <ul className="space-y-4">
             {bestSelling.map((product, idx) => (
               <li key={idx} className="flex items-center justify-between">
@@ -234,7 +234,7 @@ function Products() {
 
         {/* Recently Added Products */}
         <div className="p-5 shadow-lg border border-gray-400 rounded-xl bg-white ">
-          <h3 className="text-lg font-semibold mb-4">Recently added Products</h3>
+          <h3 className="text-lg font-semibold mb-4">Produits récemment ajoutés</h3>
           <ul className="space-y-4">
             {recentProducts.map((product, idx) => (
               <li key={idx} className="flex items-center justify-between">

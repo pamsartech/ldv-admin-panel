@@ -138,57 +138,83 @@ export default function ProductTable({ onSelectionChange }) {
   };
 
   // Normalize color input from API and return an array of clean color strings
-// ✅ Improved normalizeColors — filters only valid, renderable colors
-const normalizeColors = (raw) => {
-  if (!raw) return [];
+  // ✅ Improved normalizeColors — filters only valid, renderable colors
+  const normalizeColors = (raw) => {
+    if (!raw) return [];
 
-  let entries = [];
-  if (Array.isArray(raw)) entries = raw;
-  else if (typeof raw === "string") entries = raw.split(/[,;|]/);
-  else return [];
+    let entries = [];
+    if (Array.isArray(raw)) entries = raw;
+    else if (typeof raw === "string") entries = raw.split(/[,;|]/);
+    else return [];
 
-  const validColors = new Set();
+    const validColors = new Set();
 
-  entries.forEach((entry) => {
-    if (!entry || typeof entry !== "string") return;
+    entries.forEach((entry) => {
+      if (!entry || typeof entry !== "string") return;
 
-    const s = entry.trim().toLowerCase();
+      const s = entry.trim().toLowerCase();
 
-    // ✅ Valid short/long HEX (#fff or #ffffff)
-    if (/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(s)) {
-      validColors.add(s.toUpperCase());
-      return;
-    }
+      // ✅ Valid short/long HEX (#fff or #ffffff)
+      if (/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(s)) {
+        validColors.add(s.toUpperCase());
+        return;
+      }
 
-    // ✅ RGB / RGBA values
-    if (/^rgba?\(\s*\d+\s*,\s*\d+\s*,\s*\d+(?:\s*,\s*(0|1|0?\.\d+))?\s*\)$/i.test(s)) {
-      validColors.add(s);
-      return;
-    }
+      // ✅ RGB / RGBA values
+      if (
+        /^rgba?\(\s*\d+\s*,\s*\d+\s*,\s*\d+(?:\s*,\s*(0|1|0?\.\d+))?\s*\)$/i.test(
+          s
+        )
+      ) {
+        validColors.add(s);
+        return;
+      }
 
-    // ✅ CSS named colors (safe subset)
-    const cssNamedColors = [
-      "black","white","red","blue","green","yellow","purple","orange","pink","gray",
-      "grey","brown","cyan","magenta","lime","navy","teal","olive","maroon","silver",
-      "gold","beige","coral","violet","indigo","turquoise","khaki","lavender"
-    ];
-    if (cssNamedColors.includes(s)) {
-      validColors.add(s);
-      return;
-    }
+      // ✅ CSS named colors (safe subset)
+      const cssNamedColors = [
+        "black",
+        "white",
+        "red",
+        "blue",
+        "green",
+        "yellow",
+        "purple",
+        "orange",
+        "pink",
+        "gray",
+        "grey",
+        "brown",
+        "cyan",
+        "magenta",
+        "lime",
+        "navy",
+        "teal",
+        "olive",
+        "maroon",
+        "silver",
+        "gold",
+        "beige",
+        "coral",
+        "violet",
+        "indigo",
+        "turquoise",
+        "khaki",
+        "lavender",
+      ];
+      if (cssNamedColors.includes(s)) {
+        validColors.add(s);
+        return;
+      }
 
-    // ✅ Extract valid hex codes embedded in junk text (e.g. "color:#ffcc00 extra")
-    const hexMatches = s.match(/#([0-9a-f]{3,6})/gi);
-    if (hexMatches?.length) {
-      hexMatches.forEach((h) => validColors.add(h.toUpperCase()));
-    }
-  });
+      // ✅ Extract valid hex codes embedded in junk text (e.g. "color:#ffcc00 extra")
+      const hexMatches = s.match(/#([0-9a-f]{3,6})/gi);
+      if (hexMatches?.length) {
+        hexMatches.forEach((h) => validColors.add(h.toUpperCase()));
+      }
+    });
 
-  return Array.from(validColors);
-};
-
-
-
+    return Array.from(validColors);
+  };
 
   if (activeTab !== "all") {
     filteredProducts = filteredProducts.filter(
@@ -331,7 +357,7 @@ const normalizeColors = (raw) => {
                     : "text-gray-600 hover:text-black"
                 }`}
               >
-                <FontAwesomeIcon icon={faCircleCheck} /> All
+                <FontAwesomeIcon icon={faCircleCheck} /> Tous
               </button>
               <button
                 onClick={() => {
@@ -344,7 +370,7 @@ const normalizeColors = (raw) => {
                     : "text-gray-600 hover:text-black"
                 }`}
               >
-                <FontAwesomeIcon icon={faChartLine} /> Active
+                <FontAwesomeIcon icon={faChartLine} /> Actifs
               </button>
               <button
                 onClick={() => {
@@ -357,7 +383,7 @@ const normalizeColors = (raw) => {
                     : "text-gray-600 hover:text-black"
                 }`}
               >
-                <FontAwesomeIcon icon={faBoxArchive} /> Inactive
+                <FontAwesomeIcon icon={faBoxArchive} /> Inactif
               </button>
             </>
           )}
@@ -378,7 +404,7 @@ const normalizeColors = (raw) => {
                   onClick={() => setShowFilter((prev) => !prev)}
                   className="flex items-center gap-2 border border-gray-400 px-3 py-1.5 rounded-md text-sm text-gray-900 hover:bg-gray-100 transition"
                 >
-                  Filter
+                  Filtrer
                   <FontAwesomeIcon
                     icon={faChevronDown}
                     className="ml-1 text-gray-600"
@@ -409,7 +435,7 @@ const normalizeColors = (raw) => {
                   onClick={() => setShowSort((prev) => !prev)}
                   className="flex items-center gap-2 border border-gray-400 px-3 py-1.5 rounded-md text-sm text-gray-900 hover:bg-gray-100 transition"
                 >
-                  Sort
+                  Trier
                   <FontAwesomeIcon
                     icon={faChevronDown}
                     className="ml-1 text-gray-600"
@@ -524,14 +550,14 @@ const normalizeColors = (raw) => {
                     />
                   </th>
                   <th className="p-3">Image</th>
-                  <th className="p-3">Product Name</th>
-                  <th className="p-3">Price</th>
-                  <th className="p-3">Category</th>
-                  <th className="p-3">Product Code</th>
-                  <th className="p-3">Size</th>
-                  <th className="p-3">Color</th>
-                  <th className="p-3">Status</th>
-                  <th className="p-3 text-center">Actions</th>
+                  <th className="p-3">Nom du produit</th>
+                  <th className="p-3">Prix</th>
+                  <th className="p-3">Catégorie</th>
+                  <th className="p-3">Code produit</th>
+                  <th className="p-3">Taille</th>
+                  <th className="p-3">Couleur</th>
+                  <th className="p-3">Statut</th>
+                  <th className="p-3 text-center">Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -576,34 +602,32 @@ const normalizeColors = (raw) => {
                       </div>
                     </td> */}
 
-                       <td className="p-3">
-  <div className="flex flex-wrap items-center gap-3">
-    {(() => {
-      const colors = normalizeColors(item.color);
-      if (!colors.length)
-        return <span className="text-gray-500 italic">No color</span>;
+                    <td className="p-3">
+                      <div className="flex flex-wrap items-center gap-3">
+                        {(() => {
+                          const colors = normalizeColors(item.color);
+                          if (!colors.length)
+                            return (
+                              <span className="text-gray-500 italic">
+                                No color
+                              </span>
+                            );
 
-      return colors.map((clr, idx) => (
-        <div key={idx} className="flex items-center gap-2">
-          <span
-            className="w-5 h-5 rounded-full border border-gray-300"
-            style={{ backgroundColor: clr }}
-            // title={hexToColorName(clr)}
-          ></span>
-          {/* <span className="text-gray-700 font-medium">
+                          return colors.map((clr, idx) => (
+                            <div key={idx} className="flex items-center gap-2">
+                              <span
+                                className="w-5 h-5 rounded-full border border-gray-300"
+                                style={{ backgroundColor: clr }}
+                                // title={hexToColorName(clr)}
+                              ></span>
+                              {/* <span className="text-gray-700 font-medium">
             {hexToColorName(clr)}
           </span> */}
-        </div>
-      ));
-    })()}
-  </div>
-</td>
-
-
-
-
-
-
+                            </div>
+                          ));
+                        })()}
+                      </div>
+                    </td>
 
                     <td className="p-3">
                       <span

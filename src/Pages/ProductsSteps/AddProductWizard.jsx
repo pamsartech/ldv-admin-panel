@@ -14,7 +14,7 @@ export default function AddProductWizard() {
 
   // centralised form data (files kept as File objects)
   const [formData, setFormData] = useState({
-    tiktokSessionId: "",
+    tiktok_session_id: "",
     price: "",
     productName: "",
     productCode: "",
@@ -132,7 +132,7 @@ const handleSubmit = async () => {
     data.append("productName", formData.productName || "");
     data.append("productCode", formData.productCode || "");
     data.append("price", formData.price || "");
-    data.append("tiktokSessionId", formData.tiktokSessionId || "");
+    data.append("tiktok_session_id", formData.tiktok_session_id || "");
     data.append("gender", formData.gender || "Men");
     data.append("stock", formData.stock || "");
     data.append("category", formData.category || "");

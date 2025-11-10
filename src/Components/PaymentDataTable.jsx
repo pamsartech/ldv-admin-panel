@@ -217,8 +217,8 @@ export default function PaymentDataTable({ onSelectionChange }) {
       {/* Tabs and Filters */}
       <div className="flex justify-between items-center border-2 mb-5 border-gray-300 px-6 rounded-md p-2 relative">
         {/* Tabs */}
-        <div className="flex gap-6">
-          {["all", "Paid", "Refunded"].map((tab) => (
+        {/* <div className="flex gap-6">
+          {["all", "Paid", "Remboursés"].map((tab) => (
             <button
               key={tab}
               onClick={() => {
@@ -243,7 +243,36 @@ export default function PaymentDataTable({ onSelectionChange }) {
               {tab.charAt(0).toUpperCase() + tab.slice(1)}
             </button>
           ))}
-        </div>
+        </div> */}
+        {/* Tabs Section */}
+<div className="flex gap-6">
+  {[
+    { key: "all", label: "Tous", icon: faCircleCheck },
+    { key: "Paid", label: "Payés", icon: faCheckCircle },
+    { key: "Remboursés", label: "Remboursés", icon: faUndo },
+  ].map(({ key, label, icon }) => {
+    const isActive = activeTab === key;
+
+    return (
+      <button
+        key={key}
+        onClick={() => {
+          setActiveTab(key);
+          setCurrentPage(1);
+        }}
+        className={`flex items-center gap-2 text-sm px-2 pb-1 transition-colors duration-150 ${
+          isActive
+            ? "text-black font-medium border-b-2 border-black"
+            : "text-gray-600 hover:text-black"
+        }`}
+      >
+        <FontAwesomeIcon icon={icon} />
+        <span>{label}</span>
+      </button>
+    );
+  })}
+</div>
+
 
         {/* Filter + Sort */}
         <div className="flex gap-2 relative">
@@ -252,7 +281,7 @@ export default function PaymentDataTable({ onSelectionChange }) {
             className="flex items-center gap-2 border border-gray-400 px-3 py-1.5 rounded-md text-sm text-gray-900 hover:bg-gray-100 transition"
           >
             <img src="/icons/cuida_filter-outline.svg" alt="icon" />
-            {filterMethod === "all" ? "All Methods" : filterMethod}
+            {filterMethod === "all" ? "Toutes les méthodes" : filterMethod}
             <FontAwesomeIcon icon={faChevronDown} />
           </button>
 
@@ -270,7 +299,7 @@ export default function PaymentDataTable({ onSelectionChange }) {
                     filterMethod === method ? "font-medium text-black" : ""
                   }`}
                 >
-                  {method === "all" ? "All Methods" : method}
+                  {method === "all" ? "Toutes les méthodes" : method}
                 </button>
               ))}
             </div>
@@ -282,7 +311,7 @@ export default function PaymentDataTable({ onSelectionChange }) {
             className="flex items-center gap-2 border border-gray-400 px-3 py-1.5 rounded-md text-sm text-gray-900 hover:bg-gray-100 transition"
           >
             <img src="/icons/flowbite_sort-outline.svg" alt="icon" />
-            Sort by Date {sortOrder === "desc" ? "↓" : "↑"}
+            Trier par date {sortOrder === "desc" ? "↓" : "↑"}
           </button>
 
           {/* bulk delete button */}
@@ -350,13 +379,13 @@ export default function PaymentDataTable({ onSelectionChange }) {
                   disabled={loading}
                 />
               </th>
-              <th className="p-3">Amount</th>
-              <th className="p-3">Transaction ID</th>
-              <th className="p-3">Order ID</th>
-              <th className="p-3">Email</th>
+              <th className="p-3">Montant</th>
+              <th className="p-3">ID de transaction</th>
+              <th className="p-3">ID de commande</th>
+              <th className="p-3">E-mail</th>
               <th className="p-3">Date</th>
-              <th className="p-3">Method</th>
-              <th className="p-3">Status</th>
+              <th className="p-3">Méthode</th>
+              <th className="p-3">Statut</th>
               <th className="p-3">Action</th>
             </tr>
           </thead>
@@ -420,7 +449,7 @@ export default function PaymentDataTable({ onSelectionChange }) {
           disabled={currentPage === 1}
           onClick={() => setCurrentPage((prev) => prev - 1)}
         >
-          <FontAwesomeIcon icon={faArrowLeft} /> Previous
+          <FontAwesomeIcon icon={faArrowLeft} /> Précédent
         </button>
 
         {[...Array(totalPages)].map((_, idx) => (
@@ -475,24 +504,24 @@ export default function PaymentDataTable({ onSelectionChange }) {
           disabled={currentPage === totalPages}
           onClick={() => setCurrentPage((prev) => prev + 1)}
         >
-          Next <FontAwesomeIcon icon={faArrowRight} />
+          Suivant <FontAwesomeIcon icon={faArrowRight} />
         </button>
       </div>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-4 md:w-3xl lg:w-3xl border-1 rounded-lg px-2 mt-6 mx-auto">
         <div className="bg-white border-r-1 border-gray-400 shadow p-6 text-center">
-          <h3 className="text-gray-800 text-xl">Total revenue</h3>
+          <h3 className="text-gray-800 text-xl">Revenu total</h3>
           <p className="md:text-md lg:text-2xl font-medium mt-2">€28000</p>
         </div>
 
         <div className="bg-white col-span-2 shadow p-6 border-r-1 border-gray-400 text-center">
-          <h3 className="text-gray-800 text-xl">Outstanding payments</h3>
+          <h3 className="text-gray-800 text-xl">Paiements en attente</h3>
           <p className="md:text-md lg:text-2xl font-medium mt-2">37 (€540)</p>
         </div>
 
         <div className="bg-white rounded-lg shadow p-6 text-center">
-          <h3 className="text-gray-800 text-xl">Refunds</h3>
+          <h3 className="text-gray-800 text-xl">Remboursements</h3>
           <p className="md:text-md lg:text-2xl font-medium mt-2">€178</p>
         </div>
       </div>

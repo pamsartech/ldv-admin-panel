@@ -21,12 +21,12 @@ function UpdateProduct() {
   const { productId } = useParams();
   const navigate = useNavigate();
   const { showAlert } = useAlert();
-  const [btnLoading , setBtnLoading] = useState(false);
+  const [btnLoading, setBtnLoading] = useState(false);
 
   const [loading, setLoading] = useState(true);
   const [selectedGender, setSelectedGender] = useState("Men");
-  const [selectedSize, setSelectedSize] = useState("M");
-  const [selectedColor, setSelectedColor] = useState("#FF0000");
+  const [selectedSize, setSelectedSize] = useState([]);
+  const [selectedColor, setSelectedColor] = useState([]);
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [images, setImages] = useState([]);
 
@@ -71,55 +71,67 @@ function UpdateProduct() {
   // }, [productId]);
 
   useEffect(() => {
-  const fetchProduct = async () => {
-    try {
-      const res = await axios.get(
-        `https://dev-api.payonlive.com/api/product/product-details/${productId}`
-      );
-      if (res.data.success) {
-        const data = res.data.data;
+    const fetchProduct = async () => {
+      try {
+        const res = await axios.get(
+          `https://dev-api.payonlive.com/api/product/product-details/${productId}`
+        );
+        if (res.data.success) {
+          const data = res.data.data;
 
-        // ✅ Normalize color
-        let normalizedColor = "#FF0000";
-        if (Array.isArray(data.color)) {
-          // pick first valid color if array
-          normalizedColor = data.color[0] || "#FF0000";
-        } else if (typeof data.color === "string" && data.color.trim() !== "") {
-          normalizedColor = data.color;
+          // ✅ Normalize color
+          let normalizedColor = "#FF0000";
+          if (Array.isArray(data.color)) {
+            // pick first valid color if array
+            normalizedColor = data.color[0] || "#FF0000";
+          } else if (
+            typeof data.color === "string" &&
+            data.color.trim() !== ""
+          ) {
+            normalizedColor = data.color;
+          }
+
+          // ✅ Normalize size
+          let normalizedSize = "M";
+          if (Array.isArray(data.size)) {
+            // pick first valid size if array
+            normalizedSize = data.size[0] || "M";
+          } else if (typeof data.size === "string" && data.size.trim() !== "") {
+            normalizedSize = data.size;
+          }
+
+          // ✅ Set all states
+          setProductDetails({
+            productName: data.productName || "",
+            productCode: data.productCode || "",
+            price: data.price || "",
+            stock: data.stock || "",
+            category: data.category || "",
+            status: data.status || "",
+          });
+          setSelectedGender(data.gender || "Men");
+          setSelectedSize(Array.isArray(data.size) ? data.size : [data.size]);
+          // setSelectedColor(
+          //   Array.isArray(data.color) ? data.color : [data.color]
+          // );
+          setSelectedColor(
+            Array.isArray(data.color)
+              ? data.color.filter(Boolean)
+              : data.color
+              ? [data.color]
+              : []
+          );
+
+          setImages(data.images || []);
         }
-
-        // ✅ Normalize size
-        let normalizedSize = "M";
-        if (Array.isArray(data.size)) {
-          // pick first valid size if array
-          normalizedSize = data.size[0] || "M";
-        } else if (typeof data.size === "string" && data.size.trim() !== "") {
-          normalizedSize = data.size;
-        }
-
-        // ✅ Set all states
-        setProductDetails({
-          productName: data.productName || "",
-          productCode: data.productCode || "",
-          price: data.price || "",
-          stock: data.stock || "",
-          category: data.category || "",
-          status: data.status || "",
-        });
-        setSelectedGender(data.gender || "Men");
-        setSelectedSize(normalizedSize);
-        setSelectedColor(normalizedColor);
-        setImages(data.images || []);
+      } catch (err) {
+        console.error("Error fetching product:", err);
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      console.error("Error fetching product:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-  fetchProduct();
-}, [productId]);
-
+    };
+    fetchProduct();
+  }, [productId]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -145,60 +157,60 @@ function UpdateProduct() {
     setImages((prev) => prev.filter((_, i) => i !== index));
   };
 
- const handleUpdate = async (e) => {
-  e.preventDefault();
-  setBtnLoading(true);
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+    setBtnLoading(true);
 
-  // const payload = {
-  //   productName: productDetails.productName,
-  //   productCode: productDetails.productCode,
-  //   price: Number(productDetails.price),
-  //   status: productDetails.status,
-  //   gender: selectedGender,
-  //   color: selectedColor,
-  //   size: selectedSize,
-  //   stock: Number(productDetails.stock),
-  //   category: productDetails.category,
-  //   images: images,
-  // };
+    // const payload = {
+    //   productName: productDetails.productName,
+    //   productCode: productDetails.productCode,
+    //   price: Number(productDetails.price),
+    //   status: productDetails.status,
+    //   gender: selectedGender,
+    //   color: selectedColor,
+    //   size: selectedSize,
+    //   stock: Number(productDetails.stock),
+    //   category: productDetails.category,
+    //   images: images,
+    // };
 
-  const payload = {
-  productName: productDetails.productName,
-  productCode: productDetails.productCode,
-  price: Number(productDetails.price),
-  status: productDetails.status,
-  gender: selectedGender,
-  color: Array.isArray(selectedColor) ? selectedColor : [selectedColor],
-  size: Array.isArray(selectedSize) ? selectedSize : [selectedSize],
-  stock: Number(productDetails.stock),
-  category: productDetails.category,
-  images: images,
-};
+    const payload = {
+      productName: productDetails.productName,
+      productCode: productDetails.productCode,
+      price: Number(productDetails.price),
+      status: productDetails.status,
+      gender: selectedGender,
+      // color: Array.isArray(selectedColor) ? selectedColor : [selectedColor],
+      // size: Array.isArray(selectedSize) ? selectedSize : [selectedSize],
+      color: selectedColor,
+      size: selectedSize,
+      stock: Number(productDetails.stock),
+      category: productDetails.category,
+      images: images,
+    };
 
-
-  try {
-    const response = await axios.put(
-      `https://dev-api.payonlive.com/api/product/update-product/${productId}`,
-      payload,
-      { headers: { "Content-Type": "application/json" } }
-    );
-
-    if (response.data.success) {
-      showAlert("Product updated successfully!", "success", () =>
-        navigate("/user/products")
+    try {
+      const response = await axios.put(
+        `https://dev-api.payonlive.com/api/product/update-product/${productId}`,
+        payload,
+        { headers: { "Content-Type": "application/json" } }
       );
-    } else {
-      showAlert("Failed to update product.", "error");
-    }
-  } catch (error) {
-    console.error("Error updating product:", error);
-    showAlert("Failed to update product.", "error");
-  } finally {
-    // ✅ Always stop the spinner
-    setBtnLoading(false);
-  }
-};
 
+      if (response.data.success) {
+        showAlert("Product updated successfully!", "success", () =>
+          navigate("/user/products")
+        );
+      } else {
+        showAlert("Failed to update product.", "error");
+      }
+    } catch (error) {
+      console.error("Error updating product:", error);
+      showAlert("Failed to update product.", "error");
+    } finally {
+      // ✅ Always stop the spinner
+      setBtnLoading(false);
+    }
+  };
 
   // 🧩 Skeleton Loader (replaces plain loading text)
   if (loading)
@@ -408,14 +420,30 @@ function UpdateProduct() {
               </div>
 
               {/* Color Picker */}
-              <div>
-                <h3 className="font-semibold text-gray-800 mb-2">Colour</h3>
+              {/* <div>
+                <h3 className="font-semibold text-gray-800 mb-2">Colours</h3>
                 <div className="flex gap-3 items-center flex-wrap">
-                  <div
-                    className={`w-8 h-8 rounded-full border cursor-pointer ring-2 ring-purple-600 scale-110`}
-                    style={{ backgroundColor: selectedColor }}
-                    onClick={() => setShowColorPicker(!showColorPicker)}
-                  ></div>
+                  {selectedColor.map((color, index) => (
+                    <div
+                      key={index}
+                      className={`w-8 h-8 rounded-full border cursor-pointer transition ${
+                        selectedColor.includes(color)
+                          ? "ring-2 ring-purple-600 scale-110"
+                          : ""
+                      }`}
+                      style={{ backgroundColor: color, cursor: "pointer" }}
+                      onClick={() =>
+                        setSelectedColor(
+                          (prev) =>
+                            prev.includes(color)
+                              ? prev.filter((c) => c !== color) // remove on click
+                              : [...prev, color] // (optional) toggle back on
+                        )
+                      }
+                      title="Click to remove color"
+                    ></div>
+                  ))}
+
                   <button
                     type="button"
                     onClick={() => setShowColorPicker(!showColorPicker)}
@@ -424,12 +452,90 @@ function UpdateProduct() {
                     <FontAwesomeIcon icon={faPlus} />
                   </button>
                 </div>
+
                 {showColorPicker && (
                   <div className="mt-3">
                     <SketchPicker
-                      color={selectedColor}
-                      onChange={handleColorChange}
-                      onChangeComplete={handleColorCommit}
+                      color="#FF0000"
+                      onChangeComplete={(color) =>
+                        setSelectedColor((prev) =>
+                          prev.includes(color.hex)
+                            ? prev // ignore if already added
+                            : [...prev, color.hex]
+                        )
+                      }
+                    />
+                  </div>
+                )}
+              </div> */}
+              {/* ✅ Fixed Color Picker Section */}
+              <div>
+                <h3 className="font-semibold text-gray-800 mb-2">Colours</h3>
+                <div className="flex gap-3 items-center flex-wrap">
+                  {selectedColor.map((color, index) => (
+                    <div
+                      key={index}
+                      className={`w-8 h-8 rounded-full border cursor-pointer transition duration-200 ${
+                        selectedColor.includes(color)
+                          ? "ring-2 ring-purple-600 scale-110"
+                          : ""
+                      }`}
+                      style={{ backgroundColor: color, cursor: "pointer" }}
+                      onClick={() =>
+                        setSelectedColor((prev) =>
+                          prev.filter((c) => c !== color)
+                        )
+                      }
+                      title="Click to remove color"
+                    ></div>
+                  ))}
+
+                  {/* Add Color Button */}
+                  <button
+                    type="button"
+                    onClick={() => setShowColorPicker(!showColorPicker)}
+                    className="w-8 h-8 rounded-full border flex items-center justify-center text-gray-600 hover:bg-gray-100"
+                  >
+                    <FontAwesomeIcon icon={faPlus} />
+                  </button>
+                </div>
+
+                {showColorPicker && (
+                  <div className="mt-3 relative z-50">
+                    <SketchPicker
+                      color={
+                        selectedColor[selectedColor.length - 1] || "#000000"
+                      } // shows last picked color
+                      onChange={(color) => {
+                        // Smooth live updates, no overwrite
+                        setSelectedColor((prev) => {
+                          if (!prev.includes(color.hex)) {
+                            return [...prev, color.hex]; // ✅ always add new color
+                          }
+                          return prev;
+                        });
+                      }}
+                      onChangeComplete={() => {
+                        // Optional: close picker after final selection
+                        setShowColorPicker(false);
+                      }}
+                      styles={{
+                        default: {
+                          picker: {
+                            boxShadow: "0 4px 12px rgba(0,0,0,0.25)",
+                            borderRadius: "12px",
+                            zIndex: 9999,
+                          },
+                          saturation: {
+                            borderRadius: "10px",
+                            overflow: "hidden",
+                          },
+                          hue: {
+                            height: "12px",
+                            borderRadius: "8px",
+                          },
+                        },
+                      }}
                     />
                   </div>
                 )}
@@ -437,15 +543,21 @@ function UpdateProduct() {
 
               {/* Sizes */}
               <div>
-                <h3 className="font-semibold text-gray-800 mb-2">Size</h3>
+                <h3 className="font-semibold text-gray-800 mb-2">Sizes</h3>
                 <div className="flex gap-3 flex-wrap">
                   {["XS", "S", "M", "L", "XL"].map((size) => (
                     <button
                       key={size}
                       type="button"
-                      onClick={() => setSelectedSize(size)}
+                      onClick={() =>
+                        setSelectedSize((prev) =>
+                          prev.includes(size)
+                            ? prev.filter((s) => s !== size)
+                            : [...prev, size]
+                        )
+                      }
                       className={`px-4 py-2 rounded-lg border transition ${
-                        selectedSize === size
+                        selectedSize.includes(size)
                           ? "bg-[#6750A4] text-white"
                           : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
                       }`}
@@ -493,20 +605,18 @@ function UpdateProduct() {
         {/* Footer */}
         <hr className="text-gray-400 mx-10 mt-8" />
         <div className="flex justify-between max-w-5xl mx-auto my-10">
-
           <div className="mt-4">
-          <button
-            type="button"
-            onClick={() => navigate("/user/Products")}
-            className="px-3 py-2 border border-red-700 text-red-700 bg-red-50 rounded-md hover:bg-gray-100"
-          >
-            <FontAwesomeIcon icon={faXmark} size="lg" className="px-2" />
-            Discard Product
-          </button></div>
+            <button
+              type="button"
+              onClick={() => navigate("/user/Products")}
+              className="px-3 py-2 border border-red-700 text-red-700 bg-red-50 rounded-md hover:bg-gray-100"
+            >
+              <FontAwesomeIcon icon={faXmark} size="lg" className="px-2" />
+              Discard Product
+            </button>
+          </div>
 
-        
-
-           <div className=" mt-4">
+          <div className=" mt-4">
             <button
               type="submit"
               disabled={btnLoading}
@@ -518,7 +628,6 @@ function UpdateProduct() {
               {btnLoading ? "Updating..." : "Update Product"}
             </button>
           </div>
-
         </div>
       </form>
     </div>
@@ -526,6 +635,7 @@ function UpdateProduct() {
 }
 
 export default UpdateProduct;
+
 
 
 

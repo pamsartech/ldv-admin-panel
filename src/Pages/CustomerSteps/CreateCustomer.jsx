@@ -165,7 +165,7 @@ const CreateCustomer = () => {
                 statusActive ? "text-green-600" : "text-gray-500"
               }`}
             >
-              {statusActive ? "Active" : "Inactive"}
+              {statusActive ? "Actif" : "Inactive"}
             </span>
           </div>
 
