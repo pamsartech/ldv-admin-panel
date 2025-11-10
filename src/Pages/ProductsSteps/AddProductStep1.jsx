@@ -64,10 +64,10 @@ function AddProductStep1({ formData, setFormData, nextStep }) {
                Session TikTok
               </label>
               <input
-                name="tiktokSessionId"
+                name="tiktok_session_id"
                 type="text"
                 placeholder="Code vestimentaire 2025"
-                value={formData.tiktokSessionId || ""}
+                value={formData.tiktok_session_id || ""}
                 onChange={handleChange}
                 className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm"
               />

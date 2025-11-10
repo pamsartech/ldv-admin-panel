@@ -550,7 +550,7 @@ const handleSave = async (e) => {
     }
   } catch (error) {
     console.error("❌ Error creating event:", error);
-    showAlert("Server error - Please try again.", "error");
+    showAlert("" + error.response.data.error, "info" );
   } finally {
     setBtnLoading(false);
     setLoading(false);
