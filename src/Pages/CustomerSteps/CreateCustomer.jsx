@@ -31,6 +31,61 @@ const CreateCustomer = () => {
     offers: false,
     newsletter: false,
   });
+  const [errors, setErrors] = useState({});
+
+  // 🟢 Validation rules
+  const validateField = (name, value) => {
+    let error = "";
+
+    switch (name) {
+      case "customerName":
+        if (!value.trim()) error = "Name is required";
+        else if (value.length < 2) error = "Name must be at least 2 characters";
+        break;
+
+      case "email":
+        if (!value.trim()) error = "Email is required";
+        else if (!/^\S+@\S+\.\S+$/.test(value))
+          error = "Please enter a valid email address";
+        break;
+
+      case "phoneNumber":
+        if (!value.trim()) error = "Phone number is required";
+        else if (!/^\d{9,15}$/.test(value))
+          error = "Phone number must be 9–15 digits";
+        break;
+
+      case "password":
+        if (!value.trim()) error = "Password is required";
+        else if (value.length < 6)
+          error = "Password must be at least 6 characters";
+        break;
+
+      case "city":
+        if (!value.trim()) error = "City is required";
+        break;
+      case "street":
+        if (!value.trim()) error = "Street address is required";
+        break;
+      case "state":
+        if (!value.trim()) error = "State is required";
+        break;
+      case "zipcode":
+        if (!value.trim()) error = "Zip code is required";
+        else if (!/^\d{5,6}$/.test(value.trim()))
+          error = "Zip code must be 5 or 6 digits";
+        break;
+      case "country":
+        if (!value.trim()) error = "Please select the Country";
+        break;
+
+      default:
+        break;
+    }
+
+    setErrors((prev) => ({ ...prev, [name]: error }));
+    return error;
+  };
 
   // handle input change
   const handleChange = (e) => {
@@ -45,7 +100,10 @@ const CreateCustomer = () => {
       }
     }
 
-    setFormData({ ...formData, [e.target.id]: e.target.value });
+    setFormData((prev) => ({ ...prev, [id]: value }));
+
+    // live validate
+    validateField(id, value);
   };
 
   // toggle marketing preferences
@@ -53,22 +111,39 @@ const CreateCustomer = () => {
     setMarketingPrefs({ ...marketingPrefs, [field]: !marketingPrefs[field] });
   };
 
+  // 🟠 Validate all before submit
+  const validateForm = () => {
+    const newErrors = {};
+    Object.keys(formData).forEach((key) => {
+      const err = validateField(key, formData[key]);
+      if (err) newErrors[key] = err;
+    });
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   // submit handler
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
 
-    // ✅ Basic validation (optional)
-    if (
-      !formData.customerName ||
-      !formData.email ||
-      !formData.phoneNumber ||
-      !formData.password
-    ) {
-      showAlert("Please fill in all required fields.", "error");
-      setLoading(false); // stop spinner if validation fails
+    if (!validateForm()) {
+      showAlert("Please fix the validation errors.", "error");
       return;
     }
+
+    setLoading(true);
+
+    // // ✅ Basic validation (optional)
+    // if (
+    //   !formData.customerName ||
+    //   !formData.email ||
+    //   !formData.phoneNumber ||
+    //   !formData.password
+    // ) {
+    //   showAlert("Please fill in all required fields.", "error");
+    //   setLoading(false); // stop spinner if validation fails
+    //   return;
+    // }
 
     // ✅ Construct payload
     const payload = {
@@ -104,11 +179,11 @@ const CreateCustomer = () => {
         showAlert("Failed to create customer. Please try again.", "error");
       }
     } catch (err) {
-      console.error(
-        "❌ Error creating customer:",
-        err.response?.data || err.message
-      );
-      showAlert("Server error. Please try again.", "error");
+      const message =
+        err.response?.data?.error ||
+        err.response?.data?.message ||
+        "Server error. Please try again.";
+      showAlert(message, "info");
     } finally {
       // ✅ Always stop spinner no matter what
       setLoading(false);
@@ -117,11 +192,11 @@ const CreateCustomer = () => {
 
   return (
     <div>
-      <Navbar heading="Customer Management" />
+      <Navbar heading="Gestion des clients" />
 
       {/* discard button */}
       <div className="flex justify-between mt-5 mx-10">
-        <h1 className="font-medium text-lg">Add New Customer</h1>
+        <h1 className="font-medium text-lg">Ajouter un nouveau client</h1>
         <button
           onClick={() => navigate("/user/Customers")}
           className="px-3 py-1 border border-red-700 text-red-700 bg-red-50 rounded-md hover:bg-gray-100"
@@ -141,11 +216,11 @@ const CreateCustomer = () => {
       >
         {/* Basic Information */}
         <section className="border border-gray-400 rounded-lg p-6 space-y-6">
-          <h2 className="text-lg font-semibold">Basic Information</h2>
+          <h2 className="text-lg font-semibold">Informations de base</h2>
 
           {/* Status toggle */}
           <div className="flex items-center gap-4">
-            <span className="text-sm font-medium text-gray-600">Status</span>
+            <span className="text-sm font-medium text-gray-600">Statut</span>
             <button
               type="button"
               onClick={() => setStatusActive(!statusActive)}
@@ -165,7 +240,7 @@ const CreateCustomer = () => {
                 statusActive ? "text-green-600" : "text-gray-500"
               }`}
             >
-              {statusActive ? "Actif" : "Inactive"}
+              {statusActive ? "Actif" : "Inactif"}
             </span>
           </div>
 
@@ -176,43 +251,50 @@ const CreateCustomer = () => {
                 htmlFor="customerName"
                 className="block text-sm font-medium mb-1 text-gray-600"
               >
-                Customer Name
+                Nom du client
               </label>
               <input
-                required
                 id="customerName"
                 value={formData.customerName}
                 onChange={handleChange}
-                placeholder="Full name"
+                placeholder="Nom complet"
                 className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 bg-white"
               />
+              {errors.customerName && (
+                <p className="text-xs text-red-500 mt-1">
+                  {errors.customerName}
+                </p>
+              )}
             </div>
+
             <div>
               <label
                 htmlFor="email"
                 className="block text-sm font-medium mb-1 text-gray-600"
               >
-                Email Address
+                E-mail
               </label>
               <input
-                required
                 id="email"
                 type="email"
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="customer@email.com"
+                placeholder="client@email.com"
                 className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 bg-white"
               />
+              {errors.email && (
+                <p className="text-xs text-red-500 mt-1">{errors.email}</p>
+              )}
             </div>
+
             <div>
               <label
                 htmlFor="phone"
                 className="block text-sm font-medium mb-1 text-gray-600"
               >
-                Phone number
+                Numéro de téléphone
               </label>
               <input
-                required
                 id="phoneNumber"
                 type="number"
                 value={formData.phoneNumber}
@@ -220,62 +302,73 @@ const CreateCustomer = () => {
                 placeholder="+122 2131 3212"
                 className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 bg-white"
               />
+              {errors.phoneNumber && (
+                <p className="text-xs text-red-500 mt-1">
+                  {errors.phoneNumber}
+                </p>
+              )}
             </div>
+
             <div>
               <label
                 htmlFor="dob"
                 className="block text-sm font-medium mb-1 text-gray-600"
               >
-                Date of birth
+                Date de naissance
               </label>
               <input
-                required
                 id="dob"
                 type="date"
                 value={formData.dob}
                 onChange={handleChange}
                 placeholder="dd-mm-yyyy"
+                min="1800-01-01" max="3500-12-31"
                 className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 bg-white"
               />
             </div>
+
             <div>
               <label
                 htmlFor="dob"
                 className="block text-sm font-medium mb-1 text-gray-600"
               >
-                Password
+               Mot de passe
               </label>
               <input
-                required
                 id="password"
                 type="password"
                 value={formData.password}
                 onChange={handleChange}
-                placeholder="enter password"
+                placeholder="Saisissez le mot de passe"
                 className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 bg-white"
               />
+              {errors.password && (
+                <p className="text-xs text-red-500 mt-1">{errors.password}</p>
+              )}
             </div>
           </div>
         </section>
 
         {/* Address */}
         <section className="border border-gray-400 rounded-lg p-6 space-y-4">
-          <h3 className="text-md font-semibold">Address</h3>
+          <h3 className="text-md font-semibold">Adresse</h3>
           <div>
             <label
               htmlFor="street"
               className="block text-sm font-medium mb-1 text-gray-600"
             >
-              Street address
+              Adresse de la rue
             </label>
             <input
-              required
               id="street"
               value={formData.street}
               onChange={handleChange}
-              placeholder="Enter street address"
+              placeholder="Saisissez le Adresse de la rue"
               className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 bg-white"
             />
+            {errors.street && (
+              <p className="text-xs text-red-500 mt-1">{errors.street}</p>
+            )}
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
             <div>
@@ -283,59 +376,64 @@ const CreateCustomer = () => {
                 htmlFor="city"
                 className="block text-sm font-medium mb-1 text-gray-600"
               >
-                City
+                Ville
               </label>
               <input
-                required
                 id="city"
                 value={formData.city}
                 onChange={handleChange}
-                placeholder="Enter City"
+                placeholder="Saisissez le Ville"
                 className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 bg-white"
               />
+              {errors.city && (
+                <p className="text-xs text-red-500 mt-1">{errors.city}</p>
+              )}
             </div>
             <div>
               <label
                 htmlFor="state"
                 className="block text-sm font-medium mb-1 text-gray-600"
               >
-                State
+                État
               </label>
               <input
-                required
                 id="state"
                 value={formData.state}
                 onChange={handleChange}
-                placeholder="Enter State"
+                placeholder="Saisissez le État"
                 className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 bg-white"
               />
+              {errors.state && (
+                <p className="text-xs text-red-500 mt-1">{errors.state}</p>
+              )}
             </div>
             <div>
               <label
                 htmlFor="zip"
                 className="block text-sm font-medium mb-1 text-gray-600"
               >
-                Zip Code
+                Code postal
               </label>
               <input
-                required
                 id="zipcode"
                 type="number"
                 value={formData.zipcode}
                 onChange={handleChange}
-                placeholder="Enter zip code"
+                placeholder="Saisissez le Code postal"
                 className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 bg-white"
               />
+              {errors.zipcode && (
+                <p className="text-xs text-red-500 mt-1">{errors.zipcode}</p>
+              )}
             </div>
             <div>
               <label
                 htmlFor="country"
                 className="block text-sm font-medium mb-1 text-gray-600"
               >
-                Country
+                Pays
               </label>
               <select
-                required
                 id="country"
                 value={formData.country}
                 onChange={handleChange}
@@ -346,6 +444,9 @@ const CreateCustomer = () => {
                 <option>Germany</option>
                 <option>USA</option>
               </select>
+              {errors.country && (
+                <p className="text-xs text-red-500 mt-1">{errors.country}</p>
+              )}
             </div>
           </div>
         </section>
@@ -353,29 +454,28 @@ const CreateCustomer = () => {
         {/* Preferences */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <section className="border border-gray-400 rounded-lg p-6 col-span-2 space-y-6">
-            <h3 className="text-md font-semibold">Preferences</h3>
+            <h3 className="text-md font-semibold">Préférences</h3>
             <div>
               <label
                 htmlFor="preferredMethod"
                 className="block text-sm font-medium mb-1 text-gray-600"
               >
-                Preferred Communication Method
+                Méthode de communication préférée
               </label>
               <select
-                required
                 id="communicationMethod"
                 value={communicationMethod}
                 onChange={(e) => setCommunicationMethod(e.target.value)}
                 className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-green-400"
               >
-                <option>email</option>
+                <option>e-mail</option>
                 <option>phone</option>
                 <option>sms</option>
               </select>
             </div>
 
             <fieldset className="text-sm text-gray-700">
-              <h6 className="mb-2 font-medium">Marketing Preferences</h6>
+              <h6 className="mb-2 font-medium">Préférences marketing</h6>
 
               <label className="flex items-center gap-2 mb-2">
                 <input
@@ -384,7 +484,7 @@ const CreateCustomer = () => {
                   onChange={() => handleMarketingChange("offers")}
                   className="form-checkbox rounded border-gray-400"
                 />
-                <span>Receive offers and promotions</span>
+                <span>Recevez des offres et des promotions</span>
               </label>
 
               <label className="flex items-center gap-2">
@@ -394,7 +494,7 @@ const CreateCustomer = () => {
                   onChange={() => handleMarketingChange("newsletter")}
                   className="form-checkbox rounded border-gray-400"
                 />
-                <span>Subscribe to newsletter</span>
+                <span>Abonnez-vous à la newsletter</span>
               </label>
             </fieldset>
           </section>
@@ -411,13 +511,13 @@ const CreateCustomer = () => {
                 alt="Customer"
                 className="w-20 h-20 rounded-full object-cover"
               />
-              <p className="text-sm font-semibold">Customer Name</p>
+              <p className="text-sm font-semibold">New Customer Profile Preview</p>
               <p className="text-xs text-gray-500">email@example.com</p>
             </div>
             <hr className="text-gray-400 mt-4" />
             <div className="mt-4 space-y-2 text-sm">
               <div className="flex justify-between items-center">
-                <span>Status :</span>{" "}
+                <span>Statut :</span>{" "}
                 <span
                   className={`text-xs font-semibold rounded-full px-3 py-1 ${
                     statusActive
@@ -425,18 +525,18 @@ const CreateCustomer = () => {
                       : "bg-gray-200 text-gray-600"
                   }`}
                 >
-                  {statusActive ? "Active" : "Inactive"}
+                  {statusActive ? "Actif" : "Inactif"}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span>Customer ID :</span>{" "}
+                <span>ID client:</span>{" "}
                 <span className="font-mono text-xs">CSOAKFLKSNKJA</span>
               </div>
               <div className="flex justify-between">
-                <span>Total Spend :</span> <span>€ 0</span>
+                <span>Dépenses totales :</span> <span>€ 0</span>
               </div>
               <div className="flex justify-between">
-                <span>Total Orders :</span> <span>0</span>
+                <span>Commandes totales :</span> <span>0</span>
               </div>
             </div>
           </section>

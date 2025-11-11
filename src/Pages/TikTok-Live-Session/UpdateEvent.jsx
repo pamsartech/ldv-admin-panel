@@ -181,7 +181,8 @@ function UpdateEvent() {
       }
     } catch (error) {
       console.error("Error updating event:", error);
-      showAlert("Failed to update event. Please try again.", "error");
+      // showAlert("Failed to update event. Please try again.", "error");
+       showAlert(""+error.response.data.error, "error");
     } finally {
       setLoading(false);
     }
@@ -189,10 +190,10 @@ function UpdateEvent() {
 
   return (
     <div>
-      <Navbar heading="TikTok Live Event Management" />
+      <Navbar heading="Gestion des événements TikTok Live" />
 
       <div className="flex justify-between mt-5 mx-10">
-        <h1 className="font-medium text-lg ">Update Event Details</h1>
+        <h1 className="font-medium text-lg ">Mise à jour des détails de l'événement</h1>
         <button
           onClick={() => navigate("/user/tiktok")}
           className="mr-20 px-3 py-1 border border-red-700 text-red-700 bg-red-50 rounded-md hover:bg-gray-100"
@@ -210,12 +211,12 @@ function UpdateEvent() {
         <form onSubmit={handleUpdate}>
           {/* Event Details */}
           <section className="border border-gray-400 rounded-2xl p-6 space-y-6">
-            <h2 className="text-xl font-semibold">Event Details</h2>
+            <h2 className="text-xl font-semibold">Détails de l'événement</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Event Name */}
               <div>
                 <label className="block text-sm font-medium mb-1">
-                  Event Name*
+                  Nom de l’événement*
                 </label>
                 <input
                   type="text"
@@ -230,7 +231,7 @@ function UpdateEvent() {
               {/* Event Description */}
               <div>
                 <label className="block text-sm font-medium mb-1">
-                  Event Description*
+                  Description de l'événemen*
                 </label>
                 <input
                   type="text"
@@ -245,7 +246,7 @@ function UpdateEvent() {
               {/* Session ID */}
               <div>
                 <label className="block text-sm font-medium mb-1">
-                  Session ID*
+                  ID de session*
                 </label>
                 <input
                   type="text"
@@ -260,7 +261,7 @@ function UpdateEvent() {
               {/* Status */}
               <div>
                 <label className="block text-sm font-medium mb-1">
-                  Status*
+                  Statut*
                 </label>
                 <select
                   name="status"
@@ -279,7 +280,7 @@ function UpdateEvent() {
               {/* Start Date & Time */}
               <div>
                 <label className="block text-sm font-medium mb-1">
-                  Start Date & Time*
+                  Début Date et Temps*
                 </label>
                 <input
                   type="datetime-local"
@@ -294,7 +295,7 @@ function UpdateEvent() {
               {/* End Date & Time */}
               <div>
                 <label className="block text-sm font-medium mb-1">
-                  End Date & Time*
+                  Fin Date et Temps*
                 </label>
                 <input
                   type="datetime-local"
@@ -333,7 +334,7 @@ function UpdateEvent() {
               {/* Event Category */}
               <div>
                 <label className="block text-sm font-medium mb-1">
-                  Event Category*
+                  Catégorie d'événement*
                 </label>
                 <select
                   name="eventCategory"
@@ -342,7 +343,7 @@ function UpdateEvent() {
                   className="w-full border border-gray-400 rounded-md px-3 py-2"
                   required
                 >
-                  <option value="">Select a category</option>
+                  <option value="">Sélectionnez une catégorie</option>
                   <option value="Fashion">Fashion</option>
                   <option value="Beauty">Beauty</option>
                   <option value="Other">Other</option>
@@ -434,12 +435,12 @@ function UpdateEvent() {
 
           {/* Host Information */}
           <section className="border border-gray-400 rounded-2xl p-6 mt-10 space-y-4">
-            <h2 className="text-xl font-semibold">Host Information</h2>
+            <h2 className="text-xl font-semibold">Informations sur l'hôte</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Host Name */}
               <div>
                 <label className="block text-sm font-medium mb-1">
-                  Host Name*
+                  Nom d'hôte*
                 </label>
                 <input
                   type="text"
@@ -454,7 +455,7 @@ function UpdateEvent() {
               {/* Host Email */}
               <div>
                 <label className="block text-sm font-medium mb-1">
-                  Email Address*
+                  Adresse email*
                 </label>
                 <input
                   type="email"
@@ -469,7 +470,7 @@ function UpdateEvent() {
               {/* Host Phone Number */}
               <div>
                 <label className="block text-sm font-medium mb-1">
-                  Phone Number
+                  Numéro de téléphone*
                 </label>
                 <input
                   type="text"

@@ -59,7 +59,7 @@ const ViewProduct = () => {
   }, [productId]);
 
   // 🧩 Delete product logic
- 
+
   const handleDelete = async () => {
     try {
       setIsDeleting(true);
@@ -85,7 +85,7 @@ const ViewProduct = () => {
   if (loading)
     return (
       <div>
-        <Navbar heading="Product Management" />
+        <Navbar heading="Gestion de produits" />
         <div className="max-w-5xl mx-auto mt-10 bg-white rounded-lg shadow-sm p-6">
           <Stack spacing={3}>
             <Skeleton variant="text" width={200} height={35} animation="wave" />
@@ -105,15 +105,15 @@ const ViewProduct = () => {
 
   return (
     <div>
-      <Navbar heading="Product Management" />
+      <Navbar heading="Gestion de produits" />
 
       {/* Top controls */}
       <div className="flex justify-between mt-5 mx-10">
-        <h1 className="font-medium text-lg">Product details</h1>
+        <h1 className="font-medium text-lg">Détails du produit</h1>
 
         <div>
           {/* 🔹 Delete Button triggers confirmation dialog */}
-       
+
           <button
             onClick={() => setOpenConfirm(true)}
             disabled={isDeleting}
@@ -126,8 +126,6 @@ const ViewProduct = () => {
             <FontAwesomeIcon icon={faTrashCan} className="px-2" />
             {isDeleting ? "Deleting..." : "Delete product"}
           </button>
-        
-
 
           <button
             onClick={() => navigate(`/user/update-product/${product._id}`)}
@@ -152,7 +150,7 @@ const ViewProduct = () => {
         <div className="rounded-2xl border border-gray-300 bg-[#fdfcf9] p-6 md:p-8 flex flex-col md:flex-row gap-10">
           {/* Left column */}
           <div className="flex-1 min-w-[300px]">
-            <h2 className="text-lg font-semibold mb-1">Product name</h2>
+            <h2 className="text-lg font-semibold mb-1">Nom du produit</h2>
             <h1 className="text-xl font-medium mt-5 mb-5">
               {product.productName}
             </h1>
@@ -193,7 +191,7 @@ const ViewProduct = () => {
           <div className="w-full md:max-w-[340px] flex flex-col gap-6">
             {/* Gender */}
             <div>
-              <span className="block text-sm font-semibold mb-2">Gender</span>
+              <span className="block text-sm font-semibold mb-2">Genre</span>
               <div className="flex gap-3">
                 <button className="bg-[#7252b1] text-white font-medium px-4 py-1.5 rounded-lg shadow">
                   {product.gender}
@@ -227,125 +225,139 @@ const ViewProduct = () => {
             </div> */}
 
             {/* Color */}
-               {/* Color */}
-<div className="mt-3">
-  <span className="text-sm font-semibold mb-2">Color:</span>
-  <div className="mt-2 flex flex-wrap gap-4">
-    {(() => {
-      // Try to extract tokens from many possible shapes sent by backend.
-      const extractTokens = (item) => {
-        if (item == null) return [];
-        if (typeof item === "object") {
-          // common object shapes: { hex: "#fff" } or { color: "red" } or { value: "#fff" }
-          const val =
-            item.hex || item.color || item.value || item.colour || "";
-          return typeof val === "string" ? val.split(/[,;|/]+/) : [];
-        }
-        if (typeof item === "string") {
-          // split comma/pipe/semicolon/slash separated strings
-          return item.split(/[,;|/]+/);
-        }
-        return [];
-      };
+            {/* Color */}
+            <div className="mt-3">
+              <span className="text-sm font-semibold mb-2">Couleur</span>
+              <div className="mt-2 flex flex-wrap gap-4">
+                {(() => {
+                  // Try to extract tokens from many possible shapes sent by backend.
+                  const extractTokens = (item) => {
+                    if (item == null) return [];
+                    if (typeof item === "object") {
+                      // common object shapes: { hex: "#fff" } or { color: "red" } or { value: "#fff" }
+                      const val =
+                        item.hex ||
+                        item.color ||
+                        item.value ||
+                        item.colour ||
+                        "";
+                      return typeof val === "string"
+                        ? val.split(/[,;|/]+/)
+                        : [];
+                    }
+                    if (typeof item === "string") {
+                      // split comma/pipe/semicolon/slash separated strings
+                      return item.split(/[,;|/]+/);
+                    }
+                    return [];
+                  };
 
-      // sanitize token: remove extra hashes/spaces and normalize hex if needed
-      const sanitizeToken = (t) => {
-        if (!t) return "";
-        let s = String(t).trim();
+                  // sanitize token: remove extra hashes/spaces and normalize hex if needed
+                  const sanitizeToken = (t) => {
+                    if (!t) return "";
+                    let s = String(t).trim();
 
-        // remove stray quotes
-        if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) {
-          s = s.slice(1, -1).trim();
-        }
+                    // remove stray quotes
+                    if (
+                      (s.startsWith('"') && s.endsWith('"')) ||
+                      (s.startsWith("'") && s.endsWith("'"))
+                    ) {
+                      s = s.slice(1, -1).trim();
+                    }
 
-        // collapse multiple leading # -> single
-        s = s.replace(/^#+/, "#");
+                    // collapse multiple leading # -> single
+                    s = s.replace(/^#+/, "#");
 
-        // if looks like hex without # (e.g. "ffffff" or "FFF"), add #
-        if (/^[0-9a-fA-F]{3}$/.test(s)) return `#${s}`;
-        if (/^[0-9a-fA-F]{6}$/.test(s)) return `#${s}`;
-        if (/^[0-9a-fA-F]{8}$/.test(s)) return `#${s}`; // include alpha hex if sent
+                    // if looks like hex without # (e.g. "ffffff" or "FFF"), add #
+                    if (/^[0-9a-fA-F]{3}$/.test(s)) return `#${s}`;
+                    if (/^[0-9a-fA-F]{6}$/.test(s)) return `#${s}`;
+                    if (/^[0-9a-fA-F]{8}$/.test(s)) return `#${s}`; // include alpha hex if sent
 
-        // if it's like "#fff" or "#ffffff" keep as-is
-        if (/^#[0-9a-fA-F]{3}$/.test(s)) return s;
-        if (/^#[0-9a-fA-F]{6}$/.test(s)) return s;
-        if (/^#[0-9a-fA-F]{8}$/.test(s)) return s;
+                    // if it's like "#fff" or "#ffffff" keep as-is
+                    if (/^#[0-9a-fA-F]{3}$/.test(s)) return s;
+                    if (/^#[0-9a-fA-F]{6}$/.test(s)) return s;
+                    if (/^#[0-9a-fA-F]{8}$/.test(s)) return s;
 
-        // rgb/rgba or hsl/hsla or color names — keep as-is (trimmed)
-        return s;
-      };
+                    // rgb/rgba or hsl/hsla or color names — keep as-is (trimmed)
+                    return s;
+                  };
 
-      // validate using browser CSS parser
-      const isValidCssColor = (color) => {
-        if (!color || typeof color !== "string") return false;
-        try {
-          const test = new Option().style;
-          test.color = "";
-          test.color = color;
-          return test.color !== "";
-        } catch (e) {
-          return false;
-        }
-      };
+                  // validate using browser CSS parser
+                  const isValidCssColor = (color) => {
+                    if (!color || typeof color !== "string") return false;
+                    try {
+                      const test = new Option().style;
+                      test.color = "";
+                      test.color = color;
+                      return test.color !== "";
+                    } catch (e) {
+                      return false;
+                    }
+                  };
 
-      // normalize product.color into a list of candidate tokens
-      let rawCandidates = [];
-      if (Array.isArray(product.color)) {
-        product.color.forEach((it) => {
-          rawCandidates.push(...extractTokens(it));
-        });
-      } else {
-        rawCandidates.push(...extractTokens(product.color));
-      }
+                  // normalize product.color into a list of candidate tokens
+                  let rawCandidates = [];
+                  if (Array.isArray(product.color)) {
+                    product.color.forEach((it) => {
+                      rawCandidates.push(...extractTokens(it));
+                    });
+                  } else {
+                    rawCandidates.push(...extractTokens(product.color));
+                  }
 
-      // sanitize, validate and dedupe
-      const seen = new Set();
-      const validColors = rawCandidates
-        .map((t) => sanitizeToken(t))
-        .map((t) => (t === "#" ? "" : t)) // guard against lone '#'
-        .filter((t) => t && isValidCssColor(t))
-        .map((t) => {
-          // normalize hex to lowercase for display uniqueness, keep rgb/hsl names as-is
-          if (/^#/.test(t)) return t.toLowerCase();
-          return t;
-        })
-        .filter((t) => {
-          if (seen.has(t)) return false;
-          seen.add(t);
-          return true;
-        });
+                  // sanitize, validate and dedupe
+                  const seen = new Set();
+                  const validColors = rawCandidates
+                    .map((t) => sanitizeToken(t))
+                    .map((t) => (t === "#" ? "" : t)) // guard against lone '#'
+                    .filter((t) => t && isValidCssColor(t))
+                    .map((t) => {
+                      // normalize hex to lowercase for display uniqueness, keep rgb/hsl names as-is
+                      if (/^#/.test(t)) return t.toLowerCase();
+                      return t;
+                    })
+                    .filter((t) => {
+                      if (seen.has(t)) return false;
+                      seen.add(t);
+                      return true;
+                    });
 
-      // fallback: if backend sometimes sends a single scalar non-string (number) — coerce
-      if (validColors.length === 0 && product.color && typeof product.color !== "string" && !Array.isArray(product.color)) {
-        const coerced = String(product.color).trim();
-        const s = sanitizeToken(coerced);
-        if (s && isValidCssColor(s)) validColors.push(s);
-      }
+                  // fallback: if backend sometimes sends a single scalar non-string (number) — coerce
+                  if (
+                    validColors.length === 0 &&
+                    product.color &&
+                    typeof product.color !== "string" &&
+                    !Array.isArray(product.color)
+                  ) {
+                    const coerced = String(product.color).trim();
+                    const s = sanitizeToken(coerced);
+                    if (s && isValidCssColor(s)) validColors.push(s);
+                  }
 
-      // Render
-      return validColors.length > 0 ? (
-        validColors.map((c, i) => (
-          <div key={i} className="flex flex-col items-center">
-            <span
-              className="w-6 h-6 rounded-full border border-gray-300 cursor-pointer"
-              style={{ backgroundColor: c }}
-              title={c}
-            />
-            <span className="text-xs text-gray-600 mt-1">{c}</span>
-          </div>
-        ))
-      ) : (
-        <p className="text-gray-500 text-sm">No valid colors available</p>
-      );
-    })()}
-  </div>
-</div>
-
-
+                  // Render
+                  return validColors.length > 0 ? (
+                    validColors.map((c, i) => (
+                      <div key={i} className="flex flex-col items-center">
+                        <span
+                          className="w-6 h-6 rounded-full border border-gray-300 cursor-pointer"
+                          style={{ backgroundColor: c }}
+                          title={c}
+                        />
+                        <span className="text-xs text-gray-600 mt-1">{c}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-gray-500 text-sm">
+                      No valid colors available
+                    </p>
+                  );
+                })()}
+              </div>
+            </div>
 
             {/* Size */}
             <div>
-              <span className="block text-sm font-semibold mb-2">Size</span>
+              <span className="block text-sm font-semibold mb-2">Taille</span>
               <div className="flex gap-3">
                 <button className="bg-[#7252b1] text-white text-base rounded-lg px-4 py-1.5 shadow font-medium">
                   {product.size}
@@ -359,24 +371,32 @@ const ViewProduct = () => {
             <div className="space-y-3 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-600 font-semibold">
-                  Product Code
+                 Code produit
                 </span>
                 <span>{product.productCode}</span>
               </div>
+
+              <div className="flex justify-between">
+                <span className="text-gray-600 font-semibold">
+                  ID de session TikTok
+                </span>
+                <span>{product.tiktok_session_id || "N/A"} </span>
+              </div>
+
               <div className="flex justify-between">
                 <span className="text-gray-600 font-semibold">Stock</span>
-                <span>{product.stock}</span>
+                <span>{product.stock }</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600 font-semibold">Price</span>
+                <span className="text-gray-600 font-semibold">Prix</span>
                 <span className="font-bold">€ {product.price}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600 font-semibold">Category</span>
+                <span className="text-gray-600 font-semibold">Catégorie</span>
                 <span>{product.category}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600 font-semibold">Status</span>
+                <span className="text-gray-600 font-semibold">Statut</span>
                 <span
                   className={`px-3 py-1 rounded-full text-xs font-medium ${
                     statusColors[
@@ -410,8 +430,8 @@ const ViewProduct = () => {
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="confirm-delete-description">
-            Are you sure you want to permanently delete this product? This action
-            cannot be undone.
+            Are you sure you want to permanently delete this product? This
+            action cannot be undone.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -433,4 +453,3 @@ const ViewProduct = () => {
 };
 
 export default ViewProduct;
-

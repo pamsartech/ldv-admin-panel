@@ -58,6 +58,7 @@ export default function UpdatePayment() {
         notes: prefillData.notes || "",
       });
       setLoading(false);
+
     } else {
       // ✅ Fetch payment details if page is refreshed
       const fetchPayment = async () => {
@@ -160,10 +161,10 @@ export default function UpdatePayment() {
 
   return (
     <div>
-      <Navbar heading="Payment Management" />
+      <Navbar heading="Gestion des paiements" />
 
       <div className="flex justify-between mt-5 mx-10">
-        <h1 className="font-medium text-lg">Update Payment Details</h1>
+        <h1 className="font-medium text-lg">Updating payment information</h1>
         <button
           onClick={() => navigate("/user/Payments")}
           className="px-3 py-1 border rounded-md text-white bg-[#02B978] hover:bg-[#04D18C]"
@@ -180,11 +181,11 @@ export default function UpdatePayment() {
       <form className="p-6 max-w-5xl mx-5 space-y-6" onSubmit={handleUpdate}>
         {/* Customer Details */}
         <div className="border border-gray-400 rounded-2xl p-6">
-          <h2 className="text-lg font-medium mb-4">Customer Details</h2>
+          <h2 className="text-lg font-medium mb-4">Détails du client</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <InputField
               readOnly
-              label="Customer Name"
+              label="Nom du client"
               id="customerName"
               value={paymentData.customerName}
               onChange={handleChange}
@@ -192,14 +193,14 @@ export default function UpdatePayment() {
             />
             <InputField
             readOnly
-              label="Customer ID"
+              label="ID client"
               id="customerId"
               value={paymentData.customerId}
               onChange={handleChange}
             />
             <InputField
             readOnly
-              label="Email"
+              label="E-mail"
               id="email"
               type="email"
               value={paymentData.email}
@@ -207,7 +208,7 @@ export default function UpdatePayment() {
             />
             <InputField
             readOnly
-              label="Phone"
+              label="Téléphone"
               id="phone"
               value={paymentData.phone}
               onChange={handleChange}
@@ -217,25 +218,25 @@ export default function UpdatePayment() {
 
         {/* Order Details */}
         <div className="border border-gray-400 rounded-2xl p-6">
-          <h2 className="text-lg font-medium mb-4">Order Details</h2>
+          <h2 className="text-lg font-medium mb-4">Détails de la commande</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <InputField
             readOnly
-              label="Order ID"
+              label="ID de commande"
               id="orderId"
               value={paymentData.orderId}
               onChange={handleChange}
             />
             <InputField
             readOnly
-              label="Transaction ID"
+              label="ID de transaction"
               id="transactionId"
               value={paymentData.transactionId}
               onChange={handleChange}
             />
             <InputField
             readOnly
-              label="Amount"
+              label="Montant"
               id="amount"
               type="number"
               min="0"
@@ -245,30 +246,38 @@ export default function UpdatePayment() {
             />
 
             <SelectField
-              label="Payment Method"
+              label="Mode de paiement"
               id="paymentMethod"
               value={paymentData.paymentMethod}
               onChange={handleChange}
               options={["Stripe", "PayPal"]}
             />
             <SelectField
-              label="Payment Status"
+              label="Statut du paiement"
               id="paymentStatus"
               value={paymentData.paymentStatus}
               onChange={handleChange}
               options={["Pending", "Paid", "Failed"]}
             />
-            <SelectField
-              readOnly
+            {/* <SelectField
+             disabled
               label="Delivery Status"
               id="deliveryStatus"
               value={paymentData.deliveryStatus}
               onChange={handleChange}
               options={["Processing", "Shipped", "Delivered", "Cancelled"]}
+            /> */}
+            <InputField
+            readOnly
+              label="Statut de livraison"
+              id="deliveryStatus"
+              type="textl"
+              value={paymentData.deliveryStatus}
+              options={["Processing", "Shipped", "Delivered", "Cancelled"]}
             />
             <InputField
             readOnly
-              label="Time & Date"
+              label="Date et Temps"
               id="dateTime"
               type="datetime-local"
               value={paymentData.dateTime}
@@ -288,10 +297,10 @@ export default function UpdatePayment() {
 
         {/* Status Summary */}
         <div className="border border-gray-400 lg:w-1/2 rounded-2xl p-6">
-          <h2 className="text-lg font-medium mb-4">Status Summary</h2>
+          <h2 className="text-lg font-medium mb-4">Statut Résumé</h2>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-sm mb-2 font-medium">Payment Status</p>
+              <p className="text-sm mb-2 font-medium">Statut du paiement</p>
               <span
                 className={`px-3 py-1 mt-4 text-xs rounded-full border ${getStatusClass(
                   paymentData.paymentStatus,
@@ -303,7 +312,7 @@ export default function UpdatePayment() {
               </span>
             </div>
             <div>
-              <p className="text-sm mb-2 font-medium">Shipping Status</p>
+              <p className="text-sm mb-2 font-medium">Statut de livraison</p>
               <span
                 className={`px-3 py-1 text-xs rounded-full border ${getStatusClass(
                   paymentData.deliveryStatus,

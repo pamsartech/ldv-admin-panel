@@ -595,8 +595,8 @@ export default function ViewOrder() {
 
                       {orderStatus?.toLowerCase() === "delivered" && (
                         <div className="mt-2 p-3 border border-green-400 bg-green-50 rounded-md text-xs text-green-700">
-                          <p>Order successfully delivered to customer 🎉</p>
-                          <p>Thank you for shopping with us!</p>
+                          <p>La commande a été livrée avec succès au client. 🎉</p>
+                          <p>Merci d'avoir fait vos achats chez nous !</p>
                         </div>
                       )}
                     </div>

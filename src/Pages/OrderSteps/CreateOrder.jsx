@@ -102,8 +102,7 @@ const CreateOrder = () => {
     // Validate order items
     orderItems.forEach((item, idx) => {
       if (!item.productName.trim())
-        newErrors[`product_${idx}`] = `Product code is required for item ${idx + 1
-          }`;
+        newErrors[`product_${idx}`] = `Product code is required`;
       if (item.price <= 0)
         newErrors[`price_${idx}`] = `Price must be greater than 0 for item ${idx + 1
           }`;
@@ -501,11 +500,11 @@ const CreateOrder = () => {
 
   return (
     <div>
-      <Navbar heading="Order Management" />
+      <Navbar heading="Gestion des commandes" />
 
       {/* discard button */}
       <div className="flex justify-between mt-5 mx-10">
-        <h1 className="font-medium text-lg">Order Creation</h1>
+        <h1 className="font-medium text-lg">Création de commande</h1>
         <button
           onClick={() => navigate("/user/Orders")}
           className="px-3 py-1 border border-red-700 text-red-700 bg-red-50 rounded-md hover:bg-gray-100"
@@ -526,16 +525,16 @@ const CreateOrder = () => {
       >
         {/* Create New Order */}
         <section className="border border-gray-400 rounded-lg p-6 space-y-6">
-          <h2 className="text-lg font-semibold pb-3">Create New Order</h2>
+          <h2 className="text-lg font-semibold pb-3">Créer une nouvelle commande</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div>
               <label className="block mb-1 text-sm font-medium">
-                Customer Name
+                Nom du client
               </label>
               <input
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
-                placeholder="Full name"
+                placeholder="Nom complet"
                 className="w-full rounded-lg border px-3 py-2 text-sm"
               />
               {errors.customerName && (
@@ -543,7 +542,7 @@ const CreateOrder = () => {
               )}
             </div>
             <div>
-              <label className="block mb-1 text-sm font-medium">Email</label>
+              <label className="block mb-1 text-sm font-medium">E-mail</label>
               <input
                 value={email}
                 // onChange={(e) => setEmail(e.target.value)}
@@ -555,7 +554,7 @@ const CreateOrder = () => {
                 // onBlur={() => fetchUserByEmail(email)}
                 onBlur={(e) => fetchUserByEmail(e.target.value)}
                 type="email"
-                placeholder="customer@email.com"
+                placeholder="client@email.com"
                 className="w-full rounded-lg border px-3 py-2 text-sm"
               />
               {errors.email && (
@@ -564,7 +563,7 @@ const CreateOrder = () => {
             </div>
             <div>
               <label className="block mb-1 text-sm font-medium">
-                phoneNumber
+                Numéro de téléphone
               </label>
               <input
                 value={phoneNumber}
@@ -579,12 +578,12 @@ const CreateOrder = () => {
             </div>
             <div>
               <label className="block mb-1 text-sm font-medium">
-                Shipping address
+                Adresse de livraison
               </label>
               <input
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
-                placeholder="123, main city, state"
+                placeholder="123, ville principale, état"
                 className="w-full rounded-lg border px-3 py-2 text-sm"
               />
               {errors.address && (
@@ -597,13 +596,13 @@ const CreateOrder = () => {
         {/* Order Items */}
         <section className="border border-gray-400 rounded-lg p-6 overflow-x-auto">
           <div className="flex justify-between items-center pb-3 mb-4">
-            <h2 className="text-lg font-semibold">Order Items</h2>
+            <h2 className="text-lg font-semibold">Articles commandés</h2>
             <button
               onClick={addProduct}
               className="flex items-center gap-2 bg-green-600 text-white text-[12px] px-3 py-2 rounded-lg hover:bg-green-700"
               type="button"
             >
-              <FontAwesomeIcon icon={faPlus} /> Add product
+              <FontAwesomeIcon icon={faPlus} /> Ajouter un produit 
             </button>
           </div>
 
@@ -615,7 +614,7 @@ const CreateOrder = () => {
               {/* product code */}
               <div className="md:col-span-2">
                 <label className="block mb-1 text-sm font-medium">
-                  Product Code
+                  Code produit
                 </label>
                 <input
                   value={item.productCode}
@@ -626,7 +625,7 @@ const CreateOrder = () => {
                     setOrderItems(newItems);
                   }}
                   onBlur={() => fetchProductByCode(idx, item.productCode)}
-                  placeholder="enter product code"
+                  placeholder="Saisissez le code produit"
                   className="w-full text-sm  rounded-xl border px-2 py-2"
                 />
                 {errors.address && (
@@ -656,7 +655,7 @@ const CreateOrder = () => {
               {/* product name */}
               <div className="md:col-span-2">
                 <label className="block mb-1 text-sm font-medium">
-                  Product Name
+                  Nom du produit
                 </label>
                 <input
                   readOnly
@@ -668,20 +667,18 @@ const CreateOrder = () => {
                     setOrderItems(newItems);
                   }}
                   onBlur={() => fetchProductByCode(idx, item.productName)}
-                  placeholder=" product name"
+                  placeholder="Nom du produit"
                   className="w-full text-sm  rounded-xl border px-2 py-2"
                 />
-                {errors.address && (
-                  <p className="text-red-500 text-sm">
-                    {errors[`product_${idx}`]}
-                  </p>
-                )}
+               {errors.productName && (
+                <p className="text-red-500 text-sm">{errors.productName}</p>
+              )}
               </div>
 
               {/* Color Section */}
               {/* Color Section */}
               <div className="md:col-span-2">
-                <label className="block mb-1 text-sm font-medium">Color</label>
+                <label className="block mb-1 text-sm font-medium">Couleur</label>
 
                 {Array.isArray(item.availableColors) &&
                   item.availableColors.length > 0 ? (
@@ -756,7 +753,7 @@ const CreateOrder = () => {
                     onChange={(e) => handleColorSelect(idx, e.target.value)}
                     className="w-full text-sm border rounded-lg px-2 py-2"
                   >
-                    <option value="">Select color</option>
+                    <option value="">Sélectionnez une couleur</option>
                     <option value="White">White</option>
                     <option value="Red">Red</option>
                     <option value="Black">Black</option>
@@ -768,7 +765,7 @@ const CreateOrder = () => {
               {/* Size Section */}
               {/* Size Section */}
               <div className="md:col-span-2">
-                <label className="block mb-1 text-sm font-medium">Size</label>
+                <label className="block mb-1 text-sm font-medium">Taille</label>
 
                 {Array.isArray(item.availableSizes) &&
                   item.availableSizes.length > 0 ? (
@@ -819,7 +816,7 @@ const CreateOrder = () => {
               {/* Quantity dropdown */}
               <div className=" text-center">
                 <label className="block mb-1 text-start text-sm font-medium">
-                  Quantity
+                  Quantité
                 </label>
                 <select
                   value={item.quantity}
@@ -885,14 +882,14 @@ const CreateOrder = () => {
         <section className="border border-gray-400 rounded-lg p-6 grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div>
             <label className="block mb-1 text-sm font-medium">
-              Payment Method
+              Mode de paiement
             </label>
             <select
               value={paymentMethod}
               onChange={(e) => setPaymentMethod(e.target.value)}
               className="w-full rounded-lg border px-3 py-2 text-sm"
             >
-              <option value="">Select Payment method</option>
+              <option value="">Sélectionnez mode de paiement</option>
               <option>Stripe</option>
               <option>Paypal</option>
             </select>
@@ -902,14 +899,14 @@ const CreateOrder = () => {
           </div>
           <div>
             <label className="block mb-1 text-sm font-medium">
-              Payment Status
+              Statut du paiement
             </label>
             <select
               value={paymentStatus}
               onChange={(e) => setPaymentStatus(e.target.value)}
               className="w-full rounded-lg border px-3 py-2 text-sm"
             >
-              <option value="">Select payment status</option>
+              <option value="">Sélectionnez statut du paiement</option>
               <option>Paid</option>
               <option>Pending</option>
               <option>Failed</option>
@@ -924,14 +921,14 @@ const CreateOrder = () => {
         <section className="border border-gray-400 rounded-lg p-6 grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div>
             <label className="block mb-1 text-sm font-medium">
-              Shipping Method
+              Statut de livraison
             </label>
             <select
               value={shippingMethod}
               onChange={(e) => setShippingMethod(e.target.value)}
               className="w-full rounded-lg border px-3 py-2 text-sm"
             >
-              <option value="">Select Shipping method</option>
+              <option value="">Sélectionnez mode de livraison</option>
               <option>Flat Rate</option>
               <option>Express</option>
               <option>Local Pickup</option>
@@ -942,7 +939,7 @@ const CreateOrder = () => {
           </div>
           <div>
             <label className="block mb-1 text-sm font-medium">
-              Shipping Status
+              Statut de livraison
             </label>
 
             <select
@@ -950,7 +947,7 @@ const CreateOrder = () => {
               onChange={(e) => setShippingStatus(e.target.value)}
               className="w-full rounded-lg border px-3 py-2 text-sm"
             >
-              <option value="">Select shipping status</option>
+              <option value="">Sélectionnez statut de la livraison</option>
               <option value="Pending">Pending</option>
               <option value="Processing">Processing</option>
               <option value="Shipped" disabled={paymentStatus !== "Paid"}>

@@ -159,11 +159,11 @@ const ViewCustomer = () => {
 
   return (
     <div>
-      <Navbar heading="Customer Management" />
+      <Navbar heading="Gestion des clients " />
 
       {/* Header Buttons */}
       <div className="flex justify-between mt-5 mx-10">
-        <h1 className="font-medium text-lg">Customer Profile</h1>
+        <h1 className="font-medium text-lg">Profil client</h1>
         <div>
           {loading ? (
             <Skeleton variant="rectangular" width={200} height={36} animation="wave" />
@@ -210,23 +210,23 @@ const ViewCustomer = () => {
 
                 <div className="w-full space-y-2 text-sm">
                   <div className="flex py-2 justify-between">
-                    <span>Status :</span>
+                    <span>Statut :</span>
                     <StatusBadge status={customer.status} />
                   </div>
                   <div className="flex justify-between">
-                    <span>Customer ID :</span>
+                    <span>ID client :</span>
                     <span className="font-mono">{customer.customerID}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Total Spend :</span>
+                    <span>Dépenses totales :</span>
                     <span>€ {customer.totalSpend}</span>
                   </div>
                   <div className="flex py-2 justify-between">
-                    <span>Total Orders :</span>
+                    <span>Commandes totales :</span>
                     <span>{customer.totalOrders}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Phone :</span>
+                    <span>Numéro de téléphone :</span>
                     <span>{customer.phone}</span>
                   </div>
                 </div>
@@ -235,11 +235,11 @@ const ViewCustomer = () => {
 
             {/* Preferences & Info */}
             <div className="border border-gray-400 rounded-2xl p-6">
-              <h3 className="font-medium mb-4">Preferences & Info</h3>
-              <ToggleSwitch label="Email Marketing :" checked={customer.preferences?.emailMarketing} onChange={() => {}} />
-              <ToggleSwitch label="SMS Marketing :" checked={customer.preferences?.smsMarketing} onChange={() => {}} />
+              <h3 className="font-medium mb-4">Préférences et informations</h3>
+              <ToggleSwitch label="Marketing par e-mail :" checked={customer.preferences?.emailMarketing} onChange={() => {}} />
+              <ToggleSwitch label="Marketing par SMS :" checked={customer.preferences?.smsMarketing} onChange={() => {}} />
               <div className="flex justify-between text-sm mb-1">
-                <span>Date Joined :</span>
+                <span>Date d'inscription :</span>
                 <span>{new Date(customer.dateJoined).toLocaleDateString()}</span>
               </div>
               <div className="flex py-2 justify-between text-sm mb-4">
@@ -247,10 +247,10 @@ const ViewCustomer = () => {
                 <span>{new Date(customer.lastLogin).toLocaleString()}</span>
               </div>
 
-              <h4 className="font-medium mb-2">Quick Actions</h4>
+              <h4 className="font-medium mb-2">Actions rapides</h4>
               <div className="space-y-3 mt-3">
                 <ActionButton onClick={() => alert("Add address clicked")}>
-                  <FontAwesomeIcon icon={faLocationDot} /> Add address
+                  <FontAwesomeIcon icon={faLocationDot} />Ajouter une adresse
                 </ActionButton>
                 <ActionButton onClick={() => alert("Send Email clicked")}>
                   <FontAwesomeIcon icon={faEnvelope} /> Send Email
@@ -265,7 +265,7 @@ const ViewCustomer = () => {
 
         {/* Orders Section */}
         <div className="border border-gray-400 rounded-2xl p-6 mx-4 lg:w-5xl">
-          <h3 className="font-medium mb-4">Orders made by customer</h3>
+          <h3 className="font-medium mb-4">Commandes passées par le client</h3>
           {loading ? (
             <div className="space-y-2">
               {[...Array(4)].map((_, idx) => (
@@ -279,10 +279,10 @@ const ViewCustomer = () => {
               <table className="min-w-full text-left text-sm">
                 <thead>
                   <tr>
-                    <th className="py-2 px-3 font-medium">Product Name</th>
-                    <th className="py-2 px-3 font-medium">Payment Status</th>
-                    <th className="py-2 px-3 font-medium">Delivery Status</th>
-                    <th className="py-2 px-3 font-medium">Price</th>
+                    <th className="py-2 px-3 font-medium">Nom du produit</th>
+                    <th className="py-2 px-3 font-medium">Statut du paiement</th>
+                    <th className="py-2 px-3 font-medium">Statut de livraison</th>
+                    <th className="py-2 px-3 font-medium">Prix</th>
                     <th className="py-2 px-3 font-medium">Action</th>
                   </tr>
                 </thead>
