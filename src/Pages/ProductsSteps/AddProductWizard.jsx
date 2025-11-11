@@ -19,7 +19,7 @@ export default function AddProductWizard() {
     productName: "",
     productCode: "",
     status: "",
-    gender: "Men",
+    gender: "",
     size: [],
     color: [],
     stock: "",
@@ -170,8 +170,8 @@ const handleSubmit = async () => {
     showAlert("✅ Product created successfully!", "success");
     navigate("/user/Products");
   } catch (err) {
-    console.error("Backend error:", err.response?.data || err.message);
-    showAlert("❌ Failed to create product. Please try again.", "error");
+    console.error("Backend error:", err.response?.data );
+    showAlert(""+err.response.data.message, "info");
   }
 };
 

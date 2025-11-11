@@ -216,7 +216,7 @@ function UpdateProduct() {
   if (loading)
     return (
       <div>
-        <Navbar heading="Payment Management" />
+        <Navbar heading="Gestion de produits" />
         <div className="max-w-6xl mx-auto mt-10 bg-white rounded-lg shadow-sm p-6">
           <Stack spacing={3}>
             <Skeleton variant="text" width={220} height={35} animation="wave" />
@@ -233,11 +233,11 @@ function UpdateProduct() {
 
   return (
     <div>
-      <Navbar heading="Payment Management" />
+      <Navbar heading="Gestion de produits" />
 
       {/* Top Bar */}
       <div className="flex justify-between mt-5 mx-10">
-        <h1 className="font-medium text-lg">Update Product Details</h1>
+        <h1 className="font-medium text-lg">Mettre à jour les détails du produit</h1>
         <button
           onClick={() => navigate("/user/Products")}
           className="px-3 py-1 border rounded-md text-white bg-[#02B978] hover:bg-[#04D18C]"
@@ -253,7 +253,7 @@ function UpdateProduct() {
           <section className="border border-gray-300 rounded-xl shadow-sm p-7 bg-gray-50">
             <div className="grid grid-cols-1 gap-6">
               <div>
-                <label className="block text-sm font-medium mb-1">Price</label>
+                <label className="block text-sm font-medium mb-1">Prix</label>
                 <input
                   required
                   type="number"
@@ -266,21 +266,21 @@ function UpdateProduct() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">Name</label>
+                <label className="block text-sm font-medium mb-1">Nom</label>
                 <input
                   required
                   type="text"
                   name="productName"
                   value={productDetails.productName}
                   onChange={handleChange}
-                  placeholder="Product Name"
+                  placeholder="Nom du produit"
                   className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm"
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium mb-1">
-                  Product Code
+                  Code produit
                 </label>
                 <input
                   required
@@ -295,7 +295,7 @@ function UpdateProduct() {
 
               {/* Status Dropdown */}
               <div>
-                <label className="block text-sm font-medium mb-1">Status</label>
+                <label className="block text-sm font-medium mb-1">Statut</label>
                 <select
                   required
                   name="status"
@@ -303,9 +303,9 @@ function UpdateProduct() {
                   onChange={handleChange}
                   className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm bg-white"
                 >
-                  <option value="">Select Status</option>
-                  <option value="active">active</option>
-                  <option value="inactive">inactive</option>
+                  <option value="">Sélectionner le statut</option>
+                  <option value="active">Actifs</option>
+                  <option value="inactive">Inactif</option>
                 </select>
               </div>
             </div>
@@ -400,7 +400,7 @@ function UpdateProduct() {
             <div className="space-y-6">
               {/* Gender */}
               <div>
-                <h3 className="font-semibold text-gray-800 mb-2">Gender</h3>
+                <h3 className="font-semibold text-gray-800 mb-2">Genre</h3>
                 <div className="flex gap-3">
                   {["Men", "Women", "Unisex"].map((gender) => (
                     <button
@@ -470,7 +470,7 @@ function UpdateProduct() {
               </div> */}
               {/* ✅ Fixed Color Picker Section */}
               <div>
-                <h3 className="font-semibold text-gray-800 mb-2">Colours</h3>
+                <h3 className="font-semibold text-gray-800 mb-2">Couleurs</h3>
                 <div className="flex gap-3 items-center flex-wrap">
                   {selectedColor.map((color, index) => (
                     <div
@@ -543,7 +543,7 @@ function UpdateProduct() {
 
               {/* Sizes */}
               <div>
-                <h3 className="font-semibold text-gray-800 mb-2">Sizes</h3>
+                <h3 className="font-semibold text-gray-800 mb-2">Taille</h3>
                 <div className="flex gap-3 flex-wrap">
                   {["XS", "S", "M", "L", "XL"].map((size) => (
                     <button
@@ -584,7 +584,7 @@ function UpdateProduct() {
               </div>
 
               <div>
-                <h3 className="font-semibold text-gray-800 mb-2">Category</h3>
+                <h3 className="font-semibold text-gray-800 mb-2">Catégorie</h3>
                 <select
                   required
                   name="category"

@@ -186,11 +186,11 @@ const UpdateCustomer = () => {
 
   return (
     <div>
-      <Navbar heading="Customer Management" />
+      <Navbar heading="Gestion des clients" />
 
       {/* Header */}
       <div className="flex justify-between mt-5 mx-10">
-        <h1 className="font-medium text-lg">Update Customer Details</h1>
+        <h1 className="font-medium text-lg">Mise à jour des informations client</h1>
         <button
           onClick={() => navigate("/user/Customers")}
           className="px-3 py-1 border border-red-700 text-red-700 bg-red-50 rounded-md hover:bg-gray-100"
@@ -211,9 +211,9 @@ const UpdateCustomer = () => {
       >
         {/* Basic Info */}
         <section className="border border-gray-400 rounded-lg p-6 space-y-6">
-          <h2 className="text-lg font-semibold">Basic Information</h2>
+          <h2 className="text-lg font-semibold">Informations de base</h2>
           <div className="flex items-center gap-4">
-            <span className="text-sm font-medium text-gray-600">Status</span>
+            <span className="text-sm font-medium text-gray-600">Statut</span>
             <button
               type="button"
               onClick={() => setIsActive(!isActive)}
@@ -232,7 +232,7 @@ const UpdateCustomer = () => {
                 isActive ? "text-green-600" : "text-gray-500"
               }`}
             >
-              {isActive ? "Active" : "Inactive"}
+              {isActive ? "Actif" : "Inactif"}
             </span>
           </div>
 
@@ -242,14 +242,14 @@ const UpdateCustomer = () => {
                 htmlFor="customerName"
                 className="block text-sm font-medium mb-1 text-gray-600"
               >
-                Customer Name
+                Nom du client
               </label>
               <input
                 required
                 id="customerName"
                 value={formData.customerName}
                 onChange={handleChange}
-                placeholder="Full name"
+                placeholder="Nom complet"
                 className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm"
               />
             </div>
@@ -258,7 +258,7 @@ const UpdateCustomer = () => {
                 htmlFor="email"
                 className="block text-sm font-medium mb-1 text-gray-600"
               >
-                Email Address
+                E-mail
               </label>
               <input
                 required
@@ -266,7 +266,7 @@ const UpdateCustomer = () => {
                 type="email"
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="customer@email.com"
+                placeholder="client@email.com"
                 className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm"
               />
             </div>
@@ -275,7 +275,7 @@ const UpdateCustomer = () => {
                 htmlFor="phone"
                 className="block text-sm font-medium mb-1 text-gray-600"
               >
-                Phone number
+                Numéro de téléphone
               </label>
               <input
                 required
@@ -292,7 +292,7 @@ const UpdateCustomer = () => {
                 htmlFor="dob"
                 className="block text-sm font-medium mb-1 text-gray-600"
               >
-                Date of birth
+                Date de naissance
               </label>
               <input
                 id="dob"
@@ -307,24 +307,24 @@ const UpdateCustomer = () => {
 
         {/* Address */}
         <section className="border border-gray-400 rounded-lg p-6 space-y-4">
-          <h3 className="text-md font-semibold">Address</h3>
+          <h3 className="text-md font-semibold">Adresse</h3>
           <div>
             <label htmlFor="street" className="block text-sm font-medium mb-1">
-              Street address
+              Adresse de la rue
             </label>
             <input
               required
               id="street"
               value={formData.street}
               onChange={handleChange}
-              placeholder="Enter street address"
+              placeholder="Saisissez le Adresse de la rue"
               className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm"
             />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
             <div>
               <label htmlFor="city" className="block text-sm font-medium mb-1">
-                City
+                Ville
               </label>
               <input
                 id="city"
@@ -335,7 +335,7 @@ const UpdateCustomer = () => {
             </div>
             <div>
               <label htmlFor="state" className="block text-sm font-medium mb-1">
-                State
+                État
               </label>
               <input
                 id="state"
@@ -346,7 +346,7 @@ const UpdateCustomer = () => {
             </div>
             <div>
               <label htmlFor="zip" className="block text-sm font-medium mb-1">
-                Zip Code
+                Code postal
               </label>
               <input
                 id="zip"
@@ -361,7 +361,7 @@ const UpdateCustomer = () => {
                 htmlFor="country"
                 className="block text-sm font-medium mb-1"
               >
-                Country
+                Pays
               </label>
               <select
                 id="country"
@@ -380,13 +380,13 @@ const UpdateCustomer = () => {
 
         {/* Preferences */}
         <section className="border border-gray-400 rounded-lg p-6 space-y-6">
-          <h3 className="text-md font-semibold">Preferences</h3>
+          <h3 className="text-md font-semibold">Préférences</h3>
           <div>
             <label
               htmlFor="preferredMethod"
               className="block text-sm font-medium mb-1"
             >
-              Preferred Communication Method
+              Méthode de communication préférée
             </label>
             <select
               id="preferredMethod"
@@ -394,21 +394,21 @@ const UpdateCustomer = () => {
               onChange={(e) => setCommunicationMethod(e.target.value)}
               className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm bg-white"
             >
-              <option>email</option>
+              <option>e-mail</option>
               <option>phone</option>
               <option>sms</option>
             </select>
           </div>
 
           <fieldset className="text-sm">
-            <h6 className="mb-2 font-medium">Marketing Preferences</h6>
+            <h6 className="mb-2 font-medium">Préférences marketing</h6>
             <label className="flex items-center gap-2 mb-2">
               <input
                 type="checkbox"
                 checked={marketingPrefs.offers}
                 onChange={() => handleMarketingChange("offers")}
               />
-              <span>Receive offers and promotions</span>
+              <span>Recevez des offres et des promotions</span>
             </label>
             <label className="flex items-center gap-2">
               <input
@@ -416,7 +416,7 @@ const UpdateCustomer = () => {
                 checked={marketingPrefs.newsletter}
                 onChange={() => handleMarketingChange("newsletter")}
               />
-              <span>Subscribe to newsletter</span>
+              <span>Abonnez-vous à la newsletter</span>
             </label>
           </fieldset>
         </section>

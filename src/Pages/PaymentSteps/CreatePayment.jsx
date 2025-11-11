@@ -30,53 +30,64 @@ export default function CreatePayment() {
   // 🔹 Auto-fill function (fetch order details)
   // ✅ UPDATED SECTION ONLY — rest of your component stays the same
 
-// 🔹 Auto-fill function (fetch order details)
-const handleFetchOrderDetails = async () => {
-  if (!orderID.trim()) {
-    showAlert("Please enter an Order ID first.", "error");
-    return;
-  }
-
-  setFetching(true);
-  try {
-    const res = await axios.get(
-      `https://dev-api.payonlive.com/api/order/order-details/${orderID}`
-    );
-
-    const data = res.data?.data;
-    console.log("📦 Order details fetched:", data);
-
-    if (!data) {
-      showAlert("No order found for this ID.", "error");
+  // 🔹 Auto-fill function (fetch order details)
+  const handleFetchOrderDetails = async () => {
+    if (!orderID.trim()) {
+      showAlert("Please enter an Order ID first.", "error");
       return;
     }
 
-    // ✅ Match your existing form field states
-    setAmount(data.orderTotal ? data.orderTotal.toString() : "");
-    setPaymentMethod(data.paymentMethod || "");
-    setPaymentStatus(data.paymentStatus || "Pending");
-    setDeliveryStatus(data.shippingStatus || "Processing");
+    setFetching(true);
+    try {
+      const res = await axios.get(
+        `https://dev-api.payonlive.com/api/order/order-details/${orderID}`
+      );
 
-    // ✅ Use order creation date if available
-    if (data.createdAt) {
-      const formattedDate = new Date(data.createdAt)
-        .toISOString()
-        .slice(0, 16);
-      setDate(formattedDate);
+      const data = res.data?.data;
+      console.log("📦 Order details fetched:", data);
+
+      if (!data) {
+        showAlert("No order found for this ID.", "error");
+        return;
+      }
+
+      // ✅ Match your existing form field states
+      setAmount(data.orderTotal ? data.orderTotal.toString() : "");
+      setPaymentMethod(data.paymentMethod || "");
+      setPaymentStatus(data.paymentStatus || "Pending");
+      setDeliveryStatus(data.shippingStatus || "Processing");
+
+      // ✅ Use order creation date if available
+      if (data.createdAt) {
+        const formattedDate = new Date(data.createdAt)
+          .toISOString()
+          .slice(0, 16);
+        setDate(formattedDate);
+      }
+
+      // ✅ Optional notes (if available in future API)
+      setNotes(data.notes || "");
+
+      // ✅ Apply condition: If Delivered → Payment must be Paid
+      // if (data.shippingStatus === "Delivered" || "Shipped") {
+      //   setPaymentStatus("Paid");
+      //   showAlert(
+      //     "Delivery is already marked as Delivered — Payment status set to Paid.",
+      //     "info"
+      //   );
+      // }
+
+      showAlert("Order details loaded successfully!", "success");
+    } catch (err) {
+      console.error(
+        "❌ Error fetching order details:",
+        err.response?.data || err
+      );
+      showAlert("Order not found or failed to fetch details.", "error");
+    } finally {
+      setFetching(false);
     }
-
-    // ✅ Optional notes (if available in future API)
-    setNotes(data.notes || "");
-
-    showAlert("Order details loaded successfully!", "success");
-  } catch (err) {
-    console.error("❌ Error fetching order details:", err.response?.data || err);
-    showAlert("Order not found or failed to fetch details.", "error");
-  } finally {
-    setFetching(false);
-  }
-};
-
+  };
 
   // 🔹 Handle Submit
   const handleSubmit = async (e) => {
@@ -85,6 +96,18 @@ const handleFetchOrderDetails = async () => {
 
     if (!orderID || !amount || !paymentMethod || !date) {
       showAlert("Please fill in all required fields.", "error");
+      setLoading(false);
+      return;
+    }
+
+    if (
+      (deliveryStatus === "Delivered" || deliveryStatus === "Shipped") &&
+      paymentStatus !== "Paid"
+    ) {
+      showAlert(
+        "When delivery status is 'Delivered' or 'Shipped', payment status must be 'Paid'.",
+        "warning"
+      );
       setLoading(false);
       return;
     }
@@ -109,7 +132,10 @@ const handleFetchOrderDetails = async () => {
       );
 
       if (res.data?.success || res.status === 200) {
-        showAlert(res.data.message || "Payment created successfully!", "success");
+        showAlert(
+          res.data.message || "Payment created successfully!",
+          "success"
+        );
         navigate("/user/Payments");
       } else {
         showAlert("Failed to create payment. Please try again.", "error");
@@ -124,11 +150,11 @@ const handleFetchOrderDetails = async () => {
 
   return (
     <div>
-      <Navbar heading="Payment Management" />
+      <Navbar heading="Gestion des paiements" />
 
       {/* Header */}
       <div className="flex justify-between mt-5 mx-10">
-        <h1 className="font-medium text-lg">Create Payment</h1>
+        <h1 className="font-medium text-lg">Créer un paiement </h1>
         <button
           onClick={() => navigate("/user/Payments")}
           className="px-3 py-1 border rounded-md text-white bg-[#02B978] hover:bg-[#04D18C]"
@@ -176,41 +202,40 @@ const handleFetchOrderDetails = async () => {
           </div>
         </div> */}
         <div>
-  <label className="block text-sm font-medium mb-1">Order ID*</label>
-  <div className="flex items-center gap-2">
-    <input
-      required
-      type="text"
-      value={orderID}
-      onChange={(e) => setOrderID(e.target.value)}
-      placeholder="e.g. 100007"
-      className="flex-grow border border-gray-400 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-    />
-    <button
-      type="button"
-      onClick={handleFetchOrderDetails}
-      disabled={fetching || !orderID.trim()}
-      className="flex items-center justify-center gap-2 bg-[#114E9D] text-white px-4 py-2 rounded-lg hover:bg-blue-600 disabled:opacity-50 min-w-[110px] h-[38px]"
-    >
-      {fetching ? (
-        <>
-          <FontAwesomeIcon icon={faSpinner} spin />
-          Fetching...
-        </>
-      ) : (
-        <>
-          <FontAwesomeIcon icon={faMagnifyingGlass} />
-          Auto-Fill
-        </>
-      )}
-    </button>
-  </div>
-</div>
-
+          <label className="block text-sm font-medium mb-1">ID commande*</label>
+          <div className="flex items-center gap-2">
+            <input
+              required
+              type="text"
+              value={orderID}
+              onChange={(e) => setOrderID(e.target.value)}
+              placeholder="e.g. 100007"
+              className="flex-grow border border-gray-400 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <button
+              type="button"
+              onClick={handleFetchOrderDetails}
+              disabled={fetching || !orderID.trim()}
+              className="flex items-center justify-center gap-2 bg-[#114E9D] text-white px-4 py-2 rounded-lg hover:bg-blue-600 disabled:opacity-50 min-w-[110px] h-[38px]"
+            >
+              {fetching ? (
+                <>
+                  <FontAwesomeIcon icon={faSpinner} spin />
+                  Fetching...
+                </>
+              ) : (
+                <>
+                  <FontAwesomeIcon icon={faMagnifyingGlass} />
+                  Auto-Fill
+                </>
+              )}
+            </button>
+          </div>
+        </div>
 
         {/* Amount */}
         <div>
-          <label className="block text-sm font-medium mb-1">Amount (€)*</label>
+          <label className="block text-sm font-medium mb-1">Montant (€)*</label>
           <input
             required
             type="text"
@@ -223,38 +248,50 @@ const handleFetchOrderDetails = async () => {
 
         {/* Payment Method */}
         <div>
-          <label className="block text-sm font-medium mb-1">Payment Method*</label>
+          <label className="block text-sm font-medium mb-1">
+            Mode de paiement*
+          </label>
           <select
             required
             value={paymentMethod}
             onChange={(e) => setPaymentMethod(e.target.value)}
             className="w-full border border-gray-400 text-gray-600 rounded-lg px-3 py-2 text-sm"
           >
-            <option value="">Select</option>
-            <option>Credit Card</option>
+            <option value="">Sélectionnez mode de paiement</option>
             <option>PayPal</option>
             <option>Stripe</option>
-            <option>Bank Transfer</option>
           </select>
         </div>
 
         {/* Status Fields */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium mb-1">Payment Status</label>
+            <label className="block text-sm font-medium mb-1">
+              Statut du paiement
+            </label>
             <select
               value={paymentStatus}
               onChange={(e) => setPaymentStatus(e.target.value)}
-              className="w-full border border-gray-400 text-gray-600 rounded-lg px-3 py-2 text-sm"
+              // className="w-full border border-gray-400 text-gray-600 rounded-lg px-3 py-2 text-sm"
+              disabled={
+                deliveryStatus === "Delivered" || deliveryStatus === "Shipped"
+              }
+              className={`w-full border border-gray-400 text-gray-600 rounded-lg px-3 py-2 text-sm ${
+                deliveryStatus === "Delivered" || deliveryStatus === "Shipped"
+                  ? "bg-gray-100 cursor-not-allowed"
+                  : ""
+              }`}
             >
               <option>Pending</option>
-              <option>Paid</option>  
+              <option>Paid</option>
               <option>Failed</option>
             </select>
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1">Delivery Status</label>
+            <label className="block text-sm font-medium mb-1">
+              Statut de livraison
+            </label>
             <select
               value={deliveryStatus}
               disabled
@@ -271,7 +308,9 @@ const handleFetchOrderDetails = async () => {
 
         {/* Payment Date */}
         <div>
-          <label className="block text-sm font-medium mb-1">Payment Date & Time*</label>
+          <label className="block text-sm font-medium mb-1">
+            Date et heure du paiement*
+          </label>
           <input
             required
             type="datetime-local"
@@ -283,7 +322,9 @@ const handleFetchOrderDetails = async () => {
 
         {/* Notes */}
         <div>
-          <label className="block text-sm font-medium mb-1">Notes (Optional)</label>
+          <label className="block text-sm font-medium mb-1">
+            Notes (Optional)
+          </label>
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
@@ -332,4 +373,3 @@ const handleFetchOrderDetails = async () => {
     </div>
   );
 }
-

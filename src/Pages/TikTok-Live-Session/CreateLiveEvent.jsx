@@ -564,11 +564,11 @@ const handleSave = async (e) => {
   // ----------------------
   return (
     <div>
-      <Navbar heading="TikTok Live Event Management" />
+      <Navbar heading="Gestion des événements TikTok Live " />
 
       {/* Header */}
       <div className="flex justify-between mt-5 mx-10">
-        <h1 className="font-medium text-lg">Create New Live Event</h1>
+        <h1 className="font-medium text-lg">Créer nouvel événement en direct</h1>
         <button
           onClick={() => navigate("/user/tiktok")}
           className="mr-20 px-3 py-1 border border-red-700 text-red-700 bg-red-50 rounded-md hover:bg-gray-100"
@@ -589,12 +589,12 @@ const handleSave = async (e) => {
       >
         {/* Event Details */}
         <section className="border border-gray-400 rounded-2xl p-6 space-y-6">
-          <h2 className="text-xl font-semibold">Event details</h2>
+          <h2 className="text-xl font-semibold">Détails de l'événement</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Event Name */}
             <div className="flex flex-col">
               <label className="mb-1 text-gray-700 font-medium">
-                Event Name*
+                Nom de l’événement*
               </label>
               <input
                 type="text"
@@ -611,7 +611,7 @@ const handleSave = async (e) => {
             {/* Event Description */}
             <div className="flex flex-col">
               <label className="mb-1 text-gray-700 font-medium">
-                Event Description*
+                Description de l'événement*
               </label>
               <input
                 type="text"
@@ -630,7 +630,7 @@ const handleSave = async (e) => {
             {/* Session ID */}
             <div className="flex flex-col">
               <label className="mb-1 text-gray-700 font-medium">
-                Session ID*
+                ID de session*
               </label>
               <input
                 type="text"
@@ -646,7 +646,7 @@ const handleSave = async (e) => {
 
             {/* Status */}
             <div className="flex flex-col">
-              <label className="mb-1 text-gray-700 font-medium">Status*</label>
+              <label className="mb-1 text-gray-700 font-medium">Statut*</label>
               <select
                 name="status"
                 value={eventDetails.status}
@@ -668,7 +668,7 @@ const handleSave = async (e) => {
             {/* Start & End Date */}
             <div className="flex flex-col">
               <label className="mb-1 text-gray-700 font-medium">
-                Start Date & Time*
+                Début Date et Temps*
               </label>
               <input
                 type="datetime-local"
@@ -686,7 +686,7 @@ const handleSave = async (e) => {
 
             <div className="flex flex-col">
               <label className="mb-1 text-gray-700 font-medium">
-                End Date & Time*
+                Fin Date et Temps*
               </label>
               <input
                 type="datetime-local"
@@ -731,7 +731,7 @@ const handleSave = async (e) => {
             {/* Event Category */}
             <div className="flex flex-col">
               <label className="mb-1 text-gray-700 font-medium">
-                Event Category*
+                Catégorie d'événement*
               </label>
               <select
                 name="eventCategory"
@@ -739,7 +739,7 @@ const handleSave = async (e) => {
                 onChange={handleEventChange}
                 className="w-full border border-gray-300 px-4 py-2 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
               >
-                <option value="">Select a category</option>
+                <option value="">Sélectionnez une catégorie</option>
                 <option value="Fashion">Fashion</option>
                 <option value="Beauty">Beauty</option>
                 <option value="Other">Other</option>
@@ -827,10 +827,10 @@ const handleSave = async (e) => {
 
         {/* Host Information */}
         <section className="border border-gray-400 rounded-2xl p-6 space-y-4">
-          <h2 className="text-xl font-semibold">Host information</h2>
+          <h2 className="text-xl font-semibold">Informations sur l'hôte</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
-              <label className="block text-sm font-medium mb-1">Host name*</label>
+              <label className="block text-sm font-medium mb-1">Nom d'hôte*</label>
               <input
                 type="text"
                 name="hostName"
@@ -844,7 +844,7 @@ const handleSave = async (e) => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Email address*</label>
+              <label className="block text-sm font-medium mb-1">Adresse email*</label>
               <input
                 type="email"
                 name="hostEmailAddress"
@@ -858,7 +858,7 @@ const handleSave = async (e) => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Phone Number*</label>
+              <label className="block text-sm font-medium mb-1">Numéro de téléphone*</label>
               <input
                 type="number"
                 name="hostPhoneNumber"

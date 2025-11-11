@@ -554,6 +554,7 @@ export default function ProductTable({ onSelectionChange }) {
                   <th className="p-3">Prix</th>
                   <th className="p-3">Catégorie</th>
                   <th className="p-3">Code produit</th>
+                  <th className="p-3">Session ID</th>
                   <th className="p-3">Taille</th>
                   <th className="p-3">Couleur</th>
                   <th className="p-3">Statut</th>
@@ -587,7 +588,8 @@ export default function ProductTable({ onSelectionChange }) {
                     <td className="p-3">€ {item.price.toFixed(2)}</td>
                     <td className="p-3">{item.category}</td>
                     <td className="p-3">{item.productCode}</td>
-                    <td className="p-3">{item.size}</td>
+                    <td className="p-3">{item.tiktok_session_id || "N/A"}</td>
+                    <td className="p-3">{item.size || "N/A"}</td>
 
                     {/* <td className="p-3">
                       <div className="flex items-center gap-2">
@@ -609,7 +611,7 @@ export default function ProductTable({ onSelectionChange }) {
                           if (!colors.length)
                             return (
                               <span className="text-gray-500 italic">
-                                No color
+                                N/A
                               </span>
                             );
 
@@ -671,7 +673,7 @@ export default function ProductTable({ onSelectionChange }) {
                       : "hover:bg-gray-100"
                   }`}
                 >
-                  <FontAwesomeIcon icon={faChevronLeft} /> Previous
+                  <FontAwesomeIcon icon={faChevronLeft} /> Précédent
                 </button>
                 {[...Array(totalPages)].map((_, i) => (
                   <button
@@ -697,7 +699,7 @@ export default function ProductTable({ onSelectionChange }) {
                       : "hover:bg-gray-100"
                   }`}
                 >
-                  Next <FontAwesomeIcon icon={faChevronRight} />
+                  Suivant <FontAwesomeIcon icon={faChevronRight} />
                 </button>
               </div>
             </div>

@@ -397,8 +397,8 @@ export default function CustomersTable({ onSelectionChange }) {
         {/* Pagination */}
         <div className="flex flex-col md:flex-row justify-center items-center mt-4 text-sm text-gray-600 gap-3">
           <p className="px-2">
-            Showing <span className="font-medium">{startIndex}</span>–
-            <span className="font-medium">{endIndex}</span> of{" "}
+            Affichage de  <span className="font-medium">{startIndex}</span>–
+            <span className="font-medium">{endIndex}</span> sur{" "}
             <span className="font-medium">{filteredData.length}</span> Clients
           </p>
           <div className="flex items-center space-x-2">

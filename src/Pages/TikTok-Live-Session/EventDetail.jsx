@@ -247,11 +247,11 @@ export default function EventDetail() {
 
   return (
     <div>
-      <Navbar heading="TikTok Live Event Management" />
+      <Navbar heading="Gestion des événements TikTok Live" />
 
       {/* Top buttons */}
       <div className="flex justify-between mt-5 mx-10">
-        <h1 className="font-medium text-lg">Live Event Details</h1>
+        <h1 className="font-medium text-lg">Détails de l'événement en direct</h1>
         <div>
           <button
             onClick={handleDelete}
@@ -289,13 +289,13 @@ export default function EventDetail() {
       {/* Event Details */}
       <div className="max-w-6xl mx-5 p-6 space-y-6">
         <div className="border border-gray-400 rounded-2xl p-6 space-y-4">
-          <h2 className="text-sm font-medium text-gray-700">Event Name</h2>
+          <h2 className="text-sm font-medium text-gray-700">Nom de l’événement</h2>
           <p className="text-lg font-medium mt-1">
             {event.eventDetails.eventName}
           </p>
 
           <h3 className="text-sm font-medium text-gray-700">
-            Event Description
+            Description de l'événemen
           </h3>
           <textarea
             className="w-full h-35 mt-2 border border-gray-400 rounded-md p-3 text-sm bg-gray-100 resize-none"
@@ -305,7 +305,7 @@ export default function EventDetail() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6 text-sm pt-2">
             <div>
-              <p className="font-medium text-gray-700">Status</p>
+              <p className="font-medium text-gray-700">Statut</p>
               <span
                 className={`inline-block mt-3 px-4 py-1 rounded-full border text-xs font-medium ${getStatusStyles(
                   event.eventDetails.status
@@ -316,21 +316,21 @@ export default function EventDetail() {
             </div>
 
             <div>
-              <p className="font-medium text-gray-700">Session ID</p>
+              <p className="font-medium text-gray-700">ID de session</p>
               <p className="mt-3 text-gray-800">
                 {event.eventDetails.sessionID}
               </p>
             </div>
 
             <div>
-              <p className="font-medium text-gray-700">Start Date & Time</p>
+              <p className="font-medium text-gray-700">Début Date et Temps</p>
               <p className="mt-3 text-gray-800">
                 {new Date(event.eventDetails.startDateTime).toLocaleString()}
               </p>
             </div>
 
             <div>
-              <p className="font-medium text-gray-700">End Date & Time</p>
+              <p className="font-medium text-gray-700">Fin Date et Temps</p>
               <p className="mt-3 text-gray-800">
                 {new Date(event.eventDetails.endDateTime).toLocaleString()}
               </p>
@@ -412,7 +412,7 @@ export default function EventDetail() {
 
         {/* Host Information */}
         <section className="border border-gray-400 rounded-2xl p-6 space-y-4">
-          <h2 className="text-xl font-semibold">Host Information</h2>
+          <h2 className="text-xl font-semibold">Informations sur l'hôte</h2>
           <div className="flex items-center space-x-4">
             <div className="relative w-15 h-15">
               <img
@@ -450,7 +450,7 @@ export default function EventDetail() {
                 className="block text-sm font-medium mb-1"
                 htmlFor="hostName"
               >
-                Host Name*
+                Nom d'hôte
               </label>
               <input
                 type="text"
@@ -466,7 +466,7 @@ export default function EventDetail() {
                 className="block text-sm font-medium mb-1"
                 htmlFor="emailAddress"
               >
-                Email Address*
+                Adresse email
               </label>
               <input
                 type="email"
@@ -482,7 +482,7 @@ export default function EventDetail() {
                 className="block text-sm font-medium mb-1"
                 htmlFor="phoneNumber"
               >
-                Phone Number
+                Numéro de téléphone
               </label>
               <input
                 type="number"

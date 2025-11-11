@@ -82,6 +82,7 @@ function Products() {
            headers: { "Content-Type": "multipart/form-data" },
          }
        );
+       console.log('response import', res)
  
        // Show summary message
        const summary = res.data.summary;
@@ -89,11 +90,11 @@ function Products() {
          `✅ Imported successfully: ${summary.insertedToDatabase} / ${summary.totalRows} | Duplicates: ${summary.duplicatesSkipped} | Errors: ${summary.processingErrors + summary.insertionErrors}`
        );
  
-       // Refresh recently added products
-       const recentRes = await axios.get(
-         "http://dev-api.payonlive.com/api/product/latest-products"
-       );
-       setRecentProducts(recentRes.data.data || []);
+      //  // Refresh recently added products
+      //  const recentRes = await axios.get(
+      //    "http://dev-api.payonlive.com/api/product/latest-products"
+      //  );
+      //  setRecentProducts(recentRes.data.data || []);
        setImportMessage(" ✅Products import successfully");
      } catch (error) {
        console.error(error);

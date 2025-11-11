@@ -164,11 +164,11 @@ function ViewPayment() {
 
   return (
     <div>
-      <Navbar heading="Payment Management" />
+      <Navbar heading="Gestion des paiements" />
 
       {/* Top Buttons */}
       <div className="flex justify-between mt-5 mx-10">
-        <h1 className="font-medium text-lg">Payment & Order details</h1>
+        <h1 className="font-medium text-lg">Détails du paiement et de la commande</h1>
         <div>
           <button
             onClick={handleDelete}
@@ -220,7 +220,7 @@ function ViewPayment() {
 
             <div className="space-y-4 text-sm">
               <div className="grid grid-cols-2 items-center">
-                <span className="font-medium text-gray-700">Customer ID</span>
+                <span className="font-medium text-gray-700">ID client</span>
                 <span className="text-gray-900 font-mono text-right">
                   {userId}
                 </span>
@@ -229,7 +229,7 @@ function ViewPayment() {
               {/* ✅ Payment Status */}
               <div className="grid grid-cols-2 items-center">
                 <span className="font-medium text-gray-700">
-                  Payment Status
+                  Statut du paiement
                 </span>
                 <span
                   className={`justify-self-end px-3 py-1 rounded-full text-xs font-medium ${
@@ -245,7 +245,7 @@ function ViewPayment() {
               {/* ✅ Shipping Status */}
               <div className="grid grid-cols-2 items-center">
                 <span className="font-medium text-gray-700">
-                  Shipping Status
+                  Statut de livraison
                 </span>
                 <span
                   className={`justify-self-end px-3 py-1 rounded-full text-xs font-medium ${
@@ -292,35 +292,35 @@ function ViewPayment() {
 
           {/* Right Card */}
           <div className="border border-gray-300 rounded-2xl p-6 shadow-sm">
-            <h3 className="font-medium mb-4">Order Info</h3>
+            <h3 className="font-medium mb-4">Informations sur la commande</h3>
             <div className="space-y-2 text-sm">
               <div className="grid grid-cols-2">
                 <span className="font-medium text-gray-700">
-                  Transaction ID
+                  ID de transaction
                 </span>
                 <span className="text-gray-900 text-right">{payment_id}</span>
               </div>
               <div className="grid grid-cols-2 py-2">
-                <span className="font-medium text-gray-700">Date & Time</span>
+                <span className="font-medium text-gray-700">Date et Temps</span>
                 <span className="text-gray-900 text-right">
                   {new Date(createdAt).toLocaleString()}
                 </span>
               </div>
               <div className="grid grid-cols-2">
-                <span className="font-medium text-gray-700">Method</span>
+                <span className="font-medium text-gray-700">Méthode</span>
                 <span className="text-gray-900 text-right">
                   {paymentMethod}
                 </span>
               </div>
               <div className="grid grid-cols-2">
-                <span className="font-medium text-gray-700">Amount</span>
+                <span className="font-medium text-gray-700">Montant</span>
                 <span className="text-gray-900 text-right">€ {orderTotal.toFixed(2)}</span>
               </div>
             </div>
 
             {/* ✅ Show Ordered Items */}
             <div className="mt-6">
-              <h4 className="font-medium mb-2">Ordered Items</h4>
+              <h4 className="font-medium mb-2">Articles commandés</h4>
               {orderItems.length > 0 ? (
                 orderItems.map((item, index) => (
                   <div
@@ -337,7 +337,7 @@ function ViewPayment() {
                         {item.productDetails?.productName}
                       </p>
                       <p className="text-sm text-gray-600">
-                        Qty: {item.quantity} × €{item.price}
+                        Quantité: {item.quantity} × €{item.price}
                       </p>
                       <p className="text-sm font-medium">
                         Total: €{item.total}

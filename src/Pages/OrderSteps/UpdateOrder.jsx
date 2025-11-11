@@ -167,10 +167,10 @@ const UpdateOrder = () => {
 
   return (
     <div>
-      <Navbar heading="Order Management" />
+      <Navbar heading="Gestion des commandes" />
 
       <div className="flex justify-between mt-5 mx-10">
-        <h1 className="font-medium text-lg">Update Order</h1>
+        <h1 className="font-medium text-lg">Mise à jour du produit</h1>
         <button
           onClick={() => navigate("/user/Orders")}
           className="px-3 py-1 border border-red-700 text-red-700 bg-red-50 rounded-md hover:bg-gray-100"
@@ -190,14 +190,14 @@ const UpdateOrder = () => {
       >
         {/* Customer Info */}
         <section className="border border-gray-400 rounded-lg p-6 space-y-6">
-          <h2 className="text-lg font-semibold">Customer Info</h2>
+          <h2 className="text-lg font-semibold">Informations client</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div>
               <label
                 htmlFor="customerName"
                 className="block mb-1 text-sm font-medium text-gray-600"
               >
-                Customer Name
+                Nom du client
               </label>
               <input
                 required
@@ -205,7 +205,7 @@ const UpdateOrder = () => {
                 type="text"
                 value={orderData.customerName}
                 onChange={handleChange}
-                placeholder="Full name"
+                placeholder="Nom complet"
                 className="w-full rounded-lg border border-gray-400 px-3 py-2 text-sm"
               />
             </div>
@@ -214,7 +214,7 @@ const UpdateOrder = () => {
                 htmlFor="email"
                 className="block mb-1 text-sm font-medium text-gray-600"
               >
-                Email
+                E-mail
               </label>
               <input
                 required
@@ -222,7 +222,7 @@ const UpdateOrder = () => {
                 type="email"
                 value={orderData.email}
                 onChange={handleChange}
-                placeholder="customer@email.com"
+                placeholder="client@email.com"
                 className="w-full rounded-lg border border-gray-400 px-3 py-2 text-sm"
               />
             </div>
@@ -231,7 +231,7 @@ const UpdateOrder = () => {
                 htmlFor="phoneNumber"
                 className="block mb-1 text-sm font-medium text-gray-600"
               >
-                Phone number
+                numéro de téléphone
               </label>
               <input
                 required
@@ -248,7 +248,7 @@ const UpdateOrder = () => {
                 htmlFor="address"
                 className="block mb-1 text-sm font-medium text-gray-600"
               >
-                Shipping address
+                Adresse de livraison
               </label>
               <input
                 required
@@ -256,7 +256,7 @@ const UpdateOrder = () => {
                 type="text"
                 value={orderData.address}
                 onChange={handleChange}
-                placeholder="123, main city, state, 12323"
+                placeholder="123, ville principale, état"
                 className="w-full rounded-lg border border-gray-400 px-3 py-2 text-sm"
               />
             </div>
@@ -266,7 +266,7 @@ const UpdateOrder = () => {
         {/* Order Items */}
         <section className="border border-gray-400 rounded-lg p-6 overflow-x-auto">
           <div className="flex justify-between items-center border-gray-200 pb-3 mb-4">
-            <h2 className="text-lg font-semibold">Order Items</h2>
+            <h2 className="text-lg font-semibold">Articles commandés</h2>
             {/* <button
               type="button"
               onClick={addProduct}
@@ -299,7 +299,7 @@ const UpdateOrder = () => {
               </div> */}
               <div className="md:col-span-5">
                 <label className="block mb-1 text-sm font-medium">
-                  Product Name
+                  Nom du produit
                 </label>
                 <input
                   required
@@ -309,13 +309,13 @@ const UpdateOrder = () => {
                   onChange={(e) =>
                     handleProductChange(idx, "productName", e.target.value)
                   }
-                  placeholder="123, main city, state, 12323"
+                  placeholder="Nom du produit"
                   className="w-full rounded-lg border border-gray-300 px-2 py-2 text-sm"
                 />
               </div>
               <div className="md:col-span-1 text-center">
                 <label className="block mb-1 text-sm font-medium">
-                  Quantity
+                  Quantité
                 </label>
                 <input
                   required
@@ -390,7 +390,7 @@ const UpdateOrder = () => {
               htmlFor="paymentMethod"
               className="block mb-1 text-sm font-medium text-gray-600"
             >
-              Payment Method
+              Mode de paiement
             </label>
             <select
               required
@@ -399,7 +399,7 @@ const UpdateOrder = () => {
               onChange={handleChange}
               className="w-full rounded-lg border border-gray-400 px-3 py-2 text-sm"
             >
-              <option value="">Select Payment method</option>
+              <option value="">Sélectionnez mode de paiement</option>
 
               <option value="paypal">Paypal</option>
               <option value="stripe">Stripe</option>
@@ -410,7 +410,7 @@ const UpdateOrder = () => {
               htmlFor="paymentStatus"
               className="block mb-1 text-sm font-medium text-gray-600"
             >
-              Payment Status
+              Statut du paiement
             </label>
             <select
               required
@@ -419,7 +419,7 @@ const UpdateOrder = () => {
               onChange={handleChange}
               className="w-full rounded-lg border border-gray-400 px-3 py-2 text-sm"
             >
-              <option value="">Select payment status</option>
+              <option value="">Sélectionnez statut du paiement</option>
               <option>Paid</option>
               <option>Pending</option>
               <option>Failed</option>
@@ -430,7 +430,7 @@ const UpdateOrder = () => {
               htmlFor="shippingMethod"
               className="block mb-1 text-sm font-medium text-gray-600"
             >
-              Shipping Method
+              Statut de livraison
             </label>
             <select
               required
@@ -439,7 +439,7 @@ const UpdateOrder = () => {
               onChange={handleChange}
               className="w-full rounded-lg border border-gray-400 px-3 py-2 text-sm"
             >
-              <option value="">Select Shipping method</option>
+              <option value="">Sélectionnez mode de livraison</option>
               <option>Flat Rate</option>
               <option>Free Shipping</option>
               <option>Local Pickup</option>
@@ -452,7 +452,7 @@ const UpdateOrder = () => {
     htmlFor="shippingStatus"
     className="block mb-1 text-sm font-medium text-gray-600"
   >
-    Shipping Status
+    Statut de livraison
   </label>
   <select
     required
@@ -461,7 +461,7 @@ const UpdateOrder = () => {
     onChange={handleChange}
     className="w-full rounded-lg border border-gray-400 px-3 py-2 text-sm"
   >
-    <option value="">Select shipping status</option>
+    <option value="">Sélectionnez statut de la livraison</option>
     <option value="Processing">Processing</option>
     <option
       value="Shipped"
@@ -510,7 +510,7 @@ const UpdateOrder = () => {
 
           <div className="flex flex-col">
             <label className="mb-1 text-gray-700 font-medium">
-              Order Tracking Link*
+              Lien de suivi de commande*
             </label>
             <div className="flex items-center border border-gray-400 rounded-lg px-3 py-2 shadow-sm focus-within:ring-2 focus-within:ring-blue-400 transition">
               <input

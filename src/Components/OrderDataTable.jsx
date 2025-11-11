@@ -462,7 +462,7 @@ export default function OrdersDataTable({ onSelectionChange }) {
                 disabled={currentPage === 1}
                 className="px-3 py-1 text-sm border rounded disabled:opacity-50"
               >
-                <FontAwesomeIcon icon={faChevronLeft} /> Previous
+                <FontAwesomeIcon icon={faChevronLeft} /> Précédent
               </button>
               <div className="space-x-2">
                 {Array.from({ length: totalPages }).map((_, idx) => (
@@ -484,7 +484,7 @@ export default function OrdersDataTable({ onSelectionChange }) {
                 disabled={currentPage === totalPages}
                 className="px-3 py-1 text-sm border rounded disabled:opacity-50"
               >
-                Next <FontAwesomeIcon icon={faChevronRight} />
+                Suivant <FontAwesomeIcon icon={faChevronRight} />
               </button>
             </div>
 

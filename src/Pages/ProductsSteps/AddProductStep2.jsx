@@ -30,9 +30,9 @@ function AddProductStep2({ formData, setFormData, prevStep, nextStep }) {
   const [showColorPicker, setShowColorPicker] = useState(false);
 
   // New enable/disable toggles
-  const [enableGender, setEnableGender] = useState(true);
-  const [enableColor, setEnableColor] = useState(true);
-  const [enableSize, setEnableSize] = useState(true);
+  const [enableGender, setEnableGender] = useState(false);
+  const [enableColor, setEnableColor] = useState(false);
+  const [enableSize, setEnableSize] = useState(false);
 
   // Sync with formData based on enable/disable
   useEffect(() => {
@@ -46,7 +46,7 @@ function AddProductStep2({ formData, setFormData, prevStep, nextStep }) {
   useEffect(() => {
     setFormData((prev) => ({
       ...prev,
-      color: enableColor ? selectedColor : [],
+      color: enableColor ? selectedColor : [] || "N/A",
     }));
   }, [enableColor, selectedColor, setFormData]);
 
@@ -54,7 +54,7 @@ function AddProductStep2({ formData, setFormData, prevStep, nextStep }) {
   useEffect(() => {
     setFormData((prev) => ({
       ...prev,
-      size: enableSize ? selectedSize : [],
+      size: enableSize ? selectedSize : [] || "N/A",
     }));
   }, [enableSize, selectedSize, setFormData]);
 
