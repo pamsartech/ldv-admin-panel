@@ -200,7 +200,7 @@ const UpdateCustomer = () => {
             size="lg"
             className="text-red-700 px-2"
           />
-          Discard
+          Jeter
         </button>
       </div>
 
@@ -433,7 +433,7 @@ const UpdateCustomer = () => {
             {btnLoading && (
               <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
             )}
-            {btnLoading ? "Updating..." : "Update Customer"}
+            {btnLoading ? "Mise à jour..." : "Mise à jour Clent"}
           </button>
         </div>
       </form>

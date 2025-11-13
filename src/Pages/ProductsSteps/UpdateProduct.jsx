@@ -243,7 +243,7 @@ function UpdateProduct() {
           className="px-3 py-1 border rounded-md text-white bg-[#02B978] hover:bg-[#04D18C]"
         >
           <FontAwesomeIcon icon={faArrowLeft} size="lg" className="px-2" />
-          Back to Main View
+          Dos la vue principale
         </button>
       </div>
 
@@ -304,8 +304,8 @@ function UpdateProduct() {
                   className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm bg-white"
                 >
                   <option value="">Sélectionner le statut</option>
-                  <option value="active">Actifs</option>
-                  <option value="inactive">Inactif</option>
+                  <option value="actif">Actif</option>
+                  <option value="inactif">Inactif</option>
                 </select>
               </div>
             </div>
@@ -313,7 +313,7 @@ function UpdateProduct() {
 
           {/* Image Upload */}
           <section className="bg-gray-100 mx-auto p-6 rounded-2xl w-full max-w-5xl">
-            <h3 className="font-semibold text-gray-800 mb-3">Upload Images</h3>
+            <h3 className="font-semibold text-gray-800 mb-3">Ajouter des images</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Main Image */}
               <div className="relative col-span-2">
@@ -572,7 +572,7 @@ function UpdateProduct() {
             {/* Right */}
             <div className="space-y-6">
               <div>
-                <h3 className="font-semibold text-gray-800 mb-2">Stock</h3>
+                <h3 className="font-semibold text-gray-800 mb-2">Produits en stock</h3>
                 <input
                   required
                   type="number"
@@ -593,9 +593,9 @@ function UpdateProduct() {
                   className="w-full bg-gray-50 border border-gray-400 rounded-lg px-3 py-2"
                 >
                   <option value="">Select Category</option>
-                  <option value="clothing">Clothing</option>
-                  <option value="shoes">Shoes</option>
-                  <option value="accessories">Accessories</option>
+                  <option value="vêtements">Vêtements</option>
+                  <option value="chaussures">Chaussures</option>
+                  <option value="accessoires">Accessoires</option>
                 </select>
               </div>
             </div>
@@ -612,7 +612,7 @@ function UpdateProduct() {
               className="px-3 py-2 border border-red-700 text-red-700 bg-red-50 rounded-md hover:bg-gray-100"
             >
               <FontAwesomeIcon icon={faXmark} size="lg" className="px-2" />
-              Discard Product
+              Jeter Produit
             </button>
           </div>
 
@@ -625,7 +625,7 @@ function UpdateProduct() {
               {btnLoading && (
                 <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
               )}
-              {btnLoading ? "Updating..." : "Update Product"}
+              {btnLoading ? "Mise à jour..." : "Mise à jour Produits"}
             </button>
           </div>
         </div>

@@ -124,8 +124,8 @@ function AddProductStep1({ formData, setFormData, nextStep }) {
               className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm bg-white"
             >
               <option value="">Sélectionner le statut</option>
-              <option value="active">Actifs</option>
-              <option value="inactive">Inactif</option>
+              <option value="actif">Actifs</option>
+              <option value="inactif">Inactif</option>
             </select>
           </div>
              

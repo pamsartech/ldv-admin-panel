@@ -32,8 +32,8 @@ const ViewProduct = () => {
   const { showAlert } = useAlert(); // ✅ useAlert context
 
   const statusColors = {
-    Active: "bg-green-100 text-green-700 border border-green-300",
-    Inactive: "bg-red-100 text-red-700 border border-red-300",
+    Actif: "bg-green-100 text-green-700 border border-green-300",
+    Inactif: "bg-red-100 text-red-700 border border-red-300",
   };
 
   // 🧩 Fetch product details
@@ -71,7 +71,7 @@ const ViewProduct = () => {
         showAlert("Product deleted successfully!", "success");
         navigate("/user/Products");
       } else {
-        showAlert(response.data.message || "Failed to delete product", "error");
+        showAlert(response.data.message || "Failed to delete product", "info");
       }
     } catch (err) {
       showAlert(err.response?.data?.message || err.message, "error");
@@ -124,7 +124,7 @@ const ViewProduct = () => {
             }`}
           >
             <FontAwesomeIcon icon={faTrashCan} className="px-2" />
-            {isDeleting ? "Deleting..." : "Delete product"}
+            {isDeleting ? "Supprimer..." : "Supprimer Produit"}
           </button>
 
           <button
@@ -132,7 +132,7 @@ const ViewProduct = () => {
             className="mx-2 px-3 py-1 border rounded-md text-[#114E9D] bg-blue-50 hover:bg-blue-100"
           >
             <FontAwesomeIcon icon={faArrowRotateLeft} className="px-2" />
-            Update
+            Mise à jour
           </button>
 
           <button
@@ -140,7 +140,7 @@ const ViewProduct = () => {
             className="px-3 py-1 border rounded-md text-white bg-[#02B978] hover:bg-[#04D18C]"
           >
             <FontAwesomeIcon icon={faArrowLeft} className="text-white px-2" />
-            Back to Main View
+            Dos la vue principale
           </button>
         </div>
       </div>
@@ -371,7 +371,7 @@ const ViewProduct = () => {
             <div className="space-y-3 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-600 font-semibold">
-                 Code produit
+                  Code produit
                 </span>
                 <span>{product.productCode}</span>
               </div>
@@ -380,12 +380,19 @@ const ViewProduct = () => {
                 <span className="text-gray-600 font-semibold">
                   ID de session TikTok
                 </span>
-                <span>{product.tiktok_session_id || "N/A"} </span>
+                {/* <span>{product.tiktok_session_id || "N/A"} </span> */}
+                <span className="text-right break-words">
+                  {Array.isArray(product.tiktok_session_id)
+                    ? product.tiktok_session_id.join("   ") // 3 spaces between each ID
+                    : product.tiktok_session_id || "N/A"}
+                </span>
               </div>
 
               <div className="flex justify-between">
-                <span className="text-gray-600 font-semibold">Stock</span>
-                <span>{product.stock }</span>
+                <span className="text-gray-600 font-semibold">
+                  Produits en stock
+                </span>
+                <span>{product.stock}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600 font-semibold">Prix</span>
@@ -403,14 +410,14 @@ const ViewProduct = () => {
                       product.status
                         ? product.status.charAt(0).toUpperCase() +
                           product.status.slice(1).toLowerCase()
-                        : "Inactive"
+                        : "Inactif"
                     ] || "bg-gray-100 text-gray-600 border border-gray-300"
                   }`}
                 >
                   {product.status
                     ? product.status.charAt(0).toUpperCase() +
                       product.status.slice(1).toLowerCase()
-                    : "Inactive"}
+                    : "Inactif"}
                 </span>
               </div>
             </div>

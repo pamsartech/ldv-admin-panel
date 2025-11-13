@@ -1,812 +1,277 @@
+/// AddProductStep3.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../Components/Navbar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus, faTrash, faXmark } from "@fortawesome/free-solid-svg-icons";
-import axios from "axios";
-import { useAlert } from "../../Components/AlertContext";
+import {
+  faArrowLeft,
+  faCheck,
+  faXmark,
+  faPlus,
+  faTimes,
+  faCircleInfo,
+} from "@fortawesome/free-solid-svg-icons";
 
-const CreateOrder = () => {
+function AddProductStep3({ formData, setFormData, prevStep, handleSubmit }) {
   const navigate = useNavigate();
-  const { showAlert } = useAlert();
-
-  // 🔹 State for customer info
-  const [customerName, setCustomerName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phoneNumber, setphoneNumber] = useState("");
-  const [address, setAddress] = useState("");
   const [loading, setLoading] = useState(false);
+  
+  // Side image previews (4 slots)
+  const [previews, setPreviews] = useState(
+    Array(4)
+      .fill(null)
+      .map((_, i) =>
+        formData.images?.[i] ? URL.createObjectURL(formData.images[i]) : null
+      )
+  );
 
-  // 🔹 State for order items
-  const [orderItems, setOrderItems] = useState([
-    {
-      productCode: "",
-      productName: "",
-      quantity: 1,
-      price: 0,
-      color: "",
-      size: "",
-      availableColors: [],
-      availableSizes: [],
-    },
-  ]);
+  // Index of side image shown in main preview
+  const [selectedIndex, setSelectedIndex] = useState(
+    previews.findIndex((p) => p !== null) >= 0
+      ? previews.findIndex((p) => p !== null)
+      : 0
+  );
 
-  // 🔹 State for payment & shipping
-  const [paymentMethod, setPaymentMethod] = useState("");
-  const [paymentStatus, setPaymentStatus] = useState("");
-  const [shippingMethod, setShippingMethod] = useState("");
-  const [shippingStatus, setShippingStatus] = useState("");
-
-  // 🔹 Validation errors + popup
-  const [errors, setErrors] = useState({});
-  const [showPopup, setShowPopup] = useState(false);
-  const [popupMessage, setPopupMessage] = useState("");
-
-  // for check user email exist or not
-  const [userExists, setUserExists] = useState(false);
-  const [userChecked, setUserChecked] = useState(false);
-
+  // Clean up object URLs on unmount
   useEffect(() => {
-    if (showPopup) {
-      const timer = setTimeout(() => setShowPopup(false), 2500);
-      return () => clearTimeout(timer);
-    }
-  }, [showPopup]);
+    return () => {
+      previews.forEach((url) => url && URL.revokeObjectURL(url));
+    };
+  }, [previews]);
 
-  // Add product row
-  const addProduct = () => {
-    setOrderItems([...orderItems, { productName: "", quantity: 1, price: 0 }]);
-  };
+  // Handle side image upload
+  const handleImageUpload = (event, index) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
 
-  // Remove product row
-  const removeProduct = (index) => {
-    setOrderItems(orderItems.filter((_, i) => i !== index));
-  };
+    const url = URL.createObjectURL(file);
 
-  // Update product field
-  const handleProductChange = (index, value) => {
-    const newItems = [...orderItems];
-    newItems[index].productName = value;
-    setOrderItems(newItems);
-  };
-
-  // 🔹 Validation Logic (same style as LiveEvent)
-  const validate = () => {
-    const newErrors = {};
-
-    if (!customerName.trim())
-      newErrors.customerName = "Customer name is required.";
-    if (!email.trim()) newErrors.email = "Email is required.";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
-      newErrors.email = "Please enter a valid email.";
-
-    if (!phoneNumber.trim())
-      newErrors.phoneNumber = "Phone number is required.";
-    else if (!/^\d{9,15}$/.test(phoneNumber))
-      newErrors.phoneNumber = "Phone number must be 9–15 digits.";
-
-    if (!address.trim()) newErrors.address = "Shipping address is required.";
-
-    if (!paymentMethod.trim())
-      newErrors.paymentMethod = "Select a payment method.";
-    if (!paymentStatus.trim())
-      newErrors.paymentStatus = "Select a payment status.";
-    if (!shippingMethod.trim())
-      newErrors.shippingMethod = "Select a shipping method.";
-    if (!shippingStatus.trim())
-      newErrors.shippingStatus = "Select a shipping status.";
-
-    // Validate order items
-    orderItems.forEach((item, idx) => {
-      if (!item.productName.trim())
-        newErrors[`product_${idx}`] = `Product code is required for item ${
-          idx + 1
-        }`;
-      if (item.price <= 0)
-        newErrors[`price_${idx}`] = `Price must be greater than 0 for item ${
-          idx + 1
-        }`;
+    setPreviews((prev) => {
+      const updated = [...prev];
+      updated[index] = url;
+      return updated;
     });
 
-    setErrors(newErrors);
-    console.log("🧾 Validation Errors:", newErrors);
-    return Object.keys(newErrors).length === 0;
+    setFormData((prev) => {
+      const imgs = [...(prev.images || [])];
+      imgs[index] = file;
+      return { ...prev, images: imgs };
+    });
+
+    setSelectedIndex(index); // Show newly uploaded image in main preview
   };
 
-  // 🔍 Fetch user by email and autofill details
-  const fetchUserByEmail = async (email) => {
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return;
+  // Handle image removal
+  const handleRemoveImage = (index) => {
+    setPreviews((prev) => {
+      const updated = [...prev];
+      const url = updated[index];
+      if (url) URL.revokeObjectURL(url);
+      updated[index] = null;
+      return updated;
+    });
 
-    try {
-      setLoading(true);
-      console.log(`🔍 Searching user by email: ${email}`);
+    setFormData((prev) => {
+      const imgs = [...(prev.images || [])];
+      imgs[index] = null;
+      return { ...prev, images: imgs };
+    });
 
-      const res = await axios.post(
-        "https://dev-api.payonlive.com/api/user/search",
-        { email },
-        { headers: { "Content-Type": "application/json" } }
-      );
-
-      if (res.data.success && res.data.data) {
-        const user = res.data.data;
-        console.log("✅ User found:", user);
-        setCustomerName(user.customerName || "");
-        setphoneNumber(user.phoneNumber || "");
-        // ✅ Combine full address into one line
-        if (user.address) {
-          const { street, city, state, zipcode, country } = user.address;
-          const fullAddress = [street, city, state, zipcode, country]
-            .filter(Boolean)
-            .join(", ");
-          setAddress(fullAddress || "");
-          console.log("address", fullAddress);
-        }
-        setUserExists(true);
-        setUserChecked(true);
-        showAlert("User details loaded successfully!", "success");
-      } else {
-        // ✅ User not found (no crash)
-        console.warn("⚠️ User not found:", res.data);
-        setUserExists(false);
-        setUserChecked(true);
-        setCustomerName("");
-        setphoneNumber("");
-        setAddress("");
-        showAlert(
-          "User does not exist. Please create the user first.",
-          "warning"
-        );
-      }
-    } catch (error) {
-      // ✅ Handle server-side 404 or network issues gracefully
-      console.error("❌ Error fetching user:", error);
-
-      setUserExists(false);
-      setUserChecked(true);
-      setCustomerName("");
-      setphoneNumber("");
-      setAddress("");
-
-      // Show warning instead of error for user not found
-      if (error.response && error.response.status === 404) {
-        showAlert(
-          "User does not exist. Please create the user first.",
-          "warning"
-        );
-      } else {
-        showAlert("Error fetching user details. Please try again.", "error");
-      }
-    } finally {
-      setLoading(false);
+    // Update main preview to first available image
+    if (selectedIndex === index) {
+      const nextIndex = previews.findIndex((p, i) => p !== null && i !== index);
+      setSelectedIndex(nextIndex >= 0 ? nextIndex : 0);
     }
   };
 
-  // 🔹 Handle form submit
-  const handleSubmit = async (e) => {
+  // When a side image is clicked, show it in main preview
+  const handleSelectMain = (index) => {
+    if (previews[index]) setSelectedIndex(index);
+  };
+
+  // 🟢 Wrapped handleSubmit with loading logic
+  const onSubmit = async (e) => {
     e.preventDefault();
-
-    // 🔒 Block order creation if user not found
-    if (!userExists && userChecked) {
-      showAlert("User does not exist. Please create the user first.", "error");
-      return;
-    }
-
     setLoading(true);
-
-    const isValid = validate();
-    if (!isValid) {
-      setLoading(false); // ✅ Stop spinner if validation fails
-      return;
-    }
-
-    const formattedItems = orderItems.map((item) => ({
-      ...item,
-      color: Array.isArray(item.color)
-        ? item.color
-        : item.color
-        ? [item.color]
-        : [],
-      size: Array.isArray(item.size) ? item.size : item.size ? [item.size] : [],
-    }));
-
-    const payload = {
-      customerName,
-      email,
-      phoneNumber,
-      address,
-      orderItems: formattedItems,
-      paymentMethod,
-      paymentStatus,
-      shippingMethod,
-      shippingStatus,
-      orderTotal: total,
-    };
-
-    console.log("📤 Sending order:", payload);
-
     try {
-      const res = await axios.post(
-        "https://dev-api.payonlive.com/api/order/create-order",
-        payload,
-        { headers: { "Content-Type": "application/json" } }
-      );
-
-      console.log("✅ Order created:", res.data);
-
-      if (res.data?.success || res.status === 200) {
-        showAlert("Order created successfully!", "success");
-        navigate("/user/Orders");
-      } else {
-        showAlert("Failed to create order. Please try again.", "error");
-      }
-    } catch (err) {
-      console.error("Server Error while creating order:", err);
-      showAlert("Server error. Please try again.", "error");
+      await handleSubmit(); // call parent function
+    } catch (error) {
+      console.error("Error submitting:", error);
     } finally {
-      // ✅ Always stop the spinner — success or fail
       setLoading(false);
     }
   };
-
-  // Fetch product details by product code
-  const fetchProductByCode = async (index, code) => {
-    if (!code) return;
-
-    try {
-      console.log(`🔍 Fetching product for code: ${code}`);
-      const res = await axios.get(
-        `https://dev-api.payonlive.com/api/product/product-code/${code}`
-      );
-
-      if (res.data.success) {
-        const product = res.data.data;
-        console.log("✅ Product fetched:", product);
-
-        const newItems = [...orderItems];
-        newItems[index].productCode = code;
-        newItems[index].productName = product.productName || "";
-        newItems[index].price = product.price || 0;
-        newItems[index].availableColors = product.color || [];
-        newItems[index].availableSizes = product.size || [];
-        newItems[index].color = "";
-        newItems[index].size = "";
-        setOrderItems(newItems);
-      } else {
-        console.warn("⚠️ Product not found for code:", code);
-      }
-    } catch (error) {
-      console.error("❌ Error fetching product:", error);
-    }
-  };
-
-  const handleColorSelect = (index, color) => {
-    const newItems = [...orderItems];
-    newItems[index].color = color;
-    setOrderItems(newItems);
-  };
-
-  // ✅ Handle size click
-  const handleSizeSelect = (index, size) => {
-    const newItems = [...orderItems];
-    newItems[index].size = size;
-    setOrderItems(newItems);
-  };
-
-  // calculate
-  const subtotal = orderItems.reduce(
-    (acc, item) => acc + item.price * item.quantity,
-    0
-  );
-  const tax = subtotal * 0.1; // Example 10%
-  const shippingFee = shippingMethod === "Free Shipping" ? 0 : 7;
-  const total = subtotal + tax + shippingFee;
 
   return (
-    <div>
-      <Navbar heading="Order Management" />
+    <div className="mb-10">
+      <Navbar heading="Gestion des produits" />
 
-      {/* discard button */}
-      <div className="flex justify-between mt-5 mx-10">
-        <h1 className="font-medium text-lg">Order Creation</h1>
-        <button
-          onClick={() => navigate("/user/Orders")}
-          className="px-3 py-1 border border-red-700 text-red-700 bg-red-50 rounded-md hover:bg-gray-100"
-        >
-          <FontAwesomeIcon
-            icon={faXmark}
-            size="lg"
-            className="text-red-700 px-2"
-          />
-          Discard
-        </button>
+      <h1 className="mt-5 text-start mx-5 font-medium text-lg">
+        Création de produits
+      </h1>
+
+      <div className="max-w-3xl mx-auto mt-10 bg-white p-6 border-0">
+        {/* progress indicator */}
+        <div className="flex justify-center items-center mt-5 gap-4 mb-5">
+          <div className="flex flex-col items-center text-black font-semibold">
+            <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[#02B978] text-white">
+              <FontAwesomeIcon
+                icon={faCheck}
+                size="lg"
+                className="text-white px-3 "
+              />
+            </div>
+            <span className="mt-3 text-sm font-bold text-[#02B978]">
+              Saisir les informations sur le produit
+            </span>
+          </div>
+          <div className="flex-1 pb-5 border-t-3 border-[#02B978]"></div>
+          <div className="flex flex-col items-center text-gray-400 font-semibold">
+            <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[#02B978] text-white">
+              <FontAwesomeIcon
+                icon={faCheck}
+                size="lg"
+                className="text-white px-3 "
+              />
+            </div>
+            <span className="mt-3 font-bold text-sm text-[#02B978]">
+              Ajouter des variations
+            </span>
+          </div>
+          <div className="flex-1 pb-5 border-t-3 border-[#02B978]"></div>
+          <div className="flex flex-col items-center text-gray-400 font-semibold">
+            <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[#02B978] text-white border border-gray-300">
+              3
+            </div>
+            <span className="mt-3 text-sm text-[#02B978]">Ajouter des images</span>
+          </div>
+        </div>
       </div>
 
-      {/* Form wrapper */}
+      {/* FORM START */}
       <form
-        onSubmit={handleSubmit}
-        className="max-w-6xl mx-6 sm:px-6 lg:px-8 py-6 space-y-8 font-sans text-gray-700"
+       onSubmit={onSubmit}
       >
-        {/* Create New Order */}
-        <section className="border border-gray-400 rounded-lg p-6 space-y-6">
-          <h2 className="text-lg font-semibold pb-3">Create New Order</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-            <div>
-              <label className="block mb-1 text-sm font-medium">
-                Customer Name
-              </label>
-              <input
-                value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
-                placeholder="Full name"
-                className="w-full rounded-lg border px-3 py-2 text-sm"
-              />
-              {errors.customerName && (
-                <p className="text-red-500 text-sm">{errors.customerName}</p>
-              )}
-            </div>
-            <div>
-              <label className="block mb-1 text-sm font-medium">Email</label>
-              <input
-                value={email}
-                // onChange={(e) => setEmail(e.target.value)}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  setUserChecked(false);
-                  setUserExists(false);
-                }}
-                // onBlur={() => fetchUserByEmail(email)}
-                onBlur={(e) => fetchUserByEmail(e.target.value)}
-                type="email"
-                placeholder="customer@email.com"
-                className="w-full rounded-lg border px-3 py-2 text-sm"
-              />
-              {errors.email && (
-                <p className="text-red-500 text-sm">{errors.email}</p>
-              )}
-            </div>
-            <div>
-              <label className="block mb-1 text-sm font-medium">
-                phoneNumber
-              </label>
-              <input
-                value={phoneNumber}
-                onChange={(e) => setphoneNumber(e.target.value)}
-                type="number"
-                placeholder="+122 2313 3212"
-                className="w-full rounded-lg border px-3 py-2 text-sm"
-              />
-              {errors.phoneNumber && (
-                <p className="text-red-500 text-sm">{errors.phoneNumber}</p>
-              )}
-            </div>
-            <div>
-              <label className="block mb-1 text-sm font-medium">
-                Shipping address
-              </label>
-              <input
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                placeholder="123, main city, state"
-                className="w-full rounded-lg border px-3 py-2 text-sm"
-              />
-              {errors.address && (
-                <p className="text-red-500 text-sm">{errors.address}</p>
-              )}
-            </div>
-          </div>
-        </section>
-
-        {/* Order Items */}
-        {/* <section className="border border-gray-400 rounded-lg p-6 overflow-x-auto">
-          <div className="flex justify-between items-center pb-3 mb-4">
-            <h2 className="text-lg font-semibold">Order Items</h2>
-            <button
-              onClick={addProduct}
-              className="flex items-center gap-2 bg-green-600 text-white text-[12px] px-3 py-2 rounded-lg hover:bg-green-700"
-              type="button"
-            >
-              <FontAwesomeIcon icon={faPlus} /> Add product
-            </button>
-          </div>
-
-          {orderItems.map((item, idx) => (
-            <div
-              key={idx}
-              className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center py-3 border-b border-gray-400"
-            >
-              <div className="md:col-span-5">
-                <select
-                  value={item.product}
-                  onChange={(e) => handleProductChange(idx, e.target.value)}
-                  className="w-full text-sm bg-gray-100 rounded-xl border px-2 py-2"
-                >
-                  <option value="">Select product</option>
-                  <option>Product A</option>
-                  <option>Product B</option>
-                  <option>Product C</option>
-                </select>
-              </div>
-
-              <div className="md:col-span-1 text-center">{item.quantity}</div>
-              <div className="md:col-span-2 text-center">€ {item.price.toFixed(2)}</div>
-              <div className="md:col-span-2 text-center">
-                € {(item.price * item.quantity).toFixed(2)}
-              </div>
-              <div className="md:col-span-2 flex justify-center">
-                <button
-                  onClick={() => removeProduct(idx)}
-                  className="w-8 h-8 flex justify-center items-center rounded-full hover:bg-red-100"
-                  type="button"
-                >
-                  <FontAwesomeIcon icon={faTrash} className="text-red-600 text-sm" />
-                </button>
-              </div>
-            </div>
-          ))}
-        </section> */}
-
-        {/* Order Items */}
-        <section className="border border-gray-400 rounded-lg p-6 overflow-x-auto">
-          <div className="flex justify-between items-center pb-3 mb-4">
-            <h2 className="text-lg font-semibold">Order Items</h2>
-            <button
-              onClick={addProduct}
-              className="flex items-center gap-2 bg-green-600 text-white text-[12px] px-3 py-2 rounded-lg hover:bg-green-700"
-              type="button"
-            >
-              <FontAwesomeIcon icon={faPlus} /> Add product
-            </button>
-          </div>
-
-          {orderItems.map((item, idx) => (
-            <div
-              key={idx}
-              className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center py-3 border-b border-gray-400"
-            >
-              {/* Product dropdown */}
-              {/* <div className="md:col-span-4">
-                <label className="block mb-1 text-sm font-medium">
-                  Product Name
-                </label>
-                <select
-                  value={item.productName}
-                  onChange={(e) => handleProductChange(idx, e.target.value)}
-                  className="w-full text-sm  rounded-xl border px-2 py-2"
-                >
-                  <option value="">Select product</option>
-                  <option>Travel bag</option>
-                  <option>clothes</option>
-                  <option>boots</option>
-                  <option>T-Shirt</option>
-                  <option>Asus</option>
-                  <option >Adidas shoes</option>
-                </select>
-                {errors[`product_${idx}`] && (
-                  <p className="text-red-500 text-sm">
-                    {errors[`product_${idx}`]}
-                  </p>
-                )}
-              </div> */}
-              <div className="md:col-span-3">
-                <label className="block mb-1 text-sm font-medium">
-                  Product Name
-                </label>
-                <input
-                  value={item.productName}
-                  // onChange={(e) => handleProductChange(idx, e.target.value)}
-                  onChange={(e) => {
-                    const newItems = [...orderItems];
-                    newItems[idx].productName = e.target.value;
-                    setOrderItems(newItems);
-                  }}
-                  onBlur={() => fetchProductByCode(idx, item.productName)}
-                  placeholder="enter product code"
-                  className="w-full text-sm  rounded-xl border px-2 py-2"
-                />
-                {errors.address && (
-                  <p className="text-red-500 text-sm">
-                    {errors[`product_${idx}`]}
-                  </p>
-                )}
-              </div>
-
-              {/* Color Dropdown */}
-              {/* <div className="md:col-span-2">
-                <label className="block mb-1 text-sm font-medium">Color</label>
-                <select
-                  value={item.color || ""}
-                  onChange={(e) => {
-                    const newItems = [...orderItems];
-                    newItems[idx].color = e.target.value;
-                    setOrderItems(newItems);
-                  }}
-                  className="w-full text-sm border rounded-lg px-2 py-2"
-                >
-                  <option value="">Select color</option>
-                  {(item.availableColors || []).map((clr, cidx) => (
-                    <option key={cidx} value={clr}>
-                      {clr}
-                    </option>
-                  ))}
-                </select>
-              </div> */}
-
-              {/* Color Section */}
-              <div className="md:col-span-2">
-                <label className="block mb-1 text-sm font-medium">Color</label>
-
-                {/* ✅ If product has colors → show color circles */}
-                {Array.isArray(item.availableColors) &&
-                item.availableColors.length > 0 ? (
-                  <div className="flex flex-wrap items-center gap-2 mt-1">
-                    {item.availableColors.map((c, i) => (
-                      <span
-                        key={i}
-                        // onClick={() => {
-                        //   const newItems = [...orderItems];
-                        //   newItems[idx].color = [c];
-                        //   setOrderItems(newItems);
-                        // }}
-                        onClick={() => handleColorSelect(idx, c)}
-                        className={`w-7 h-7 rounded-full border border-gray-300 cursor-pointer shadow-sm transition ${
-                          item.color === c ? "ring-2 ring-gray-800" : ""
-                        }`}
-                        style={{ backgroundColor: c }}
-                        title={c} // shows color name on hover
-                      ></span>
-                    ))}
-                  </div>
-                ) : (
-                  // ⚙️ Fallback: Show dropdown if backend has no colors
-                  <select
-                    value={item.color || ""}
-                    onChange={(e) => {
-                      const newItems = [...orderItems];
-                      newItems[idx].color = e.target.value;
-                      setOrderItems(newItems);
-                    }}
-                    className="w-full text-sm border rounded-lg px-2 py-2"
-                  >
-                    <option value="">Select color</option>
-                    <option value="Red">Red</option>
-                    <option value="Blue">Blue</option>
-                    <option value="Black">Black</option>
-                    {/* <option value="White">White</option>
-                    <option value="Green">Green</option> */}
-                  </select>
-                )}
-              </div>
-
-              {/* Size Selector */}
-              <div className="md:col-span-2">
-                <label className="block mb-1 text-sm font-medium">Size</label>
-                <div className="flex flex-wrap items-center gap-2 mt-1">
-                  {["S", "M", "L", "XL"].map((sz) => (
-                    <span
-                      key={sz}
-                      // onClick={() => {
-                      //   const newItems = [...orderItems];
-                      //   newItems[idx].size = [sz];
-                      //   setOrderItems(newItems);
-                      // }}
-                      onClick={() => handleSizeSelect(idx, sz)}
-                      className={`w-8 h-8 flex items-center justify-center text-sm rounded-full cursor-pointer border transition 
-                ${
-                  item.size === sz
-                    ? "bg-gray-900 text-white border-gray-900"
-                    : "bg-white text-gray-800 border-gray-300 hover:bg-gray-100"
-                }`}
-                    >
-                      {sz}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              {/* Quantity dropdown */}
-              <div className="md:col-span-1 text-center">
-                <label className="block mb-1 text-start text-sm font-medium">
-                  Quantity
-                </label>
-                <select
-                  value={item.quantity}
-                  onChange={(e) => {
-                    const newItems = [...orderItems];
-                    newItems[idx].quantity = parseInt(e.target.value, 10);
-                    setOrderItems(newItems);
-                  }}
-                  className="w-full text-sm border rounded-lg px-2 py-2"
-                >
-                  {[...Array(20)].map((_, i) => (
-                    <option key={i + 1} value={i + 1}>
-                      {i + 1}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Price input */}
-              <div className="md:col-span-1 text-center">
-                <label className="block mb-1 text-start text-sm font-medium">
-                  Price
-                </label>
-                <input
-                  readOnly
-                  type="number"
-                  value={item.price}
-                  className="w-full text-sm border rounded-lg px-2 py-2 text-center"
-                />
-                {/* {errors[`price_${idx}`] && (
-                  <p className="text-red-500 text-sm">
-                    {errors[`price_${idx}`]}
-                  </p>
-                )} */}
-              </div>
-
-              {/* Total auto-calculated (read-only) */}
-              <div className="md:col-span-1 text-center">
-                <label className="block mb-1 text-start text-sm font-medium">
-                  Total
-                </label>
-                <input
-                  type="text"
-                  readOnly
-                  value={(item.price * item.quantity).toFixed(2)}
-                  className="w-full text-sm border rounded-lg px-2 py-2 text-center "
-                />
-              </div>
-
-              {/* Remove button */}
-              <div className="md:col-span-2 flex justify-center">
-                <button
-                  onClick={() => removeProduct(idx)}
-                  className="w-8 h-8 flex justify-center items-center rounded-full hover:bg-red-100"
-                  type="button"
-                >
-                  <FontAwesomeIcon
-                    icon={faTrash}
-                    className="text-red-600 text-sm"
+        {/* main preview and side uploads */}
+        <div className="bg-gray-100 mx-auto p-6 rounded-2xl w-full max-w-lg">
+          <h3 className="font-semibold text-gray-800 mb-3">Ajouter des images</h3>
+          <div className="flex gap-4 rounded-2xl">
+            {/* Main Preview */}
+            <div className="relative flex-1">
+              <div className="flex-1 flex flex-col items-center justify-center border-2 border-gray-300 rounded-xl h-64 bg-white overflow-hidden">
+                {previews[selectedIndex] ? (
+                  <img
+                    src={previews[selectedIndex]}
+                    alt="Main Preview"
+                    className="h-full w-full object-cover rounded-lg"
                   />
-                </button>
+                ) : (
+                  <span className="text-gray-500">Aucune image sélectionnée</span>
+                )}
               </div>
             </div>
-          ))}
-        </section>
 
-        {/* Payment Details */}
-        <section className="border border-gray-400 rounded-lg p-6 grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <div>
-            <label className="block mb-1 text-sm font-medium">
-              Payment Method
-            </label>
-            <select
-              value={paymentMethod}
-              onChange={(e) => setPaymentMethod(e.target.value)}
-              className="w-full rounded-lg border px-3 py-2 text-sm"
-            >
-              <option value="">Select Payment method</option>
-              <option>Stripe</option>
-              <option>Paypal</option>
-            </select>
-            {errors.paymentMethod && (
-              <p className="text-red-500 text-sm">{errors.paymentMethod}</p>
-            )}
-          </div>
-          <div>
-            <label className="block mb-1 text-sm font-medium">
-              Payment Status
-            </label>
-            <select
-              value={paymentStatus}
-              onChange={(e) => setPaymentStatus(e.target.value)}
-              className="w-full rounded-lg border px-3 py-2 text-sm"
-            >
-              <option value="">Select payment status</option>
-              <option>Paid</option>
-              <option>Pending</option>
-              <option>Failed</option>
-            </select>
-            {errors.paymentStatus && (
-              <p className="text-red-500 text-sm">{errors.paymentStatus}</p>
-            )}
-          </div>
-        </section>
-
-        {/* Shipping Details */}
-        <section className="border border-gray-400 rounded-lg p-6 grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <div>
-            <label className="block mb-1 text-sm font-medium">
-              Shipping Method
-            </label>
-            <select
-              value={shippingMethod}
-              onChange={(e) => setShippingMethod(e.target.value)}
-              className="w-full rounded-lg border px-3 py-2 text-sm"
-            >
-              <option value="">Select Shipping method</option>
-              <option>Flat Rate</option>
-              <option>Free Shipping</option>
-              <option>Local Pickup</option>
-            </select>
-            {errors.shippingMethod && (
-              <p className="text-red-500 text-sm">{errors.shippingMethod}</p>
-            )}
-          </div>
-          <div>
-            <label className="block mb-1 text-sm font-medium">
-              Shipping Status
-            </label>
-            <select
-              value={shippingStatus}
-              onChange={(e) => setShippingStatus(e.target.value)}
-              className="w-full rounded-lg border px-3 py-2 text-sm"
-            >
-              <option value="">Select shipping status</option>
-              {/* <option>Shipped</option> */}
-              <option>Pending</option>
-              <option>Processing</option>
-              {/* <option>Delivered</option> */}
-            </select>
-            {errors.shippingStatus && (
-              <p className="text-red-500 text-sm">{errors.shippingStatus}</p>
-            )}
-          </div>
-        </section>
-
-        {/* Order Summary */}
-        <section className="border border-gray-400 rounded-lg p-4 w-full sm:w-80">
-          <h3 className="font-semibold mb-4 text-sm text-gray-700">
-            Order Summary
-          </h3>
-          <div className="text-sm text-gray-700 space-y-2">
-            <div className="flex justify-between">
-              <span>Sub Total</span>
-              <span> € {subtotal} </span>
-            </div>
-            <div className="flex justify-between">
-              <span>Tax</span>
-              <span> € {tax} </span>
-            </div>
-            {/* <div className="flex justify-between">
-            <span>Discount</span>
-            <span>€ 12.44</span>
-          </div> */}
-            <div className="flex justify-between">
-              <span>Shipping Fee</span>
-              <span>€ {shippingFee} </span>
-            </div>
-            <div className="border-t border-gray-400 mt-5 pt-2 font-semibold flex justify-between">
-              <span>Total</span>
-              <span>€ {total} </span>
+            {/* Side Uploads */}
+            <div className="flex flex-col gap-3">
+              {[0, 1, 2, 3].map((index) => (
+                <div key={index} className="relative">
+                  <label
+                    htmlFor={`sideImageUpload-${index}`}
+                    className="w-12 h-12 flex items-center justify-center bg-gray-200 rounded-lg cursor-pointer hover:bg-gray-300 transition overflow-hidden"
+                  >
+                    {previews[index] ? (
+                      <img
+                        src={previews[index]}
+                        alt={`Upload ${index}`}
+                        className="w-full h-full object-cover rounded-lg"
+                        onClick={() => handleSelectMain(index)}
+                      />
+                    ) : (
+                      <FontAwesomeIcon
+                        icon={faPlus}
+                        className="text-gray-600"
+                      />
+                    )}
+                  </label>
+                  <input
+                    id={`sideImageUpload-${index}`}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => handleImageUpload(e, index)}
+                    required={index === 0} // ✅ HTML5 required only for the first image
+                  />
+                  {previews[index] && (
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveImage(index)}
+                      className="absolute top-1 right-1 bg-black bg-opacity-50 text-white rounded-full p-1"
+                    >
+                      <FontAwesomeIcon icon={faTimes} size="sm" />
+                    </button>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
-        </section>
+        </div>
 
-        {/* Submit Button */}
-        {/* <div className="flex justify-end">
+        <div className="mx-auto w-90"> 
+        <h6 className=" text-sm font-medium my-2">
+          <FontAwesomeIcon icon={faCircleInfo} className="pr-1"/>Seuls les formats png ou jpg sont acceptables.
+        </h6>
+        <h6 className=" text-sm font-medium my-2">
+          <FontAwesomeIcon icon={faCircleInfo} /> La taille de chaque image ne doit pas dépasser 5 Mb.
+        </h6>
+        </div>
+
+        {/* navigation */}
+        <div className="flex justify-between max-w-lg mx-auto mt-6">
           <button
-            type="submit"
-            className="bg-green-600 text-white font-semibold rounded-lg px-5 py-2 text-sm hover:bg-green-700"
+            type="button"
+            onClick={() => navigate("/user/Products")}
+            className="px-3 py-1 border border-red-700 text-red-700 bg-red-50 rounded-md hover:bg-gray-100"
           >
-            Submit Order
+            <FontAwesomeIcon
+              icon={faXmark}
+              size="lg"
+              className="text-red-700 px-2"
+            />
+            Discard Product
           </button>
-        </div> */}
 
-        <div className="flex justify-end mt-4">
           <button
+            type="button"
+            onClick={prevStep}
+            className="px-4 py-2 bg-gray-900 text-white border rounded-lg hover:bg-gray-700"
+          >
+            <FontAwesomeIcon icon={faArrowLeft} /> précédent
+          </button>
+
+          {/* <button
+            type="submit"
+            className="px-4 py-2 bg-[#02B978] text-white rounded-lg hover:bg-[#04D18C]"
+          >
+            Soumettre <FontAwesomeIcon icon={faCheck} />
+          </button> */}
+
+           <button
             type="submit"
             disabled={loading}
-            className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2"
+            className={`px-4 py-2 rounded-lg flex items-center gap-2 text-white 
+              ${loading ? "bg-[#02B978]/70 cursor-not-allowed" : "bg-[#02B978] hover:bg-[#04D18C]"}`}
           >
             {loading && (
               <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
             )}
-            {loading ? "Submitting..." : "Submit Order"}
+            {loading ? "Soumettre..." : "Soumettre"} <FontAwesomeIcon icon={faCheck} />
           </button>
+
         </div>
       </form>
+      {/* FORM END */}
     </div>
   );
-};
+}
 
-export default CreateOrder;
+export default AddProductStep3;

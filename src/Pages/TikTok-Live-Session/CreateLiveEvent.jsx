@@ -21,7 +21,7 @@ function CreateLiveEvent() {
     eventName: "",
     eventDescription: "",
     sessionID: "",
-    status: "inactive",
+    status: "",
     startDateTime: "",
     endDateTime: "",
     eventLink: "",
@@ -160,7 +160,7 @@ function CreateLiveEvent() {
     //   newErrors.sessionID = "Session ID already exists.";
 
     // Status
-    const validStatuses = ["active", "inactive", "about to come", "suspended"];
+    const validStatuses = ["actif", "inactif", "sur-point-d'arriver", "suspendu"];
     if (!status.trim()) newErrors.status = "Status is required.";
     else if (!validStatuses.includes(status))
       newErrors.status = "Invalid status selected.";
@@ -205,277 +205,6 @@ function CreateLiveEvent() {
     return Object.keys(newErrors).length === 0;
   };
 
-  // ----------------------
-  // Submit Event
-  // ----------------------
-//  const handleSave = async (e) => {
-//   e.preventDefault();
-//   if (!validate()) return;
-
-//   setBtnLoading(true);
-//   setLoading(true);
-
-//   const payload = {
-//     eventDetails: {
-//       ...eventDetails,
-//       status: eventDetails.status.toLowerCase(),
-//       startDateTime: new Date(eventDetails.startDateTime).toISOString(),
-//       endDateTime: new Date(eventDetails.endDateTime).toISOString(),
-//     },
-//     products: products.map((p) => ({ productId: p._id })),
-//     hostInformation: {
-//       ...hostInfo,
-//       hostPhoneNumber: String(hostInfo.hostPhoneNumber),
-//     },
-//   };
-
-//   try {
-//     const response = await axios.post(
-//       "https://dev-api.payonlive.com/api/event/create-live-event",
-//       payload,
-//       {
-//         headers: { "Content-Type": "application/json" },
-//       }
-//     );
-
-//     if (response.data?.success || response.status === 200) {
-//       showAlert("Event created successfully!", "success", () => {
-//         navigate("/user/tiktok");
-//       });
-//     } else {
-//       showAlert(response.data.message || "Failed to create event.", "error");
-//     }
-//   } catch (error) {
-//     console.error("❌ Error creating event:", error);
-//     showAlert("Server error - Please try again.", "error");
-//   } finally {
-//     // ✅ Always stop spinner regardless of success or failure
-//     setBtnLoading(false);
-//     setLoading(false);
-//   }
-// };
-
-// const handleSave = async (e) => {
-//   e.preventDefault();
-
-//   // Run existing validation
-//   if (!validate()) return;
-
-//   // Check product selection
-//   if (products.length === 0) {
-//     showAlert("Please select at least one product.", "error");
-//     return;
-//   }
-
-//   // ✅ Check local sessionID uniqueness
-//   const isDuplicate = existingSessions.includes(eventDetails.sessionID.trim());
-//   if (isDuplicate) {
-//     setErrors((prev) => ({
-//       ...prev,
-//       sessionID: "Please enter a unique session ID.",
-//     }));
-//     showAlert("Please enter a unique session ID.", "error");
-//     return;
-//   }
-
-//   // If everything passes
-//   setBtnLoading(true);
-//   setLoading(true);
-
-//   const payload = {
-//     eventDetails: {
-//       ...eventDetails,
-//       status: eventDetails.status.toLowerCase(),
-//       startDateTime: new Date(eventDetails.startDateTime).toISOString(),
-//       endDateTime: new Date(eventDetails.endDateTime).toISOString(),
-//     },
-//     products: products.map((p) => ({ productId: p._id })),
-//     hostInformation: {
-//       ...hostInfo,
-//       hostPhoneNumber: String(hostInfo.hostPhoneNumber),
-//     },
-//   };
-
-//   try {
-//     const response = await axios.post(
-//       "https://dev-api.payonlive.com/api/event/create-live-event",
-//       payload,
-//       { headers: { "Content-Type": "application/json" } }
-//     );
-
-//     if (response.data?.success || response.status === 200) {
-//       showAlert("Event created successfully!", "success", () => {
-//         navigate("/user/tiktok");
-//       });
-//     } else {
-//       showAlert(response.data.message || "Failed to create event.", "error");
-//     }
-//   } catch (error) {
-//     console.error("❌ Error creating event:", error);
-//     showAlert("Server error - Please try again.", "error");
-//   } finally {
-//     setBtnLoading(false);
-//     setLoading(false);
-//   }
-// };
-
-// ----------------------
-// Submit Event
-// ----------------------
-// const handleSave = async (e) => {
-//   e.preventDefault();
-
-//   // 1️⃣ Run existing validation first
-//   if (!validate()) return;
-
-//   // 2️⃣ Check if at least one product is selected
-//   if (products.length === 0) {
-//     showAlert("Please select at least one product.", "info");
-//     return;
-//   }
-
-//   // 3️⃣ Check if sessionID is unique
-//   try {
-//     const sessionCheck = await axios.get(
-//       `https://dev-api.payonlive.com/api/event/check-event-session/${eventDetails.sessionID}`
-//     );
-
-//     // If API returns that the session already exists
-//     if (sessionCheck.data?.exists) {
-//       setErrors((prev) => ({
-//         ...prev,
-//         sessionID: " Please enter a unique session ID.",
-//       }));
-//       showAlert("Session ID already exits please enter a unique session ID.", "info");
-//       return;
-//     }
-//   } catch (error) {
-//     console.error("❌ Error checking session ID:", error);
-//     showAlert("Unable to verify session ID. Please try again.", "error");
-//     return;
-//   }
-
-//   // 4️⃣ Proceed only if all validations pass
-//   setBtnLoading(true);
-//   setLoading(true);
-
-//   const payload = {
-//     eventDetails: {
-//       ...eventDetails,
-//       status: eventDetails.status.toLowerCase(),
-//       startDateTime: new Date(eventDetails.startDateTime).toISOString(),
-//       endDateTime: new Date(eventDetails.endDateTime).toISOString(),
-//     },
-//     products: products.map((p) => ({ productId: p._id })),
-//     hostInformation: {
-//       ...hostInfo,
-//       hostPhoneNumber: String(hostInfo.hostPhoneNumber),
-//     },
-//   };
-
-//   try {
-//     const response = await axios.post(
-//       "https://dev-api.payonlive.com/api/event/create-live-event",
-//       payload,
-//       {
-//         headers: { "Content-Type": "application/json" },
-//       }
-//     );
-
-//     if (response.data?.success || response.status === 200) {
-//       showAlert("Event created successfully!", "success", () => {
-//         navigate("/user/tiktok");
-//       });
-//     } else {
-//       showAlert(response.data.message || "Failed to create event.", "error");
-//     }
-//   } catch (error) {
-//     console.error("❌ Error creating event:", error);
-//     showAlert("Server error - Please try again.", "error");
-//   } finally {
-//     setBtnLoading(false);
-//     setLoading(false);
-//   }
-// };
-
-// const handleSave = async (e) => {
-//   e.preventDefault();
-
-//   // 1️⃣ Run validation first
-//   if (!validate()) return;
-
-//   // 2️⃣ Ensure product selection
-//   if (products.length === 0) {
-//     showAlert("Please select at least one product.", "info");
-//     return;
-//   }
-
-//   // 3️⃣ Check session ID uniqueness
-//   try {
-//     const sessionCheck = await axios.get(
-//       `https://dev-api.payonlive.com/api/event/check-event-session/${eventDetails.sessionID}`
-//     );
-
-//     console.log("🔍 Session check response:", sessionCheck.data);
-
-//     if (sessionCheck.data?.exists === true) {
-//       setErrors((prev) => ({
-//         ...prev,
-//         sessionID: "Please enter a unique session ID.",
-//       }));
-//       showAlert(
-//         "Session ID already exists. Please enter a unique session ID.",
-//         "info"
-//       );
-//       return;
-//     }
-//   } catch (error) {
-//     console.error("❌ Error checking session ID:", error);
-//     showAlert("Unable to verify session ID. Please try again.", "error");
-//     return;
-//   }
-
-//   // 4️⃣ Proceed if unique
-//   setBtnLoading(true);
-//   setLoading(true);
-
-//   const payload = {
-//     eventDetails: {
-//       ...eventDetails,
-//       status: eventDetails.status.toLowerCase(),
-//       startDateTime: new Date(eventDetails.startDateTime).toISOString(),
-//       endDateTime: new Date(eventDetails.endDateTime).toISOString(),
-//     },
-//     products: products.map((p) => ({ productId: p._id })),
-//     hostInformation: {
-//       ...hostInfo,
-//       hostPhoneNumber: String(hostInfo.hostPhoneNumber),
-//     },
-//   };
-
-//   try {
-//     const response = await axios.post(
-//       "https://dev-api.payonlive.com/api/event/create-live-event",
-//       payload,
-//       { headers: { "Content-Type": "application/json" } }
-//     );
-
-//     if (response.data?.success || response.status === 200) {
-//       showAlert("Event created successfully!", "success", () => {
-//         navigate("/user/tiktok");
-//       });
-//     } else {
-//       showAlert(response.data.message || "Failed to create event.", "error");
-//     }
-//   } catch (error) {
-//     console.error("❌ Error creating event:", error);
-//     showAlert("Server error - Please try again.", "error");
-//   } finally {
-//     setBtnLoading(false);
-//     setLoading(false);
-//   }
-// };
-
 const handleSave = async (e) => {
   e.preventDefault();
 
@@ -488,34 +217,7 @@ const handleSave = async (e) => {
     return;
   }
 
-  // 3️⃣ Check session ID uniqueness
-  // try {
-  //   const sessionCheck = await axios.get(
-  //     `https://dev-api.payonlive.com/api/event/check-event-session/${eventDetails.sessionID}`
-  //   );
-
-  //   console.log("🔍 API response:", sessionCheck.data);
-
-  //   // 🚀 Correct logic
-  //   if (sessionCheck.data?.exists === true) {
-  //     setErrors((prev) => ({
-  //       ...prev,
-  //       sessionID: "Session ID already exists.",
-  //     }));
-  //     showAlert(
-  //       "Session ID already exists. Please enter a unique session ID.",
-  //       "info"
-  //     );
-  //     return;
-  //   }
-
-  //   // If false → continue
-  // } catch (error) {
-  //   console.error("❌ Error checking session ID:", error);
-  //   showAlert("Unable to verify session ID. Please try again.", "error");
-  //   return;
-  // }
-
+ 
   // 4️⃣ Proceed if unique (exists === false)
   setBtnLoading(true);
   setLoading(true);
@@ -653,9 +355,9 @@ const handleSave = async (e) => {
                 onChange={handleEventChange}
                 className="w-full border border-gray-300 px-4 py-2 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
               >
-                <option value="inactive">Inactive</option>
-                <option value="active">Active</option>
-                <option value="about to come">About to come</option>
+                <option value="inactif">Inactif</option>
+                <option value="actif">Actif</option>
+                <option value="sur-point-d'arriver">Sur-point-d'arriver</option>
                 <option value="suspended">Suspended</option>
               </select>
                {errors.status && (
@@ -705,7 +407,7 @@ const handleSave = async (e) => {
             {/* Event Link */}
             <div className="flex flex-col">
               <label className="mb-1 text-gray-700 font-medium">
-                TikTok Live Link*
+                Lien direct TikTok*
               </label>
               <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2 shadow-sm focus-within:ring-2 focus-within:ring-blue-400 transition">
                 <input
@@ -740,9 +442,9 @@ const handleSave = async (e) => {
                 className="w-full border border-gray-300 px-4 py-2 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
               >
                 <option value="">Sélectionnez une catégorie</option>
-                <option value="Fashion">Fashion</option>
-                <option value="Beauty">Beauty</option>
-                <option value="Other">Other</option>
+                <option value="mode">Mode</option>
+                <option value="beauté">Beauté</option>
+                <option value="autre">Autre</option>
               </select>
                {errors.eventCategory && (
               <p className="text-red-500 text-sm">{errors.eventCategory}</p>
@@ -754,7 +456,7 @@ const handleSave = async (e) => {
         {/* Selected Products */}
         <section className="border border-gray-400 rounded-2xl p-6 bg-white shadow-sm space-y-6">
           <h2 className="text-xl font-semibold text-gray-900">
-            Selected products for live
+            Produits sélectionnés pour live
           </h2>
 
           <div className="flex flex-col sm:flex-row sm:space-x-4 space-y-3 sm:space-y-0">
@@ -762,7 +464,7 @@ const handleSave = async (e) => {
               type="text"
               value={productId}
               onChange={(e) => setProductId(e.target.value)}
-              placeholder="Search by Product Code"
+              placeholder="Recherche par code produit"
               className="flex-grow border border-gray-400 rounded-lg px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-blue-900"
             />
             <button
@@ -770,7 +472,7 @@ const handleSave = async (e) => {
               onClick={handleSearch}
               className="bg-[#02B978] text-white rounded-xl px-4 py-2 text-base font-medium hover:bg-[#04D18C] transition"
             >
-              Select Product
+              Sélectionner Produits
             </button>
           </div>
 

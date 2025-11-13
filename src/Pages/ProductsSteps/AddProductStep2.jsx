@@ -299,9 +299,9 @@ function AddProductStep2({ formData, setFormData, prevStep, nextStep }) {
                 className="w-full border rounded-lg px-3 py-2"
               >
                 <option value="">Sélectionner catégorie </option>
-                <option value="Clothing">Clothing</option>
-                <option value="Shoes">Shoes</option>
-                <option value="Accessories">Accessories</option>
+                <option value="vêtements">Vêtements</option>
+                <option value="chaussures">Chaussures</option>
+                <option value="accessoires">Accessoires</option>
               </select>
             </div>
 

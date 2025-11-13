@@ -21,7 +21,7 @@ function UpdateEvent() {
     eventName: "",
     eventDescription: "",
     sessionID: "",
-    status: "Inactive",
+    status: "",
     startDateTime: "",
     endDateTime: "",
     eventLink: "",
@@ -48,7 +48,7 @@ function UpdateEvent() {
         eventName: data.eventDetails?.eventName || "",
         eventDescription: data.eventDetails?.eventDescription || "",
         sessionID: data.eventDetails?.sessionID || "",
-        status: data.eventDetails?.status || "Inactive",
+        status: data.eventDetails?.status || "",
         startDateTime: data.eventDetails?.startDateTime
           ? data.eventDetails.startDateTime.slice(0, 16)
           : "",
@@ -203,7 +203,7 @@ function UpdateEvent() {
             size="lg"
             className="text-red-700 px-2"
           />
-          Discard
+          Jeter
         </button>
       </div>
 
@@ -231,7 +231,7 @@ function UpdateEvent() {
               {/* Event Description */}
               <div>
                 <label className="block text-sm font-medium mb-1">
-                  Description de l'événemen*
+                  Description de événemen*
                 </label>
                 <input
                   type="text"
@@ -270,10 +270,10 @@ function UpdateEvent() {
                   className="w-full border border-gray-400 rounded-md px-3 py-2"
                   required
                 >
-                  <option value="inactive">Inactive</option>
-                  <option value="active">Active</option>
-                  <option value="about to come">About to come</option>
-                  <option value="suspended">Suspended</option>
+                  <option value="inactif">Inactif</option>
+                  <option value="actif">Actif</option>
+                  <option value="sur-point-d'arriver">Sur-point-d'arriver</option>
+                  <option value="suspendu">Suspendu</option>
                 </select>
               </div>
 
@@ -310,7 +310,7 @@ function UpdateEvent() {
               {/* Event Link */}
               <div>
                 <label className="block text-sm font-medium mb-1">
-                  TikTok Live Event Link*
+                  Lien événement TikTok en direct*
                 </label>
                 <div className="flex items-center border border-gray-400 rounded-md px-3 py-2">
                   <input
@@ -344,9 +344,9 @@ function UpdateEvent() {
                   required
                 >
                   <option value="">Sélectionnez une catégorie</option>
-                  <option value="Fashion">Fashion</option>
-                  <option value="Beauty">Beauty</option>
-                  <option value="Other">Other</option>
+                  <option value="mode">Mode</option>
+                  <option value="beauté">Beauté</option>
+                  <option value="autre">Autre</option>
                 </select>
               </div>
             </div>
@@ -355,7 +355,7 @@ function UpdateEvent() {
           {/* Selected Products */}
           <section className="border border-gray-400 rounded-2xl p-6 bg-white shadow-sm space-y-6 mt-10">
             <h2 className="text-xl font-semibold text-gray-900">
-              Selected products for live
+              Produits sélectionnés pour live
             </h2>
 
             <div className="flex flex-col sm:flex-row sm:space-x-4 space-y-3 sm:space-y-0">
@@ -363,7 +363,7 @@ function UpdateEvent() {
                 type="text"
                 value={productId}
                 onChange={(e) => setProductId(e.target.value)}
-                placeholder="Search by Product Code"
+                placeholder="Recherche par code produit"
                 className="flex-grow border border-gray-400 rounded-lg px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-blue-900"
               />
               <button
@@ -371,7 +371,7 @@ function UpdateEvent() {
                 onClick={handleSearch}
                 className="bg-[#02B978] text-white rounded-xl px-4 py-2 text-base font-medium hover:bg-[#04D18C] transition"
               >
-                Select Product
+                Sélectionner Produits
               </button>
             </div>
 
@@ -492,7 +492,7 @@ function UpdateEvent() {
               {loading && (
                 <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
               )}
-              {loading ? "Updating..." : "Update Event"}
+              {loading ? "Mise à jour..." : "Mise à jour Événement"}
             </button>
           </div>
         </form>

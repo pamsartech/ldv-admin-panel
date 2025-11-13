@@ -28,8 +28,8 @@ export default function UpdatePayment() {
     transactionId: "",
     amount: "",
     paymentMethod: "",
-    paymentStatus: "Pending",
-    deliveryStatus: "Pending",
+    paymentStatus: "En-attente",
+    deliveryStatus: "En-attente",
     dateTime: "",
     notes: "",
   });
@@ -50,8 +50,8 @@ export default function UpdatePayment() {
         transactionId: prefillData.payment_id || "",
         amount: prefillData.orderTotal || "",
         paymentMethod: prefillData.paymentMethod || "",
-        paymentStatus: prefillData.paymentStatus || "Pending",
-        deliveryStatus: prefillData.shippingStatus || "Pending",
+        paymentStatus: prefillData.paymentStatus || "En-attente",
+        deliveryStatus: prefillData.shippingStatus || "En-attente",
         dateTime: prefillData.createdAt
           ? prefillData.createdAt.slice(0, 16)
           : "",
@@ -77,8 +77,8 @@ export default function UpdatePayment() {
             transactionId: data.payment_id || "",
             amount: data.orderTotal || "",
             paymentMethod: data.paymentMethod || "",
-            paymentStatus: data.paymentStatus || "Pending",
-            deliveryStatus: data.shippingStatus || "Pending",
+            paymentStatus: data.paymentStatus || "En-attente",
+            deliveryStatus: data.shippingStatus || "En-attente",
             dateTime: data.createdAt ? data.createdAt.slice(0, 16) : "",
             notes: data.notes || "",
           });
@@ -128,26 +128,26 @@ export default function UpdatePayment() {
 
 
   const getStatusClass = (status, type) => {
-    if (type === "payment") {
+    if (type === "paiements") {
       switch (status) {
-        case "Paid":
+        case "Payé":
           return "bg-green-100 text-green-600 border-green-400";
-        case "Pending":
+        case "En-attente":
           return "bg-orange-100 text-orange-600 border-orange-400";
-        case "Failed":
+        case "Échoué":
           return "bg-red-100 text-red-600 border-red-400";
         default:
           return "bg-gray-100 text-gray-600 border-gray-400";
       }
-    } else if (type === "delivery") {
+    } else if (type === "livraison") {
       switch (status) {
-        case "Delivered":
+        case "Livraison":
           return "bg-green-100 text-green-600 border-green-400";
-        case "Shipped":
+        case "Expédié":
           return "bg-blue-100 text-blue-600 border-blue-600";
-        case "Pending":
+        case "En-attente":
           return "bg-orange-100 text-orange-600 border-orange-400";
-        case "Cancelled":
+        case "Annulé":
           return "bg-red-100 text-red-600 border-red-400";
         default:
           return "bg-gray-100 text-gray-600 border-gray-400";
@@ -164,7 +164,7 @@ export default function UpdatePayment() {
       <Navbar heading="Gestion des paiements" />
 
       <div className="flex justify-between mt-5 mx-10">
-        <h1 className="font-medium text-lg">Updating payment information</h1>
+        <h1 className="font-medium text-lg">Mise à jour informations paiement</h1>
         <button
           onClick={() => navigate("/user/Payments")}
           className="px-3 py-1 border rounded-md text-white bg-[#02B978] hover:bg-[#04D18C]"
@@ -174,7 +174,7 @@ export default function UpdatePayment() {
             size="lg"
             className="text-white px-2"
           />
-          Back to Main View
+          Dos la vue principale
         </button>
       </div>
 
@@ -257,7 +257,7 @@ export default function UpdatePayment() {
               id="paymentStatus"
               value={paymentData.paymentStatus}
               onChange={handleChange}
-              options={["Pending", "Paid", "Failed"]}
+              options={["en-attente", "payé", "expédié"]}
             />
             {/* <SelectField
              disabled
@@ -273,7 +273,7 @@ export default function UpdatePayment() {
               id="deliveryStatus"
               type="textl"
               value={paymentData.deliveryStatus}
-              options={["Processing", "Shipped", "Delivered", "Cancelled"]}
+              options={["Processing", "Expédié", "Livraison", "Annulé"]}
             />
             <InputField
             readOnly
@@ -308,7 +308,7 @@ export default function UpdatePayment() {
                 )}`}
               >
                 <FontAwesomeIcon icon={faClock} className="pr-2" />
-                {paymentData.paymentStatus || "Pending"}
+                {paymentData.paymentStatus || "En-attente"}
               </span>
             </div>
             <div>
@@ -319,7 +319,7 @@ export default function UpdatePayment() {
                   "delivery"
                 )}`}
               >
-                {paymentData.deliveryStatus || "Pending"}
+                {paymentData.deliveryStatus || "En-attente"}
               </span>
             </div>
           </div>
@@ -333,7 +333,7 @@ export default function UpdatePayment() {
             className="w-full md:w-auto flex items-center justify-center border border-red-600 gap-2 bg-red-100 text-red-600 px-4 py-2 rounded-md font-medium hover:bg-red-200"
           >
             <FontAwesomeIcon icon={faXmark} />
-            Discard Payment
+            Jeter paiement
           </button>
           {/* <button
             type="submit"
@@ -351,7 +351,7 @@ export default function UpdatePayment() {
               {btnLoading && (
                 <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
               )}
-              {btnLoading ? "Updating..." : "Update Payment"}
+              {btnLoading ? "Mise à jour..." : "Mise à jour paiement"}
             </button>
           
 
