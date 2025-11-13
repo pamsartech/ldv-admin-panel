@@ -36,7 +36,7 @@ export default function CustomersTable({ onSelectionChange }) {
   const [search, setSearch] = useState("");
   const [sortField, setSortField] = useState(null);
   const [sortOrder, setSortOrder] = useState("asc");
-  const [filterStatus, setFilterStatus] = useState("All");
+  const [filterStatus, setFilterStatus] = useState("Tous");
   const [showFilter, setShowFilter] = useState(false);
 
   const [selectedRows, setSelectedRows] = useState([]);
@@ -94,7 +94,7 @@ export default function CustomersTable({ onSelectionChange }) {
     }
 
     // ⚙️ Status filter
-    if (filterStatus !== "All") {
+    if (filterStatus !== "Tous") {
       data = data.filter((c) => c.status === filterStatus);
     }
 
@@ -254,7 +254,7 @@ export default function CustomersTable({ onSelectionChange }) {
             </button>
             {showFilter && (
               <div className="absolute right-0 mt-1 w-32 bg-white border rounded shadow-lg z-10">
-                {["All", "Active", "Inactive"].map((status) => (
+                {["Tous", "Actif", "Inactif"].map((status) => (
                   <button
                     key={status}
                     onClick={() => {
@@ -305,7 +305,7 @@ export default function CustomersTable({ onSelectionChange }) {
             ) : (
               <>
                 <FontAwesomeIcon icon={faTrash} />
-                Delete Selected ({selectedRows.length})
+                Supprimer sélection ({selectedRows.length})
               </>
             )}
           </button>
@@ -360,7 +360,7 @@ export default function CustomersTable({ onSelectionChange }) {
                   <td className="py-3 px-3">
                     <span
                       className={`px-3 text-center py-1 rounded-xl text-sm font-medium ${
-                        customer.status === "Active"
+                        customer.status === "Actif"
                           ? "bg-green-100 text-green-700 border border-green-300"
                           : "bg-red-100 text-red-700 border border-red-300"
                       }`}

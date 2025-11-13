@@ -69,7 +69,7 @@ export default function TiktokLiveTable() {
           status: item.eventDetails?.status
             ? item.eventDetails.status.charAt(0).toUpperCase() +
               item.eventDetails.status.slice(1).toLowerCase()
-            : "Inactive",
+            : "",
         }));
 
         setLiveData(formatted);
@@ -88,8 +88,8 @@ export default function TiktokLiveTable() {
 
   // ---- Filtering & Sorting Logic ----
   let tabFilteredData = liveData;
-  if (activeTab === "active")
-    tabFilteredData = liveData.filter((e) => e.status === "Active");
+  if (activeTab === "actif")
+    tabFilteredData = liveData.filter((e) => e.status === "Actif");
 
   if (search.trim()) {
     tabFilteredData = tabFilteredData.filter(
@@ -180,13 +180,13 @@ const sortedData = [...filteredData].sort((a, b) => {
   // ---- Status Styling ----
   const getStatusStyle = (status) => {
     switch (status) {
-      case "Active":
+      case "Actif":
         return "bg-green-100 text-green-600 border border-green-400";
-      case "Inactive":
+      case "Inactif":
         return "bg-orange-100 text-orange-600 border border-orange-400";
-      case "About to come":
+      case "Aur-point-d'arriver":
         return "bg-blue-100 text-blue-600 border border-blue-400";
-      case "Suspended":
+      case "Suspendu":
         return "bg-red-100 text-red-600 border border-red-400";
       default:
         return "bg-gray-100 text-gray-600 border border-gray-400";
@@ -228,11 +228,11 @@ const sortedData = [...filteredData].sort((a, b) => {
 
           <button
             onClick={() => {
-              setActiveTab("active");
+              setActiveTab("actif");
               setCurrentPage(1);
             }}
             className={`flex items-center gap-2 text-sm px-2 pb-1 ${
-              activeTab === "active"
+              activeTab === "actif"
                 ? "text-black font-medium border-b-2 border-black"
                 : "text-gray-600 hover:text-black"
             }`}
@@ -255,7 +255,7 @@ const sortedData = [...filteredData].sort((a, b) => {
 
           {showFilter && (
             <div className="absolute right-0 top-12 w-48 bg-white border rounded-md shadow-md p-2 z-50">
-              {["All", "Active", "Inactive", "About to come", "Suspended"].map(
+              {["All", "Actif", "Inactif", "Aur-point-d'arriver", "Suspendu"].map(
                 (status) => (
                   <button
                     key={status}
@@ -304,7 +304,7 @@ const sortedData = [...filteredData].sort((a, b) => {
             ) : (
               <>
                 <FontAwesomeIcon icon={faTrash} />
-                Delete Selected ({selectedRows.length})
+                Supprimer sélection ({selectedRows.length})
               </>
             )}
           </button>

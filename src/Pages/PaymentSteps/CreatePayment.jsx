@@ -54,7 +54,7 @@ export default function CreatePayment() {
       // ✅ Match your existing form field states
       setAmount(data.orderTotal ? data.orderTotal.toString() : "");
       setPaymentMethod(data.paymentMethod || "");
-      setPaymentStatus(data.paymentStatus || "Pending");
+      setPaymentStatus(data.paymentStatus || "en-attente");
       setDeliveryStatus(data.shippingStatus || "Processing");
 
       // ✅ Use order creation date if available
@@ -101,8 +101,8 @@ export default function CreatePayment() {
     }
 
     if (
-      (deliveryStatus === "Delivered" || deliveryStatus === "Shipped") &&
-      paymentStatus !== "Paid"
+      (deliveryStatus === "livraison" || deliveryStatus === "expédié") &&
+      paymentStatus !== "payé"
     ) {
       showAlert(
         "When delivery status is 'Delivered' or 'Shipped', payment status must be 'Paid'.",
@@ -274,17 +274,17 @@ export default function CreatePayment() {
               onChange={(e) => setPaymentStatus(e.target.value)}
               // className="w-full border border-gray-400 text-gray-600 rounded-lg px-3 py-2 text-sm"
               disabled={
-                deliveryStatus === "Delivered" || deliveryStatus === "Shipped"
+                deliveryStatus === "ivraison" || deliveryStatus === "Sxpédié"
               }
               className={`w-full border border-gray-400 text-gray-600 rounded-lg px-3 py-2 text-sm ${
-                deliveryStatus === "Delivered" || deliveryStatus === "Shipped"
+                deliveryStatus === "Livraison" || deliveryStatus === "Expédié"
                   ? "bg-gray-100 cursor-not-allowed"
                   : ""
               }`}
             >
-              <option>Pending</option>
-              <option>Paid</option>
-              <option>Failed</option>
+              <option value="en-attente">En-attente</option>
+              <option value="payé">Payé</option>
+              <option value="échoué">Échoué</option>
             </select>
           </div>
 
@@ -299,9 +299,9 @@ export default function CreatePayment() {
               className="w-full border border-gray-400 text-gray-600 rounded-lg px-3 py-2 text-sm"
             >
               <option>Processing</option>
-              <option>Shipped</option>
-              <option>Delivered</option>
-              <option>Cancelled</option>
+              <option value="expédié">Expédié</option>
+              <option value="livraison">Livraison</option>
+              <option value="annulé">Annulé</option>
             </select>
           </div>
         </div>

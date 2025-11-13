@@ -85,8 +85,8 @@ export default function ProductTable({ onSelectionChange }) {
   const normalizeStatus = (status) => {
     if (!status) return "unknown";
     const s = status.toString().toLowerCase().trim();
-    if (["active", "1", "true", "enabled"].includes(s)) return "active";
-    if (["inactive", "0", "false", "disabled"].includes(s)) return "inactive";
+    if (["actif", "1", "true", "enabled"].includes(s)) return "actif";
+    if (["inactif", "0", "false", "disabled"].includes(s)) return "inactif";
     return s;
   };
 
@@ -97,8 +97,8 @@ export default function ProductTable({ onSelectionChange }) {
   };
 
   const statusColors = {
-    Active: "bg-green-100 text-green-700 border border-green-300",
-    Inactive: "bg-red-100 text-red-700 border border-red-300",
+    Actif: "bg-green-100 text-green-700 border border-green-300",
+    Inactif: "bg-red-100 text-red-700 border border-red-300",
   };
 
   // const hexToColorName = (hex) => {
@@ -361,11 +361,11 @@ export default function ProductTable({ onSelectionChange }) {
               </button>
               <button
                 onClick={() => {
-                  setActiveTab("active");
+                  setActiveTab("actif");
                   setCurrentPage(1);
                 }}
                 className={`flex items-center gap-2 text-sm px-2 pb-1 ${
-                  activeTab === "active"
+                  activeTab === "actif"
                     ? "text-black font-medium border-b-2 border-black"
                     : "text-gray-600 hover:text-black"
                 }`}
@@ -374,11 +374,11 @@ export default function ProductTable({ onSelectionChange }) {
               </button>
               <button
                 onClick={() => {
-                  setActiveTab("inactive");
+                  setActiveTab("inactif");
                   setCurrentPage(1);
                 }}
                 className={`flex items-center gap-2 text-sm px-2 pb-1 ${
-                  activeTab === "inactive"
+                  activeTab === "inactif"
                     ? "text-black font-medium border-b-2 border-black"
                     : "text-gray-600 hover:text-black"
                 }`}
@@ -412,19 +412,21 @@ export default function ProductTable({ onSelectionChange }) {
                 </button>
                 {showFilter && (
                   <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-300 rounded-md shadow-md z-50">
-                    {["All", "Clothing", "Shoes", "Accessories"].map((cat) => (
-                      <div
-                        key={cat}
-                        onClick={() => {
-                          setSelectedCategory(cat);
-                          setCurrentPage(1);
-                          setShowFilter(false);
-                        }}
-                        className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
-                      >
-                        {cat}
-                      </div>
-                    ))}
+                    {["All", "Vêtements", "Chaussures", "Accessoires"].map(
+                      (cat) => (
+                        <div
+                          key={cat}
+                          onClick={() => {
+                            setSelectedCategory(cat);
+                            setCurrentPage(1);
+                            setShowFilter(false);
+                          }}
+                          className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+                        >
+                          {cat}
+                        </div>
+                      )
+                    )}
                   </div>
                 )}
               </div>
@@ -481,7 +483,7 @@ export default function ProductTable({ onSelectionChange }) {
                   ) : (
                     <>
                       <FontAwesomeIcon icon={faTrash} />
-                      Delete Selected ({selected.length})
+                      Supprimer sélection ({selected.length})
                     </>
                   )}
                 </button>
@@ -503,7 +505,7 @@ export default function ProductTable({ onSelectionChange }) {
             />
             <input
               type="text"
-              placeholder="Search"
+              placeholder="Recherche"
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
@@ -588,7 +590,13 @@ export default function ProductTable({ onSelectionChange }) {
                     <td className="p-3">€ {item.price.toFixed(2)}</td>
                     <td className="p-3">{item.category}</td>
                     <td className="p-3">{item.productCode}</td>
-                    <td className="p-3">{item.tiktok_session_id || "N/A"}</td>
+                    {/* <td className="p-3">{item.tiktok_session_id || "N/A"}</td> */}
+                    <td className="p-3">
+                      {Array.isArray(item.tiktok_session_id)
+                        ? item.tiktok_session_id.join("   ") // 3 spaces between each ID
+                        : item.tiktok_session_id || "N/A"}
+                    </td>
+
                     <td className="p-3">{item.size || "N/A"}</td>
 
                     {/* <td className="p-3">
@@ -610,9 +618,7 @@ export default function ProductTable({ onSelectionChange }) {
                           const colors = normalizeColors(item.color);
                           if (!colors.length)
                             return (
-                              <span className="text-gray-500 italic">
-                                N/A
-                              </span>
+                              <span className="text-gray-500 italic">N/A</span>
                             );
 
                           return colors.map((clr, idx) => (
@@ -659,8 +665,8 @@ export default function ProductTable({ onSelectionChange }) {
             {/* Pagination */}
             <div className="flex justify-between items-center p-3 text-sm text-gray-600 bg-gray-50 border-t">
               <span className="text-gray-500">
-                Showing {startIndex + 1}–
-                {Math.min(startIndex + rowsPerPage, filteredProducts.length)} of{" "}
+                Affichage {startIndex + 1}–
+                {Math.min(startIndex + rowsPerPage, filteredProducts.length)} de{" "}
                 {filteredProducts.length}
               </span>
               <div className="flex gap-2 items-center">

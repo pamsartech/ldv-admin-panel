@@ -1,4 +1,3 @@
-/// AddProductStep3.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../Components/Navbar";
@@ -14,34 +13,32 @@ import {
 
 function AddProductStep3({ formData, setFormData, prevStep, handleSubmit }) {
   const navigate = useNavigate();
-  
+  const [loading, setLoading] = useState(false);
+  const [previews, setPreviews] = useState([null, null, null, null]);
+  const [selectedIndex, setSelectedIndex] = useState(0);
 
-  // Side image previews (4 slots)
-  const [previews, setPreviews] = useState(
-    Array(4)
-      .fill(null)
-      .map((_, i) =>
-        formData.images?.[i] ? URL.createObjectURL(formData.images[i]) : null
-      )
-  );
+  // 🧩 Load existing images from formData when returning to this step
+  useEffect(() => {
+    if (formData.images && formData.images.length > 0) {
+      const previewUrls = formData.images.map((img) =>
+        img instanceof File ? URL.createObjectURL(img) : null
+      );
+      setPreviews((prev) =>
+        prev.map((_, i) => previewUrls[i] || prev[i] || null)
+      );
+    }
+  }, [formData.images]);
 
-  // Index of side image shown in main preview
-  const [selectedIndex, setSelectedIndex] = useState(
-    previews.findIndex((p) => p !== null) >= 0
-      ? previews.findIndex((p) => p !== null)
-      : 0
-  );
-
-  // Clean up object URLs on unmount
+  // 🧩 Cleanup object URLs on unmount
   useEffect(() => {
     return () => {
       previews.forEach((url) => url && URL.revokeObjectURL(url));
     };
   }, [previews]);
 
-  // Handle side image upload
-  const handleImageUpload = (event, index) => {
-    const file = event.target.files?.[0];
+  // 🧩 Handle image upload
+  const handleImageUpload = (e, index) => {
+    const file = e.target.files?.[0];
     if (!file) return;
 
     const url = URL.createObjectURL(file);
@@ -58,15 +55,14 @@ function AddProductStep3({ formData, setFormData, prevStep, handleSubmit }) {
       return { ...prev, images: imgs };
     });
 
-    setSelectedIndex(index); // Show newly uploaded image in main preview
+    setSelectedIndex(index);
   };
 
-  // Handle image removal
+  // 🧩 Handle remove
   const handleRemoveImage = (index) => {
     setPreviews((prev) => {
       const updated = [...prev];
-      const url = updated[index];
-      if (url) URL.revokeObjectURL(url);
+      if (updated[index]) URL.revokeObjectURL(updated[index]);
       updated[index] = null;
       return updated;
     });
@@ -77,22 +73,39 @@ function AddProductStep3({ formData, setFormData, prevStep, handleSubmit }) {
       return { ...prev, images: imgs };
     });
 
-    // Update main preview to first available image
     if (selectedIndex === index) {
-      const nextIndex = previews.findIndex((p, i) => p !== null && i !== index);
+      const nextIndex = previews.findIndex((p, i) => p && i !== index);
       setSelectedIndex(nextIndex >= 0 ? nextIndex : 0);
     }
   };
 
-  // When a side image is clicked, show it in main preview
   const handleSelectMain = (index) => {
     if (previews[index]) setSelectedIndex(index);
+  };
+
+  // 🧩 Submit with image validation
+  const onSubmit = async (e) => {
+    e.preventDefault();
+
+    const validImages = (formData.images || []).filter((img) => img instanceof File);
+    if (validImages.length === 0) {
+      alert("Veuillez télécharger au moins une image avant de soumettre."); // simple validation alert
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await handleSubmit();
+    } catch (error) {
+      console.error("Error submitting:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="mb-10">
       <Navbar heading="Gestion des produits" />
-
       <h1 className="mt-5 text-start mx-5 font-medium text-lg">
         Création de produits
       </h1>
@@ -102,11 +115,7 @@ function AddProductStep3({ formData, setFormData, prevStep, handleSubmit }) {
         <div className="flex justify-center items-center mt-5 gap-4 mb-5">
           <div className="flex flex-col items-center text-black font-semibold">
             <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[#02B978] text-white">
-              <FontAwesomeIcon
-                icon={faCheck}
-                size="lg"
-                className="text-white px-3 "
-              />
+              <FontAwesomeIcon icon={faCheck} size="lg" />
             </div>
             <span className="mt-3 text-sm font-bold text-[#02B978]">
               Saisir les informations sur le produit
@@ -115,11 +124,7 @@ function AddProductStep3({ formData, setFormData, prevStep, handleSubmit }) {
           <div className="flex-1 pb-5 border-t-3 border-[#02B978]"></div>
           <div className="flex flex-col items-center text-gray-400 font-semibold">
             <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[#02B978] text-white">
-              <FontAwesomeIcon
-                icon={faCheck}
-                size="lg"
-                className="text-white px-3 "
-              />
+              <FontAwesomeIcon icon={faCheck} size="lg" />
             </div>
             <span className="mt-3 font-bold text-sm text-[#02B978]">
               Ajouter des variations
@@ -130,21 +135,19 @@ function AddProductStep3({ formData, setFormData, prevStep, handleSubmit }) {
             <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[#02B978] text-white border border-gray-300">
               3
             </div>
-            <span className="mt-3 text-sm text-[#02B978]">Ajouter des images</span>
+            <span className="mt-3 text-sm text-[#02B978]">
+              Ajouter des images
+            </span>
           </div>
         </div>
       </div>
 
       {/* FORM START */}
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          handleSubmit();
-        }}
-      >
-        {/* main preview and side uploads */}
+      <form onSubmit={onSubmit}>
         <div className="bg-gray-100 mx-auto p-6 rounded-2xl w-full max-w-lg">
-          <h3 className="font-semibold text-gray-800 mb-3">Upload Images</h3>
+          <h3 className="font-semibold text-gray-800 mb-3">
+            Ajouter des images
+          </h3>
           <div className="flex gap-4 rounded-2xl">
             {/* Main Preview */}
             <div className="relative flex-1">
@@ -156,7 +159,9 @@ function AddProductStep3({ formData, setFormData, prevStep, handleSubmit }) {
                     className="h-full w-full object-cover rounded-lg"
                   />
                 ) : (
-                  <span className="text-gray-500">Aucune image sélectionnée</span>
+                  <span className="text-gray-500">
+                    Aucune image sélectionnée
+                  </span>
                 )}
               </div>
             </div>
@@ -177,10 +182,7 @@ function AddProductStep3({ formData, setFormData, prevStep, handleSubmit }) {
                         onClick={() => handleSelectMain(index)}
                       />
                     ) : (
-                      <FontAwesomeIcon
-                        icon={faPlus}
-                        className="text-gray-600"
-                      />
+                      <FontAwesomeIcon icon={faPlus} className="text-gray-600" />
                     )}
                   </label>
                   <input
@@ -189,7 +191,6 @@ function AddProductStep3({ formData, setFormData, prevStep, handleSubmit }) {
                     accept="image/*"
                     className="hidden"
                     onChange={(e) => handleImageUpload(e, index)}
-                    required={index === 0} // ✅ HTML5 required only for the first image
                   />
                   {previews[index] && (
                     <button
@@ -206,10 +207,16 @@ function AddProductStep3({ formData, setFormData, prevStep, handleSubmit }) {
           </div>
         </div>
 
-        <h6 className="text-center text-sm font-medium my-4">
-          <FontAwesomeIcon icon={faCircleInfo} /> The size of each image should
-          not be more than 5 MB
-        </h6>
+        <div className="mx-auto w-90">
+          <h6 className="text-sm font-medium my-2">
+            <FontAwesomeIcon icon={faCircleInfo} className="pr-1" />
+            Seuls les formats png ou jpg sont acceptables.
+          </h6>
+          <h6 className="text-sm font-medium my-2">
+            <FontAwesomeIcon icon={faCircleInfo} /> La taille de chaque image ne
+            doit pas dépasser 5 Mb.
+          </h6>
+        </div>
 
         {/* navigation */}
         <div className="flex justify-between max-w-lg mx-auto mt-6">
@@ -218,11 +225,7 @@ function AddProductStep3({ formData, setFormData, prevStep, handleSubmit }) {
             onClick={() => navigate("/user/Products")}
             className="px-3 py-1 border border-red-700 text-red-700 bg-red-50 rounded-md hover:bg-gray-100"
           >
-            <FontAwesomeIcon
-              icon={faXmark}
-              size="lg"
-              className="text-red-700 px-2"
-            />
+            <FontAwesomeIcon icon={faXmark} size="lg" className="px-2" />
             Discard Product
           </button>
 
@@ -236,14 +239,21 @@ function AddProductStep3({ formData, setFormData, prevStep, handleSubmit }) {
 
           <button
             type="submit"
-            className="px-4 py-2 bg-[#02B978] text-white rounded-lg hover:bg-[#04D18C]"
+            disabled={loading}
+            className={`px-4 py-2 rounded-lg flex items-center gap-2 text-white ${
+              loading
+                ? "bg-[#02B978]/70 cursor-not-allowed"
+                : "bg-[#02B978] hover:bg-[#04D18C]"
+            }`}
           >
-            Soumettre <FontAwesomeIcon icon={faCheck} />
+            {loading && (
+              <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+            )}
+            {loading ? "Soumettre..." : "Soumettre"}{" "}
+            <FontAwesomeIcon icon={faCheck} />
           </button>
-
         </div>
       </form>
-      {/* FORM END */}
     </div>
   );
 }

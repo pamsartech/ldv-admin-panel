@@ -113,8 +113,8 @@ const UpdateOrder = () => {
 
   // ✅ Validation: prevent shipped/delivered if payment not paid
   if (
-    paymentStatus !== "Paid" &&
-    (shippingStatus === "Shipped" || shippingStatus === "Delivered")
+    paymentStatus !== "payé" &&
+    (shippingStatus === "expédié" || shippingStatus === "livraison")
   ) {
     showAlert(
       "You can only mark an order as Shipped or Delivered after payment is completed.",
@@ -180,7 +180,7 @@ const UpdateOrder = () => {
             size="lg"
             className="text-red-700 px-2"
           />
-          Discard
+          Jeter
         </button>
       </div>
 
@@ -420,9 +420,9 @@ const UpdateOrder = () => {
               className="w-full rounded-lg border border-gray-400 px-3 py-2 text-sm"
             >
               <option value="">Sélectionnez statut du paiement</option>
-              <option>Paid</option>
-              <option>Pending</option>
-              <option>Failed</option>
+              <option value="payé">Payé</option>
+              <option value="enattente">En-attente</option>
+              <option value="échoué">Échoué</option>
             </select>
           </div>
           <div>
@@ -464,21 +464,21 @@ const UpdateOrder = () => {
     <option value="">Sélectionnez statut de la livraison</option>
     <option value="Processing">Processing</option>
     <option
-      value="Shipped"
-      disabled={orderData.paymentStatus !== "Paid"}
+      value="expédié"
+      disabled={orderData.paymentStatus !== "payé"}
     >
-      Shipped
+      Expédié
     </option>
     <option
-      value="Delivered"
-      disabled={orderData.paymentStatus !== "Paid"}
+      value="livraison"
+      disabled={orderData.paymentStatus !== "payé"}
     >
-      Delivered
+      Livraison
     </option>
   </select>
 
   {/* 🧩 Optional inline message */}
-  {orderData.paymentStatus !== "Paid" && (
+  {orderData.paymentStatus !== "payé" && (
     <p className="text-xs text-gray-500 mt-1">
       Complete payment before marking as Shipped or Delivered.
     </p>
@@ -574,7 +574,7 @@ const UpdateOrder = () => {
             {loading && (
               <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
             )}
-            {loading ? "Updating..." : "Update Order"}
+            {loading ? "Mise à jour..." : "Mise à jour commande"}
           </button>
         </div>
       </form>

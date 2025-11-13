@@ -127,7 +127,7 @@ const CreateCustomer = () => {
     e.preventDefault();
 
     if (!validateForm()) {
-      showAlert("Please fix the validation errors.", "error");
+      showAlert("Please fill the all input feilds.", "info");
       return;
     }
 
@@ -503,7 +503,7 @@ const CreateCustomer = () => {
 
           <section className="border border-gray-400 rounded-lg p-6">
             <h3 className="text-md font-semibold mb-4">
-              New Customer Profile Preview
+              Nouveau profil client
             </h3>
             <div className="flex flex-col items-center space-y-2">
               <img
@@ -511,7 +511,7 @@ const CreateCustomer = () => {
                 alt="Customer"
                 className="w-20 h-20 rounded-full object-cover"
               />
-              <p className="text-sm font-semibold">New Customer Profile Preview</p>
+              <p className="text-sm font-semibold">Nouveau profil client</p>
               <p className="text-xs text-gray-500">email@example.com</p>
             </div>
             <hr className="text-gray-400 mt-4" />

@@ -25,11 +25,11 @@ import {
 } from "@mui/material";
 
 const statusStyles = {
-  Pending: "bg-yellow-100 text-yellow-700 border border-yellow-300",
-  Paid: "bg-green-100 text-green-700 border border-green-300",
-  Failed: "bg-red-100 text-red-700 border border-red-300",
-  Cancelled: "bg-red-100 text-red-700 border border-red-300",
-  Refunded: "bg-blue-100 text-blue-700 border border-blue-300",
+  enattente : "bg-yellow-100 text-yellow-700 border border-yellow-300",
+  payé: "bg-green-100 text-green-700 border border-green-300",
+  expédié: "bg-red-100 text-red-700 border border-red-300",
+  annulé: "bg-red-100 text-red-700 border border-red-300",
+  remboursé : "bg-blue-100 text-blue-700 border border-blue-300",
 };
 
 export default function PaymentDataTable({ onSelectionChange }) {
@@ -62,7 +62,7 @@ export default function PaymentDataTable({ onSelectionChange }) {
         const formatted = paymentsArray.map((item) => ({
           id: item.payment_id,
           amount: item.amount || "N/A",
-          status: item.status || "Pending",
+          status: item.status || "En-attente",
           transactionId: item.payment_id || "N/A",
           orderId: item.orderId || "N/A",
           email: item.email || "N/A",
@@ -83,10 +83,10 @@ export default function PaymentDataTable({ onSelectionChange }) {
 
   // ---- Filtering ----
   let tabFiltered = payments;
-  if (activeTab === "Paid")
-    tabFiltered = payments.filter((p) => p.status === "Paid");
-  if (activeTab === "Refunded")
-    tabFiltered = payments.filter((p) => p.status === "Refunded");
+  if (activeTab === "Payé")
+    tabFiltered = payments.filter((p) => p.status === "Payé");
+  if (activeTab === "Remboursé")
+    tabFiltered = payments.filter((p) => p.status === "Remboursé");
 
   if (search.trim()) {
     const term = search.toLowerCase();
@@ -247,9 +247,9 @@ export default function PaymentDataTable({ onSelectionChange }) {
         {/* Tabs Section */}
 <div className="flex gap-6">
   {[
-    { key: "all", label: "Tous", icon: faCircleCheck },
-    { key: "Paid", label: "Payés", icon: faCheckCircle },
-    { key: "Remboursés", label: "Remboursés", icon: faUndo },
+    { key: "tous", label: "Tous", icon: faCircleCheck },
+    { key: "payé", label: "Payés", icon: faCheckCircle },
+    { key: "remboursés", label: "Remboursés", icon: faUndo },
   ].map(({ key, label, icon }) => {
     const isActive = activeTab === key;
 
@@ -341,7 +341,7 @@ export default function PaymentDataTable({ onSelectionChange }) {
             ) : (
               <>
                 <FontAwesomeIcon icon={faTrash} />
-                Delete Selected ({selectedRows.length})
+                Supprimer sélection ({selectedRows.length})
               </>
             )}
           </button>
@@ -356,7 +356,7 @@ export default function PaymentDataTable({ onSelectionChange }) {
         />
         <input
           type="text"
-          placeholder="Search"
+          placeholder="Recherche"
           value={search}
           onChange={(e) => {
             setSearch(e.target.value);
@@ -419,7 +419,7 @@ export default function PaymentDataTable({ onSelectionChange }) {
                         statusStyles[p.status]
                       }`}
                     >
-                      {p.status}
+                      {p.status.charAt(0).toUpperCase() + p.status.slice(1)}
                     </span>
                   </td>
                   <td className="p-3 text-left">

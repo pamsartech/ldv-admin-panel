@@ -12,11 +12,22 @@ import {
   faPen,
 } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
+import { useAlert } from "../../Components/AlertContext";
+
+// 🧩 Material 
 import { Skeleton } from "@mui/material";
+import Stack from "@mui/material/Stack";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
+import DialogTitle from "@mui/material/DialogTitle";
+import Button from "@mui/material/Button";
 
 export default function EventDetail() {
   const navigate = useNavigate();
   const { eventId } = useParams();
+  const { showAlert } = useAlert(); // ✅ useAlert context
 
   const [event, setEvent] = useState(null);
   const [hostImage, setHostImage] = useState(
@@ -25,6 +36,7 @@ export default function EventDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+   const [openConfirm, setOpenConfirm] = useState(false); // 🔹 MUI confirm dialog
 
   const getStatusStyles = (status) => {
     const styles = {
@@ -87,10 +99,6 @@ export default function EventDetail() {
   };
 
   const handleDelete = async () => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this event?"
-    );
-    if (!confirmDelete) return;
 
     try {
       setIsDeleting(true);
@@ -99,19 +107,16 @@ export default function EventDetail() {
       );
 
       if (response.data.success) {
-        alert("Event deleted successfully!");
+        showAlert("Event deleted successfully!", "success");
         navigate("/user/tiktok");
       } else {
-        alert(
-          `Failed to delete event: ${
-            response.data.message || "Unknown error"
-          }`
-        );
+        showAlert(response.data.message || "Failed to delete product", "info");
       }
     } catch (error) {
-      alert(`Error: ${error.response?.data?.message || error.message}`);
+      showAlert(`Error: ${error.response?.data?.message || error.message}`, "error");
     } finally {
       setIsDeleting(false);
+      setOpenConfirm(false); // close confirmation dialog
     }
   };
 
@@ -254,7 +259,7 @@ export default function EventDetail() {
         <h1 className="font-medium text-lg">Détails de l'événement en direct</h1>
         <div>
           <button
-            onClick={handleDelete}
+            onClick={() => setOpenConfirm(true)}
             disabled={isDeleting}
             className={`px-3 py-1 border rounded-md ${
               isDeleting
@@ -263,7 +268,7 @@ export default function EventDetail() {
             }`}
           >
             <FontAwesomeIcon icon={faTrashCan} className="px-2" />
-            {isDeleting ? "Deleting..." : "Delete live event"}
+            {isDeleting ? "Supprimer..." : "Supprimer événement en direct"}
           </button>
 
           <button
@@ -273,7 +278,7 @@ export default function EventDetail() {
             className="mx-2 px-3 py-1 border rounded-md text-[#114E9D] bg-blue-50 hover:bg-blue-100"
           >
             <FontAwesomeIcon icon={faArrowRotateLeft} className="px-2" />
-            Update
+            Mise à jour
           </button>
 
           <button
@@ -281,10 +286,41 @@ export default function EventDetail() {
             className="px-3 py-1 border rounded-md text-white bg-[#02B978] hover:bg-[#04D18C]"
           >
             <FontAwesomeIcon icon={faArrowLeft} className="text-white px-2" />
-            Back to Main View
+            Dos la vue principale
           </button>
         </div>
       </div>
+
+      {/* 🔹 MUI Confirmation Dialog */}
+      <Dialog
+        open={openConfirm}
+        onClose={() => setOpenConfirm(false)}
+        aria-labelledby="confirm-delete-title"
+        aria-describedby="confirm-delete-description"
+      >
+        <DialogTitle id="confirm-delete-title">
+          {"Confirm Event Deletion"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="confirm-delete-description">
+            Are you sure you want to permanently delete this event? This
+            action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenConfirm(false)} color="primary">
+            Cancel
+          </Button>
+          <Button
+            onClick={handleDelete}
+            color="error"
+            variant="contained"
+            disabled={isDeleting}
+          >
+            {isDeleting ? "Deleting..." : "Delete"}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Event Details */}
       <div className="max-w-6xl mx-5 p-6 space-y-6">
@@ -338,7 +374,7 @@ export default function EventDetail() {
 
             <div className="col-span-2">
               <p className="font-medium text-gray-700">
-                TikTok Live Event Link
+                Lien vers l'événement TikTok en direct
               </p>
               <a
                 href={event.eventDetails.eventLink}
@@ -412,7 +448,7 @@ export default function EventDetail() {
 
         {/* Host Information */}
         <section className="border border-gray-400 rounded-2xl p-6 space-y-4">
-          <h2 className="text-xl font-semibold">Informations sur l'hôte</h2>
+          <h2 className="text-xl font-semibold">Informations sur hôte</h2>
           <div className="flex items-center space-x-4">
             <div className="relative w-15 h-15">
               <img

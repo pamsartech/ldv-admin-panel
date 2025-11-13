@@ -18,10 +18,17 @@ import {
   faCopy,
 } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
+import { useAlert } from "../../Components/AlertContext";
 
 // 🧩 Material UI Skeleton
 import Skeleton from "@mui/material/Skeleton";
 import Stack from "@mui/material/Stack";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
+import DialogTitle from "@mui/material/DialogTitle";
+import Button from "@mui/material/Button";
 
 export default function ViewOrder() {
   const navigate = useNavigate();
@@ -31,7 +38,10 @@ export default function ViewOrder() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [orderStatus, setOrderStatus] = useState("Pending");
+  const [orderStatus, setOrderStatus] = useState("enattente");
+  const [openConfirm, setOpenConfirm] = useState(false); // 🔹 MUI confirm dialog
+
+  const { showAlert } = useAlert(); // ✅ useAlert context
 
   // Fetch order details
   useEffect(() => {
@@ -48,7 +58,7 @@ export default function ViewOrder() {
         );
         if (response.data.success && response.data.data) {
           setOrder(response.data.data);
-          setOrderStatus(response.data.data.shippingStatus || "Pending");
+          setOrderStatus(response.data.data.shippingStatus || "En-attente");
         } else {
           setError(response.data.message || "Failed to fetch order.");
         }
@@ -63,6 +73,14 @@ export default function ViewOrder() {
 
     fetchOrder();
   }, [orderId]);
+
+    // ✅ Copy function
+  const handleCopy = (text, label = "copied") => {
+    if (!text) return;
+    navigator.clipboard.writeText(text);
+    showAlert(`${label} Copied successfully to clipboard!`, "success");
+  };
+
 
   // 🦴 Skeleton Loader UI
   if (loading) {
@@ -124,10 +142,6 @@ export default function ViewOrder() {
 
   // Delete order
   const handleDelete = async () => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this order?"
-    );
-    if (!confirmDelete) return;
 
     try {
       setIsDeleting(true);
@@ -136,17 +150,16 @@ export default function ViewOrder() {
       );
 
       if (response.data.success) {
-        alert("Order deleted successfully!");
+        showAlert("Order deleted successfully!", "success");
         navigate("/user/Orders");
       } else {
-        alert(
-          `Failed to delete order: ${response.data.message || "Unknown error"}`
-        );
+       showAlert(response.data.message || "Failed to delete product", "error");
       }
     } catch (err) {
-      alert(`Error: ${err.response?.data?.message || err.message}`);
+      showAlert(err.response?.data?.message || err.message, "error");
     } finally {
       setIsDeleting(false);
+      setOpenConfirm(false); // close confirmation dialog
     }
   };
 
@@ -160,7 +173,7 @@ export default function ViewOrder() {
         <h1 className="font-medium text-lg">Mes commandes</h1>
         <div>
           <button
-            onClick={handleDelete}
+            onClick={() => setOpenConfirm(true)}
             disabled={isDeleting}
             className={`px-3 py-1 border rounded-md ${
               isDeleting
@@ -169,7 +182,7 @@ export default function ViewOrder() {
             }`}
           >
             <FontAwesomeIcon icon={faTrashCan} className="px-2" />
-            {isDeleting ? "Deleting..." : "Delete order"}
+            {isDeleting ? "Supprimer..." : "Supprimer commande"}
           </button>
 
           <button
@@ -181,7 +194,7 @@ export default function ViewOrder() {
             className="mx-2 px-3 py-1 border rounded-md text-[#114E9D] bg-blue-50 hover:bg-blue-100"
           >
             <FontAwesomeIcon icon={faArrowRotateLeft} className="px-2" />
-            Update
+            Mise à jour
           </button>
 
           <button
@@ -189,10 +202,40 @@ export default function ViewOrder() {
             className="px-3 py-1 border rounded-md text-white bg-[#02B978] hover:bg-[#04D18C]"
           >
             <FontAwesomeIcon icon={faArrowLeft} className="text-white px-2" />
-            Back to Main View
+            Dos la vue principale
           </button>
         </div>
       </div>
+
+      <Dialog
+        open={openConfirm}
+        onClose={() => setOpenConfirm(false)}
+        aria-labelledby="confirm-delete-title"
+        aria-describedby="confirm-delete-description"
+      >
+        <DialogTitle id="confirm-delete-title">
+          {"Confirm Order Deletion"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="confirm-delete-description">
+            Are you sure you want to permanently delete this order? This
+            action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenConfirm(false)} color="primary">
+            Cancel
+          </Button>
+          <Button
+            onClick={handleDelete}
+            color="error"
+            variant="contained"
+            disabled={isDeleting}
+          >
+            {isDeleting ? "Deleting..." : "Delete"}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Order Details */}
       <div className="max-w-6xl mx-5 mt-5 border-t bg-white border-gray-500 overflow-hidden">
@@ -246,7 +289,10 @@ export default function ViewOrder() {
                       icon={faFileInvoice}
                       className="text-gray-600"
                     /> */}
-                    <button className="ml-2 text-xs text-gray-500 hover:text-gray-700">
+                    <button className="ml-2 text-xs text-gray-500 hover:text-gray-700"
+                    onClick={() => handleCopy(order.payment_id, "ID de transaction")}
+                    title="Copier ID"
+                    >
                       <FontAwesomeIcon icon={faCopy} />
                     </button>
                     <span className="truncate max-w-[160px]">
@@ -347,7 +393,10 @@ export default function ViewOrder() {
                       icon={faEnvelope}
                       className="text-gray-600"
                     /> */}
-                    <button className="ml-2 text-xs text-gray-500 hover:text-gray-700">
+                    <button className="ml-2 text-xs text-gray-500 hover:text-gray-700"
+                    onClick={() => handleCopy(order.email, "E-mail")}
+                    title="Copier E-mail"
+                    >
                       <FontAwesomeIcon icon={faCopy} />
                     </button>
 
@@ -364,7 +413,10 @@ export default function ViewOrder() {
                   <span>Téléphone</span>
                   <div className="flex items-center gap-3">
                     {/* <FontAwesomeIcon icon={faPhone} className="text-gray-600" /> */}
-                    <button className="ml-2 text-xs text-gray-500 hover:text-gray-700">
+                    <button className="ml-2 text-xs text-gray-500 hover:text-gray-700"
+                    onClick={() => handleCopy(order.phoneNumber, "Numéro de téléphone")}
+                    title="Copier Téléphone"
+                    >
                       <FontAwesomeIcon icon={faCopy} />
                     </button>
                     <span className="truncate max-w-[220px]">
@@ -407,9 +459,9 @@ export default function ViewOrder() {
                   className="absolute left-6 top-0 w-[2px] bg-green-500 transition-all duration-700"
                   style={{
                     height:
-                      orderStatus?.toLowerCase() === "delivered"
+                      orderStatus?.toLowerCase() === "livraison"
                         ? "100%"
-                        : orderStatus?.toLowerCase() === "shipped"
+                        : orderStatus?.toLowerCase() === "expédié"
                         ? "85%"
                         : orderStatus?.toLowerCase() === "in_progress" ||
                           orderStatus?.toLowerCase() === "processing"
@@ -425,11 +477,11 @@ export default function ViewOrder() {
                       className={`absolute left-6 top-0 -translate-x-1/2 w-8 h-8 rounded-full flex items-center justify-center shadow-sm border
             ${
               [
-                "pending",
+                "en-attente",
                 "in_progress",
                 "processing",
-                "shipped",
-                "delivered",
+                "expédié",
+                "livraison",
               ].includes(orderStatus?.toLowerCase())
                 ? "bg-green-500 border-green-500 text-white"
                 : "bg-white border-gray-300 text-gray-400"
@@ -452,7 +504,7 @@ export default function ViewOrder() {
                     <span
                       className={`absolute left-6 top-0 -translate-x-1/2 w-8 h-8 rounded-full flex items-center justify-center shadow-sm border
             ${
-              ["in_progress", "processing", "shipped", "delivered"].includes(
+              ["in_progress", "processing", "expédié", "livraison"].includes(
                 orderStatus?.toLowerCase()
               )
                 ? "bg-green-500 border-green-500 text-white"
@@ -467,8 +519,8 @@ export default function ViewOrder() {
                         {[
                           "in_progress",
                           "processing",
-                          "shipped",
-                          "delivered",
+                          "expédié",
+                          "livraison",
                         ].includes(orderStatus?.toLowerCase())
                           ? order.updatedAt
                             ? new Date(order.updatedAt).toLocaleDateString()
@@ -483,7 +535,7 @@ export default function ViewOrder() {
                     <span
                       className={`absolute left-6 top-0 -translate-x-1/2 w-8 h-8 rounded-full flex items-center justify-center shadow-sm border
             ${
-              ["shipped", "delivered"].includes(orderStatus?.toLowerCase())
+              ["expédié", "livraison"].includes(orderStatus?.toLowerCase())
                 ? "bg-green-500 border-green-500 text-white"
                 : "bg-white border-gray-300 text-gray-400"
             }`}
@@ -493,7 +545,7 @@ export default function ViewOrder() {
                     <div className="pl-16">
                       <h4 className="font-medium">Commande emballée</h4>
                       <p className="text-xs text-gray-500">
-                        {["shipped", "delivered"].includes(
+                        {["expédié", "livraison"].includes(
                           orderStatus?.toLowerCase()
                         ) && order.updatedAt
                           ? new Date(order.updatedAt).toLocaleDateString()
@@ -507,7 +559,7 @@ export default function ViewOrder() {
                     <span
                       className={`absolute left-6 top-0 -translate-x-1/2 w-10 h-10 rounded-full flex items-center justify-center shadow-sm border
             ${
-              ["shipped", "delivered"].includes(orderStatus?.toLowerCase())
+              ["expédié", "livraison"].includes(orderStatus?.toLowerCase())
                 ? "bg-green-500 border-green-500 text-white"
                 : "bg-white border-gray-300 text-gray-400"
             }`}
@@ -518,7 +570,7 @@ export default function ViewOrder() {
                       <div className="flex items-center gap-3">
                         <h4 className="font-medium">Expédié</h4>
                         <span className="text-xs text-gray-500">
-                          {["shipped", "delivered"].includes(
+                          {["expédié", "livraison"].includes(
                             orderStatus?.toLowerCase()
                           )
                             ? "Just now"
@@ -526,7 +578,7 @@ export default function ViewOrder() {
                         </span>
                       </div>
 
-                      {["shipped", "delivered"].includes(
+                      {["expédié", "livraison"].includes(
                         orderStatus?.toLowerCase()
                       ) && (
                         <div className="mt-2 inline-flex items-center gap-3 p-2 rounded-md border border-gray-300 bg-white">
@@ -546,7 +598,7 @@ export default function ViewOrder() {
                     <span
                       className={`absolute left-6 top-0 -translate-x-1/2 w-8 h-8 rounded-full flex items-center justify-center shadow-sm border
             ${
-              ["shipped", "delivered"].includes(orderStatus?.toLowerCase())
+              ["expédié", "livraison"].includes(orderStatus?.toLowerCase())
                 ? "bg-green-500 border-green-500 text-white"
                 : "bg-white border-gray-300 text-gray-400"
             }`}
@@ -556,7 +608,7 @@ export default function ViewOrder() {
                     <div className="pl-16">
                       <h4 className="font-medium">Courriel envoyé au client</h4>
                       <p className="text-xs text-gray-500">
-                        {["shipped", "delivered"].includes(
+                        {["expédié", "livraison"].includes(
                           orderStatus?.toLowerCase()
                         ) && order.updatedAt
                           ? new Date(order.updatedAt).toLocaleDateString()
@@ -577,7 +629,7 @@ export default function ViewOrder() {
                     <span
                       className={`absolute left-6 top-0 -translate-x-1/2 w-10 h-10 rounded-full flex items-center justify-center shadow-sm border
             ${
-              orderStatus?.toLowerCase() === "delivered"
+              orderStatus?.toLowerCase() === "livraison"
                 ? "bg-green-600 border-green-600 text-white"
                 : "bg-white border-gray-300 text-gray-400"
             }`}
@@ -587,15 +639,17 @@ export default function ViewOrder() {
                     <div className="pl-16">
                       <h4 className="font-medium">Livré à </h4>
                       <p className="text-xs text-gray-500">
-                        {orderStatus?.toLowerCase() === "delivered" &&
+                        {orderStatus?.toLowerCase() === "livraison" &&
                         order.updatedAt
                           ? new Date(order.updatedAt).toLocaleDateString()
                           : "—"}
                       </p>
 
-                      {orderStatus?.toLowerCase() === "delivered" && (
+                      {orderStatus?.toLowerCase() === "livraison" && (
                         <div className="mt-2 p-3 border border-green-400 bg-green-50 rounded-md text-xs text-green-700">
-                          <p>La commande a été livrée avec succès au client. 🎉</p>
+                          <p>
+                            La commande a été livrée avec succès au client. 🎉
+                          </p>
                           <p>Merci d'avoir fait vos achats chez nous !</p>
                         </div>
                       )}

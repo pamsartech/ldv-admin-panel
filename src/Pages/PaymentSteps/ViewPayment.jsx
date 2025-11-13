@@ -10,16 +10,29 @@ import {
   faArrowLeft,
 } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
-import { Skeleton } from "@mui/material"; // ✅ Import MUI Skeleton
+import { useAlert } from "../../Components/AlertContext";
+
+// MUI 
+import { Skeleton } from "@mui/material"; 
+import Stack from "@mui/material/Stack";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
+import DialogTitle from "@mui/material/DialogTitle";
+import Button from "@mui/material/Button";
+
 
 function ViewPayment() {
   const navigate = useNavigate();
   const { paymentId } = useParams();
+  const { showAlert } = useAlert(); // ✅ useAlert context
 
   const [paymentData, setPaymentData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [openConfirm, setOpenConfirm] = useState(false); // 🔹 MUI confirm dialog
 
   // ✅ Fetch Payment / Order Details
   useEffect(() => {
@@ -49,31 +62,29 @@ function ViewPayment() {
 
   // ✅ Delete Payment Function
   const handleDelete = async () => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this payment?"
-    );
-    if (!confirmDelete) return;
 
     try {
       setIsDeleting(true);
-      const response = await axios.delete(
-        `https://dev-api.payonlive.com/api/payment/delete-payment/${paymentId}`
+      const response = await axios.post(
+        "https://dev-api.payonlive.com/api/payment/bulk-delete",
+        {
+          payment_ids: [paymentId + ""],
+        }
       );
+      // console.log('rsponse', response)
 
-      if (response.data.success) {
-        alert("Payment deleted successfully!");
+
+      if (response.data.message) {
+        showAlert("Payment deleted successfully!", "success");
         navigate("/user/Payments");
       } else {
-        alert(
-          `Failed to delete payment: ${
-            response.data.message || "Unknown error"
-          }`
-        );
+      showAlert(response.data.message || "Failed to delete product", "error");
       }
     } catch (error) {
-      alert(`Error: ${error.response?.data?.message || error.message}`);
+      showAlert(`Error: ${error.response?.data?.message || error.message}`);
     } finally {
       setIsDeleting(false);
+      setOpenConfirm(false); // close confirmation dialog
     }
   };
 
@@ -171,7 +182,7 @@ function ViewPayment() {
         <h1 className="font-medium text-lg">Détails du paiement et de la commande</h1>
         <div>
           <button
-            onClick={handleDelete}
+            onClick={() => setOpenConfirm(true)}
             disabled={isDeleting}
             className={`px-3 py-1 border rounded-md ${
               isDeleting
@@ -180,7 +191,7 @@ function ViewPayment() {
             }`}
           >
             <FontAwesomeIcon icon={faTrashCan} className="px-2" />
-            {isDeleting ? "Deleting..." : "Delete payment"}
+            {isDeleting ? "Supprimer..." : "Supprimer paiement"}
           </button>
 
           <button
@@ -188,7 +199,7 @@ function ViewPayment() {
             className="mx-2 px-3 py-1 border rounded-md text-[#114E9D] bg-blue-50 hover:bg-blue-100"
           >
             <FontAwesomeIcon icon={faArrowRotateLeft} className="px-2" />
-            Update
+            Mise à jour
           </button>
 
           <button
@@ -196,10 +207,41 @@ function ViewPayment() {
             className="px-3 py-1 border rounded-md text-white bg-[#02B978] hover:bg-[#04D18C]"
           >
             <FontAwesomeIcon icon={faArrowLeft} className="text-white px-2" />
-            Back to Main View
+            Dos la vue principale
           </button>
         </div>
       </div>
+
+      {/* 🔹 MUI Confirmation Dialog */}
+      <Dialog
+        open={openConfirm}
+        onClose={() => setOpenConfirm(false)}
+        aria-labelledby="confirm-delete-title"
+        aria-describedby="confirm-delete-description"
+      >
+        <DialogTitle id="confirm-delete-title">
+          {"Confirm Payment Deletion"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="confirm-delete-description">
+            Are you sure you want to permanently delete this payment? This
+            action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenConfirm(false)} color="primary">
+            Cancel
+          </Button>
+          <Button
+            onClick={handleDelete}
+            color="error"
+            variant="contained"
+            disabled={isDeleting}
+          >
+            {isDeleting ? "Deleting..." : "Delete"}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <div className="p-4 mt-10 mx-5 max-w-4xl">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -269,7 +311,7 @@ function ViewPayment() {
                     className="px-3 py-1 text-white rounded-full bg-red-700 hover:bg-red-600"
                   >
                     <FontAwesomeIcon icon={faUndoAlt} className="h-3 w-3 pr-2" />
-                    Refund
+                    Remboursement
                   </button>
 
                   <button
@@ -283,7 +325,7 @@ function ViewPayment() {
                     }`}
                   >
                     <FontAwesomeIcon icon={faXmark} className="h-3 w-3 pr-1" />
-                    {isDeleting ? "canceling..." : "Cancel order"}
+                    {isDeleting ? "Annuler..." : "Annuler commande"}
                   </button>
                 </div>
               </div>

@@ -13,6 +13,8 @@ import {
   faChevronRight,
   faTimes,
   faTrash,
+  faFilter,
+  faChevronDown,
 } from "@fortawesome/free-solid-svg-icons";
 import {
   Skeleton,
@@ -26,13 +28,13 @@ import {
 } from "@mui/material";
 
 const statusColors = {
-  Pending: "bg-yellow-100 text-yellow-700 border border-yellow-300",
-  Paid: "bg-green-100 text-green-700 border border-green-300",
-  Failed: "bg-red-100 text-red-700 border border-red-300",
-  Shipped: "bg-blue-100 text-blue-700 border border-blue-300",
+  enattente: "bg-yellow-100 text-yellow-700 border border-yellow-300",
+  payé: "bg-green-100 text-green-700 border border-green-300",
+  échoué: "bg-red-100 text-red-700 border border-red-300",
+  expédié: "bg-blue-100 text-blue-700 border border-blue-300",
   Processing: "bg-orange-100 text-orange-700 border border-orange-300",
-  Delivered: "bg-emerald-100 text-emerald-700 border border-emerald-300",
-  Cancelled: "bg-red-100 text-red-700 border border-red-300",
+  livraison: "bg-emerald-100 text-emerald-700 border border-emerald-300",
+  annulé: "bg-red-100 text-red-700 border border-red-300",
   Dispatched: "bg-purple-100 text-purple-700 border border-purple-300",
   "Out for delivery": "bg-orange-100 text-orange-700 border border-orange-300",
 };
@@ -53,7 +55,8 @@ export default function OrdersDataTable({ onSelectionChange }) {
   const [deleting, setDeleting] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [sortByDateAsc, setSortByDateAsc] = useState(true);
-
+  // Add this near your useState declarations
+  const [showFilter, setShowFilter] = useState(false);
 
   useEffect(() => {
     if (onSelectionChange) {
@@ -85,7 +88,7 @@ export default function OrdersDataTable({ onSelectionChange }) {
             o.orderItems && o.orderItems.length > 0
               ? o.orderItems.map((item) => item.productName).join(", ")
               : "N/A",
-          payment: o.paymentStatus || "Pending",
+          payment: o.paymentStatus || "Enattente",
           shipping: o.shippingStatus || "Processing",
           amount:
             o.orderItems && o.orderItems.length > 0
@@ -95,7 +98,7 @@ export default function OrdersDataTable({ onSelectionChange }) {
           phoneNumber: o.phoneNumber || "unknown",
           transactionId: o.payment_id || o.payment_Id || "unknown",
           // method: o.method || "unknown"
-          paymentMethod: o.paymentMethod || "unknown"
+          paymentMethod: o.paymentMethod || "unknown",
         }));
         setOrders(formattedOrders);
       } catch (err) {
@@ -140,23 +143,23 @@ export default function OrdersDataTable({ onSelectionChange }) {
     }
     if (activeTab === "active") {
       result = result.filter(
-        (o) => o.payment === "Pending" || o.shipping === "Shipped"
+        (o) => o.payment === "enattente" || o.shipping === "expédié"
       );
     } else if (activeTab === "archived") {
       result = result.filter(
-        (o) => o.shipping === "Delivered" || o.shipping === "Cancelled"
+        (o) => o.shipping === "livraison" || o.shipping === "annulé"
       );
     }
     if (filterPayment !== "all") {
       result = result.filter((o) => o.payment === filterPayment);
     }
     result.sort((a, b) => {
-       const dateA = new Date(a.date);
+      const dateA = new Date(a.date);
       const dateB = new Date(b.date);
       return sortByDateAsc ? dateA - dateB : dateB - dateA;
     });
     return result;
-  }, [orders, activeTab, filterPayment, sortAsc, search,sortByDateAsc]);
+  }, [orders, activeTab, filterPayment, sortAsc, search, sortByDateAsc]);
 
   const totalPages = Math.ceil(filteredOrders.length / ordersPerPage);
   const currentOrders = filteredOrders.slice(
@@ -300,7 +303,7 @@ export default function OrdersDataTable({ onSelectionChange }) {
         </div>
 
         <div className="flex gap-2">
-          <select
+          {/* <select
             value={filterPayment}
             onChange={(e) => {
               setFilterPayment(e.target.value);
@@ -308,18 +311,60 @@ export default function OrdersDataTable({ onSelectionChange }) {
             }}
             className="border border-gray-400 px-3 py-1.5 rounded-md text-sm text-gray-900"
           >
-            <option value="all">Tous les paiements</option>
-            <option value="Pending">Pending</option>
-            <option value="Paid">Paid</option>
-            <option value="Failed">Failed</option>
-          </select>
+            <option value="all">Tous</option>
+            <option value="enattente">Enattente</option>
+            <option value="payé">Payé</option>
+            <option value="échoué">Échoué</option>
+          </select> */}
+          <div className="flex gap-2">
+            {/* Payment Filter Dropdown */}
+            <div className="relative filter-dropdown">
+              <button
+                onClick={() => setShowFilter((prev) => !prev)}
+                className="flex items-center gap-2 border border-gray-400 px-3 py-1.5 rounded-md text-sm text-gray-900 hover:bg-gray-100 transition"
+              >
+                <FontAwesomeIcon icon={faFilter} />
+                Filtrer
+                <FontAwesomeIcon
+                  icon={faChevronDown}
+                  className="ml-1 text-gray-600"
+                />
+              </button>
+              {showFilter && (
+                <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-300 rounded-md shadow-md z-50">
+                  {[
+                    { label: "Tous", value: "all" },
+                    { label: "Enattente", value: "enattente" },
+                    { label: "Payé", value: "payé" },
+                    { label: "Échoué", value: "échoué" },
+                  ].map((option) => (
+                    <div
+                      key={option.value}
+                      onClick={() => {
+                        setFilterPayment(option.value);
+                        setCurrentPage(1);
+                        setShowFilter(false);
+                      }}
+                      className={`px-4 py-2 text-sm cursor-pointer hover:bg-gray-100 ${
+                        filterPayment === option.value
+                          ? "bg-gray-100 font-medium"
+                          : ""
+                      }`}
+                    >
+                      {option.label}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
 
           <button
             onClick={() => setSortByDateAsc((prev) => !prev)}
             className="border border-gray-400 px-3 py-1.5 rounded-md text-sm text-gray-900 hover:bg-gray-100"
           >
-            <FontAwesomeIcon icon={faUpDown} />   
-                         Trier par date
+            <FontAwesomeIcon icon={faUpDown} />
+            Trier par date
           </button>
 
           {/* bulk delete button */}
@@ -337,7 +382,7 @@ export default function OrdersDataTable({ onSelectionChange }) {
             ) : (
               <>
                 <FontAwesomeIcon icon={faTrash} />
-                Delete Selected ({selectedRows.length})
+                Supprimer sélection ({selectedRows.length})
               </>
             )}
           </button>
@@ -352,7 +397,7 @@ export default function OrdersDataTable({ onSelectionChange }) {
         />
         <input
           type="text"
-          placeholder="Search"
+          placeholder="Recherche"
           value={search}
           onChange={(e) => {
             setSearch(e.target.value);
@@ -413,14 +458,18 @@ export default function OrdersDataTable({ onSelectionChange }) {
                       <td className="py-3 px-4 font-medium">{order.id}</td>
                       <td className="py-3 px-4">{order.customer}</td>
                       <td className="py-3 px-4">{order.product}</td>
-                      <td className="py-3 px-4"> {new Date(order.date).toLocaleDateString('en-GB')}</td>
+                      <td className="py-3 px-4">
+                        {" "}
+                        {new Date(order.date).toLocaleDateString("en-GB")}
+                      </td>
                       <td className="py-3 px-4">
                         <span
                           className={`px-3 py-1 rounded-full text-xs font-medium ${
                             statusColors[order.payment]
                           }`}
                         >
-                          {order.payment}
+                          {order.payment.charAt(0).toUpperCase() +
+                            order.payment.slice(1)}
                         </span>
                       </td>
                       <td className="py-3 px-4">
@@ -429,7 +478,9 @@ export default function OrdersDataTable({ onSelectionChange }) {
                             statusColors[order.shipping]
                           }`}
                         >
-                          {order.shipping}
+                          {/* {order.shipping} */}
+                          {order.shipping.charAt(0).toUpperCase() +
+                            order.shipping.slice(1)}
                         </span>
                       </td>
                       <td className="py-3 px-4 text-gray-500">
@@ -491,9 +542,7 @@ export default function OrdersDataTable({ onSelectionChange }) {
             {/* Bottom Cards */}
             <div className="flex justify-center mt-16">
               {loading ? (
-                <>
-                  {skeletonCard}
-                </>
+                <>{skeletonCard}</>
               ) : (
                 <>
                   {/* <div className="bg-white rounded-lg shadow p-6 border">

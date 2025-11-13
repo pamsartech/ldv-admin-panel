@@ -196,8 +196,8 @@ const CreateOrder = () => {
 
     // ✅ Step 2: Check payment vs shipping rule
     if (
-      paymentStatus !== "Paid" &&
-      (shippingStatus === "Shipped" || shippingStatus === "Delivered")
+      paymentStatus !== "payé" &&
+      (shippingStatus === "expédié" || shippingStatus === "livraison")
     ) {
       showAlert(
         "You can only mark an order as Shipped or Delivered after payment is completed.",
@@ -246,7 +246,7 @@ const CreateOrder = () => {
       }
     } catch (err) {
       console.error("❌ Server Error:", err);
-      showAlert("Server error. Please try again later.", "error");
+      showAlert(""+ err.response.data.error, "info");
     } finally {
       setLoading(false);
     }
@@ -514,7 +514,7 @@ const CreateOrder = () => {
             size="lg"
             className="text-red-700 px-2"
           />
-          Discard
+          Jeter
         </button>
       </div>
 
@@ -838,7 +838,7 @@ const CreateOrder = () => {
               {/* Price input */}
               <div className=" text-center">
                 <label className="block mb-1 text-start text-sm font-medium">
-                  Price
+                  Prix
                 </label>
                 <input
                   readOnly
@@ -907,9 +907,9 @@ const CreateOrder = () => {
               className="w-full rounded-lg border px-3 py-2 text-sm"
             >
               <option value="">Sélectionnez statut du paiement</option>
-              <option>Paid</option>
-              <option>Pending</option>
-              <option>Failed</option>
+              <option value="payé">Payé</option>
+              <option value="enattente">En-attente</option>
+              <option value="échoué">Échoué</option>
             </select>
             {errors.paymentStatus && (
               <p className="text-red-500 text-sm">{errors.paymentStatus}</p>
@@ -948,13 +948,13 @@ const CreateOrder = () => {
               className="w-full rounded-lg border px-3 py-2 text-sm"
             >
               <option value="">Sélectionnez statut de la livraison</option>
-              <option value="Pending">Pending</option>
+              <option value="enattente">En-attente</option>
               <option value="Processing">Processing</option>
-              <option value="Shipped" disabled={paymentStatus !== "Paid"}>
-                Shipped
+              <option value="expédié" disabled={paymentStatus !== "payé"}>
+                Expédié
               </option>
-              <option value="Delivered" disabled={paymentStatus !== "Paid"}>
-                Delivered
+              <option value="livraison" disabled={paymentStatus !== "payé"}>
+                Livraison
               </option>
             </select>
 
@@ -967,7 +967,7 @@ const CreateOrder = () => {
         {/* Order Summary */}
         <section className="border border-gray-400 rounded-lg p-4 w-full sm:w-80">
           <h3 className="font-semibold mb-4 text-sm text-gray-700">
-            Order Summary
+            Résumé de la commande
           </h3>
           <div className="text-sm text-gray-700 space-y-2">
             <div className="flex justify-between">
@@ -975,12 +975,12 @@ const CreateOrder = () => {
               <span> € {subtotal} </span>
             </div>
             <div className="flex justify-between">
-              <span>Tax</span>
+              <span>Impôt</span>
               <span> € {tax} </span>
             </div>
 
             <div className="flex justify-between">
-              <span>Shipping Fee</span>
+              <span>Frais d'expédition</span>
               <span>€ {shippingFee} </span>
             </div>
             <div className="border-t border-gray-400 mt-5 pt-2 font-semibold flex justify-between">
@@ -1001,7 +1001,7 @@ const CreateOrder = () => {
             {loading && (
               <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
             )}
-            {loading ? "Submitting..." : "Submit Order"}
+            {loading ? "Soumettre..." : "Soumettre commande"}
           </button>
         </div>
       </form>

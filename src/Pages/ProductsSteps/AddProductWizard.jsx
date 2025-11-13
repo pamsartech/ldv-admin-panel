@@ -167,7 +167,7 @@ const handleSubmit = async () => {
       { withCredentials: true }
     );
 
-    showAlert("✅ Product created successfully!", "success");
+    showAlert(" Product created successfully!", "success");
     navigate("/user/Products");
   } catch (err) {
     console.error("Backend error:", err.response?.data );
