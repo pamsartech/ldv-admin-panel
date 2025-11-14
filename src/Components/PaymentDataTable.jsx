@@ -83,10 +83,10 @@ export default function PaymentDataTable({ onSelectionChange }) {
 
   // ---- Filtering ----
   let tabFiltered = payments;
-  if (activeTab === "Payé")
-    tabFiltered = payments.filter((p) => p.status === "Payé");
-  if (activeTab === "Remboursé")
-    tabFiltered = payments.filter((p) => p.status === "Remboursé");
+  if (activeTab === "payé")
+    tabFiltered = payments.filter((p) => p.status === "payé");
+  if (activeTab === "remboursés")
+    tabFiltered = payments.filter((p) => p.status === "remboursé");
 
   if (search.trim()) {
     const term = search.toLowerCase();
@@ -247,7 +247,7 @@ export default function PaymentDataTable({ onSelectionChange }) {
         {/* Tabs Section */}
 <div className="flex gap-6">
   {[
-    { key: "tous", label: "Tous", icon: faCircleCheck },
+    { key: "all", label: "Tous", icon: faCircleCheck },
     { key: "payé", label: "Payés", icon: faCheckCircle },
     { key: "remboursés", label: "Remboursés", icon: faUndo },
   ].map(({ key, label, icon }) => {

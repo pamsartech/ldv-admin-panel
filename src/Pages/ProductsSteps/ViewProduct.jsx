@@ -81,6 +81,16 @@ const ViewProduct = () => {
     }
   };
 
+  const formatSessionIds = (ids) => {
+  if (!Array.isArray(ids)) return "N/A";
+
+  // remove empty values
+  const cleaned = ids.filter(v => v && v.trim() !== "");
+
+  return cleaned.length > 0 ? cleaned.join("   ") : "N/A";
+};
+
+
   // 🧩 MUI Skeleton loader
   if (loading)
     return (
@@ -199,32 +209,6 @@ const ViewProduct = () => {
               </div>
             </div>
 
-            {/* Color */}
-            {/* <div className="mt-3">
-              <span className="text-sm font-semibold mb-2">Color:</span>
-              <div className="mt-2 flex flex-wrap gap-4">
-                {Array.isArray(product.color) ? (
-                  product.color.map((c, i) => (
-                    <div key={i} className="flex flex-col items-center">
-                      <span
-                        className="w-6 h-6 rounded-full border border-gray-300 cursor-pointer"
-                        style={{ backgroundColor: c }}
-                      ></span>
-                      <span className="text-xs text-gray-600 mt-1">{c}</span>
-                    </div>
-                  ))
-                ) : (
-                  <div className="flex flex-col items-center">
-                    <span
-                      className="w-6 h-6 rounded-full border border-gray-400 cursor-pointer"
-                      style={{ backgroundColor: product.color }}
-                    ></span>
-                  </div>
-                )}
-              </div>
-            </div> */}
-
-            {/* Color */}
             {/* Color */}
             <div className="mt-3">
               <span className="text-sm font-semibold mb-2">Couleur</span>
@@ -382,9 +366,7 @@ const ViewProduct = () => {
                 </span>
                 {/* <span>{product.tiktok_session_id || "N/A"} </span> */}
                 <span className="text-right break-words">
-                  {Array.isArray(product.tiktok_session_id)
-                    ? product.tiktok_session_id.join("   ") // 3 spaces between each ID
-                    : product.tiktok_session_id || "N/A"}
+                    {formatSessionIds( product.tiktok_session_id)}
                 </span>
               </div>
 

@@ -157,7 +157,7 @@ function Navbar({ heading }) {
                           : "text-blue-600 hover:underline"
                       }`}
                     >
-                      {markingAll ? "Marking..." : "Mark all as read"}
+                      {markingAll ? "Marquage..." : "Marquer tout comme lu"}
                     </button>
                   )}
                 </div>
@@ -204,7 +204,7 @@ function Navbar({ heading }) {
                           item.isRead ? "text-gray-400" : "text-blue-600"
                         }`}
                       >
-                        {item.isRead ? "Read" : "Unread"}
+                        {item.isRead ? "Lire" : "Non lu"}
                       </p>
                     </li>
                   ))}

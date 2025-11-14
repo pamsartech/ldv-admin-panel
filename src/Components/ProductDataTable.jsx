@@ -63,6 +63,7 @@ export default function ProductTable({ onSelectionChange }) {
         const res = await axios.get(
           "https://dev-api.payonlive.com/api/product/product-list"
         );
+        console.log("data", res.data);
         if (res.data && res.data.data) {
           setProducts(res.data.data);
         } else {
@@ -333,6 +334,14 @@ export default function ProductTable({ onSelectionChange }) {
       setDeleteLoading(false);
     }
   };
+  const formatSessionIds = (ids) => {
+    if (!Array.isArray(ids)) return "N/A";
+
+    // remove empty values
+    const cleaned = ids.filter((v) => v && v.trim() !== "");
+
+    return cleaned.length > 0 ? cleaned.join("   ") : "N/A";
+  };
 
   // ============================
   // 🔸 UI Rendering
@@ -556,7 +565,7 @@ export default function ProductTable({ onSelectionChange }) {
                   <th className="p-3">Prix</th>
                   <th className="p-3">Catégorie</th>
                   <th className="p-3">Code produit</th>
-                  <th className="p-3">Session ID</th>
+                  <th className="p-3">ID de session</th>
                   <th className="p-3">Taille</th>
                   <th className="p-3">Couleur</th>
                   <th className="p-3">Statut</th>
@@ -591,26 +600,17 @@ export default function ProductTable({ onSelectionChange }) {
                     <td className="p-3">{item.category}</td>
                     <td className="p-3">{item.productCode}</td>
                     {/* <td className="p-3">{item.tiktok_session_id || "N/A"}</td> */}
-                    <td className="p-3">
+                    {/* <td className="p-3">
                       {Array.isArray(item.tiktok_session_id)
                         ? item.tiktok_session_id.join("   ") // 3 spaces between each ID
                         : item.tiktok_session_id || "N/A"}
+                    </td> */}
+
+                    <td className="p-3">
+                      {formatSessionIds(item.tiktok_session_id)}
                     </td>
 
                     <td className="p-3">{item.size || "N/A"}</td>
-
-                    {/* <td className="p-3">
-                      <div className="flex items-center gap-2">
-                        <span
-                          className="w-5 h-5 rounded-full border border-gray-300"
-                          style={{ backgroundColor: item.color }}
-                          title={item.color}
-                        ></span>
-                        <span className="text-gray-700 font-medium">
-                          {hexToColorName(item.color)}
-                        </span>
-                      </div>
-                    </td> */}
 
                     <td className="p-3">
                       <div className="flex flex-wrap items-center gap-3">

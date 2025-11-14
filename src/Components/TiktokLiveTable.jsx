@@ -184,7 +184,7 @@ const sortedData = [...filteredData].sort((a, b) => {
         return "bg-green-100 text-green-600 border border-green-400";
       case "Inactif":
         return "bg-orange-100 text-orange-600 border border-orange-400";
-      case "Aur-point-d'arriver":
+      case "Sur-point-d'arriver":
         return "bg-blue-100 text-blue-600 border border-blue-400";
       case "Suspendu":
         return "bg-red-100 text-red-600 border border-red-400";

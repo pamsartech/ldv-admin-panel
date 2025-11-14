@@ -40,10 +40,10 @@ export default function EventDetail() {
 
   const getStatusStyles = (status) => {
     const styles = {
-      active: "border-green-400 text-green-600 bg-green-50",
-      inactive: "border-red-400 text-red-600 bg-red-50",
-      "about to come": "border-blue-400 text-blue-600 bg-blue-50",
-      suspended: "border-red-400 text-red-600 bg-red-50",
+      actif : "border-green-400 text-green-600 bg-green-50",
+      inactif : "border-red-400 text-red-600 bg-red-50",
+      "sur-point-d'arriver": "border-blue-400 text-blue-600 bg-blue-50",
+      suspendu : "border-red-400 text-red-600 bg-red-50",
     };
     return (
       styles[status?.toLowerCase()] ||
