@@ -1,232 +1,329 @@
-/// AddProductStep3.jsx
-import React, { useState, useEffect } from "react";
+// AddProductStep2.jsx
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Navbar from "../../Components/Navbar";
+import { SketchPicker } from "react-color";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faArrowLeft,
   faCheck,
-  faXmark,
+  faArrowLeft,
+  faArrowRight,
   faPlus,
-  faTimes,
-  faCircleInfo,
+  faXmark,
 } from "@fortawesome/free-solid-svg-icons";
+import Navbar from "../../Components/Navbar";
 
-function AddProductStep3({ formData, setFormData, prevStep, handleSubmit }) {
+function AddProductStep2({ formData, setFormData, prevStep, nextStep }) {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-  
-  // Side image previews (4 slots)
-  const [previews, setPreviews] = useState(
-    Array(4)
-      .fill(null)
-      .map((_, i) =>
-        formData.images?.[i] ? URL.createObjectURL(formData.images[i]) : null
-      )
-  );
 
-  // Index of side image shown in main preview
-  const [selectedIndex, setSelectedIndex] = useState(
-    previews.findIndex((p) => p !== null) >= 0
-      ? previews.findIndex((p) => p !== null)
-      : 0
+  // States
+  const [selectedGender, setSelectedGender] = useState(
+    formData.gender || "Men"
   );
+  const [selectedSize, setSelectedSize] = useState(formData.size || []); // changed from single
+  const [colors, setColors] = useState([
+    "#FF0000",
+    "#2563EB",
+    "#8B5CF6",
+    "#6B7280",
+  ]);
+  const [selectedColor, setSelectedColor] = useState(formData.color || []); // changed from single
+  const [showColorPicker, setShowColorPicker] = useState(false);
 
-  // Clean up object URLs on unmount
+  // New enable/disable toggles
+  const [enableGender, setEnableGender] = useState(false);
+  const [enableColor, setEnableColor] = useState(false);
+  const [enableSize, setEnableSize] = useState(false);
+
+  // Sync with formData based on enable/disable
   useEffect(() => {
-    return () => {
-      previews.forEach((url) => url && URL.revokeObjectURL(url));
-    };
-  }, [previews]);
+    setFormData((prev) => ({
+      ...prev,
+      gender: enableGender ? selectedGender : "N/A",
+    }));
+  }, [enableGender, selectedGender, setFormData]);
 
-  // Handle side image upload
-  const handleImageUpload = (event, index) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  // for select color
+  useEffect(() => {
+    setFormData((prev) => ({
+      ...prev,
+      color: enableColor ? selectedColor : [] || "N/A",
+    }));
+  }, [enableColor, selectedColor, setFormData]);
 
-    const url = URL.createObjectURL(file);
+  // for select size
+  useEffect(() => {
+    setFormData((prev) => ({
+      ...prev,
+      size: enableSize ? selectedSize : [] || "N/A",
+    }));
+  }, [enableSize, selectedSize, setFormData]);
 
-    setPreviews((prev) => {
-      const updated = [...prev];
-      updated[index] = url;
-      return updated;
-    });
-
-    setFormData((prev) => {
-      const imgs = [...(prev.images || [])];
-      imgs[index] = file;
-      return { ...prev, images: imgs };
-    });
-
-    setSelectedIndex(index); // Show newly uploaded image in main preview
+  const handleColorCommit = (color) => {
+    const newColor = color.hex;
+    if (!colors.includes(newColor)) setColors((p) => [...p, newColor]);
+    setSelectedColor(newColor);
   };
 
-  // Handle image removal
-  const handleRemoveImage = (index) => {
-    setPreviews((prev) => {
-      const updated = [...prev];
-      const url = updated[index];
-      if (url) URL.revokeObjectURL(url);
-      updated[index] = null;
-      return updated;
-    });
-
-    setFormData((prev) => {
-      const imgs = [...(prev.images || [])];
-      imgs[index] = null;
-      return { ...prev, images: imgs };
-    });
-
-    // Update main preview to first available image
-    if (selectedIndex === index) {
-      const nextIndex = previews.findIndex((p, i) => p !== null && i !== index);
-      setSelectedIndex(nextIndex >= 0 ? nextIndex : 0);
-    }
+  // Toggle color selection
+  const toggleColor = (color) => {
+    setSelectedColor((prev) =>
+      prev.includes(color) ? prev.filter((c) => c !== color) : [...prev, color]
+    );
   };
 
-  // When a side image is clicked, show it in main preview
-  const handleSelectMain = (index) => {
-    if (previews[index]) setSelectedIndex(index);
-  };
-
-  // 🟢 Wrapped handleSubmit with loading logic
-  const onSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      await handleSubmit(); // call parent function
-    } catch (error) {
-      console.error("Error submitting:", error);
-    } finally {
-      setLoading(false);
-    }
+  // Toggle size selection
+  const toggleSize = (size) => {
+    setSelectedSize((prev) =>
+      prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size]
+    );
   };
 
   return (
-    <div className="mb-10">
+    <div className="mb-20">
       <Navbar heading="Gestion des produits" />
 
       <h1 className="mt-5 text-start mx-5 font-medium text-lg">
         Création de produits
       </h1>
 
-      <div className="max-w-3xl mx-auto mt-10 bg-white p-6 border-0">
-        {/* progress indicator */}
+      <div className="max-w-3xl mx-auto mt-10 bg-white p-6">
+        {/* Step indicator */}
         <div className="flex justify-center items-center mt-5 gap-4 mb-5">
           <div className="flex flex-col items-center text-black font-semibold">
-            <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[#02B978] text-white">
+            <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[#02B978] text-white ">
               <FontAwesomeIcon
                 icon={faCheck}
                 size="lg"
                 className="text-white px-3 "
               />
             </div>
-            <span className="mt-3 text-sm font-bold text-[#02B978]">
+            <span className="mt-3 text-sm font-bold text-[#02B978] ">
               Saisir les informations sur le produit
             </span>
           </div>
+
           <div className="flex-1 pb-5 border-t-3 border-[#02B978]"></div>
+
           <div className="flex flex-col items-center text-gray-400 font-semibold">
-            <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[#02B978] text-white">
-              <FontAwesomeIcon
-                icon={faCheck}
-                size="lg"
-                className="text-white px-3 "
-              />
+            <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[#02B978] text-white ">
+              2
             </div>
-            <span className="mt-3 font-bold text-sm text-[#02B978]">
+            <span className="mt-3 font-bold text-sm text-[#02B978] ">
               Ajouter des variations
             </span>
           </div>
-          <div className="flex-1 pb-5 border-t-3 border-[#02B978]"></div>
+
+          <div className="flex-1 pb-5 border-t-3 border-gray-800"></div>
+
           <div className="flex flex-col items-center text-gray-400 font-semibold">
-            <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[#02B978] text-white border border-gray-300">
+            <div className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-400 text-white border border-gray-300">
               3
             </div>
-            <span className="mt-3 text-sm text-[#02B978]">Ajouter des images</span>
+            <span className="mt-3 text-sm">Ajouter des images</span>
           </div>
         </div>
       </div>
 
-      {/* FORM START */}
+      {/* Form wrapper */}
       <form
-       onSubmit={onSubmit}
+        className="max-w-5xl mx-auto mt-10 p-6 border border-gray-300 rounded-2xl shadow-md bg-white"
+        onSubmit={(e) => {
+          e.preventDefault();
+          nextStep();
+        }}
       >
-        {/* main preview and side uploads */}
-        <div className="bg-gray-100 mx-auto p-6 rounded-2xl w-full max-w-lg">
-          <h3 className="font-semibold text-gray-800 mb-3">Ajouter des images</h3>
-          <div className="flex gap-4 rounded-2xl">
-            {/* Main Preview */}
-            <div className="relative flex-1">
-              <div className="flex-1 flex flex-col items-center justify-center border-2 border-gray-300 rounded-xl h-64 bg-white overflow-hidden">
-                {previews[selectedIndex] ? (
-                  <img
-                    src={previews[selectedIndex]}
-                    alt="Main Preview"
-                    className="h-full w-full object-cover rounded-lg"
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+          <div className="space-y-6">
+            {/* Gender */}
+            <div>
+              <div className="flex  mb-2">
+                <h3 className="font-semibold text-gray-800">Genre</h3>
+                <label className="flex items-center gap-2 mx-5 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={enableGender}
+                    onChange={(e) => setEnableGender(e.target.checked)}
+                    className="cursor-pointer"
                   />
-                ) : (
-                  <span className="text-gray-500">Aucune image sélectionnée</span>
-                )}
+                  Activer la sélection
+                </label>
+              </div>
+              <div className="flex gap-3">
+                {["Men", "Women", "Unisex"].map((gender) => (
+                  <button
+                    type="button"
+                    key={gender}
+                    disabled={!enableGender}
+                    onClick={() => enableGender && setSelectedGender(gender)}
+                    className={`px-4 py-2 rounded-lg border transition ${
+                      selectedGender === gender && enableGender
+                        ? "bg-[#6750A4] text-white "
+                        : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
+                    } ${!enableGender ? "opacity-50 cursor-not-allowed" : ""}`}
+                  >
+                    {gender}
+                  </button>
+                ))}
               </div>
             </div>
 
-            {/* Side Uploads */}
-            <div className="flex flex-col gap-3">
-              {[0, 1, 2, 3].map((index) => (
-                <div key={index} className="relative">
-                  <label
-                    htmlFor={`sideImageUpload-${index}`}
-                    className="w-12 h-12 flex items-center justify-center bg-gray-200 rounded-lg cursor-pointer hover:bg-gray-300 transition overflow-hidden"
-                  >
-                    {previews[index] ? (
-                      <img
-                        src={previews[index]}
-                        alt={`Upload ${index}`}
-                        className="w-full h-full object-cover rounded-lg"
-                        onClick={() => handleSelectMain(index)}
-                      />
-                    ) : (
-                      <FontAwesomeIcon
-                        icon={faPlus}
-                        className="text-gray-600"
-                      />
-                    )}
-                  </label>
+            {/* Colors */}
+            <div className="mt-5">
+              <div className="flex  mb-2">
+                <h3 className="font-semibold text-gray-800">Couleurs</h3>
+                <label className="flex items-center mx-5 gap-2 text-sm">
                   <input
-                    id={`sideImageUpload-${index}`}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) => handleImageUpload(e, index)}
-                    required={index === 0} // ✅ HTML5 required only for the first image
+                    type="checkbox"
+                    checked={enableColor}
+                    onChange={(e) => setEnableColor(e.target.checked)}
+                    className="cursor-pointer"
                   />
-                  {previews[index] && (
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveImage(index)}
-                      className="absolute top-1 right-1 bg-black bg-opacity-50 text-white rounded-full p-1"
-                    >
-                      <FontAwesomeIcon icon={faTimes} size="sm" />
-                    </button>
-                  )}
+                  Activer la sélection
+                </label>
+              </div>
+              <div className="flex gap-3 items-center flex-wrap">
+                {colors.map((color, idx) => (
+                  <div
+                    key={idx}
+                    className={`w-6 h-6 rounded-full border cursor-pointer transition-all ${
+                      selectedColor.includes(color) && enableColor
+                        ? "ring-2 ring-purple-600 scale-110"
+                        : ""
+                    } ${!enableColor ? "opacity-50 cursor-not-allowed" : ""}`}
+                    style={{ backgroundColor: color }}
+                    onClick={() => enableColor && toggleColor(color)}
+                  />
+                ))}
+                <button
+                  type="button"
+                  disabled={!enableColor}
+                  onClick={() => enableColor && setShowColorPicker((s) => !s)}
+                  className={`w-8 h-8 rounded-full border flex items-center justify-center text-gray-600 transition ${
+                    !enableColor
+                      ? "opacity-50 cursor-not-allowed"
+                      : "hover:bg-gray-100"
+                  }`}
+                >
+                  <FontAwesomeIcon icon={faPlus} />
+                </button>
+              </div>
+
+              {enableColor && showColorPicker && (
+                <div className="mt-3">
+                  <SketchPicker
+                    color={selectedColor[selectedColor.length - 1] || "#000000"} // show last selected color
+                    onChangeComplete={(color) => {
+                      const newColor = color.hex;
+                      if (!colors.includes(newColor)) {
+                        setColors((prev) => [...prev, newColor]);
+                      }
+                      // only add new color if not selected
+                      setSelectedColor((prev) =>
+                        prev.includes(newColor) ? prev : [...prev, newColor]
+                      );
+                    }}
+                  />
                 </div>
-              ))}
+              )}
+
+              {/* {enableColor && showColorPicker && (
+                <div className="mt-3">
+                  <SketchPicker
+                    color={selectedColor}
+                    onChange={(c) => setSelectedColor(c.hex)}
+                    onChangeComplete={handleColorCommit}
+                  />
+                </div>
+              )} */}
+            </div>
+
+            {/* Size */}
+            <div className="mt-8">
+              <div className="flex mb-2">
+                <h3 className="font-semibold text-gray-800">Taille</h3>
+                <label className="flex items-center mx-9 gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={enableSize}
+                    onChange={(e) => setEnableSize(e.target.checked)}
+                    className="cursor-pointer"
+                  />
+                  Activer la sélection
+                </label>
+              </div>
+              <div className="flex gap-3 flex-wrap">
+                {["XS", "S", "M", "L", "XL"].map((size) => (
+                  <button
+                    type="button"
+                    key={size}
+                    disabled={!enableSize}
+                    onClick={() => enableSize && toggleSize(size)}
+                    className={`px-4 py-2 rounded-lg border transition ${
+                      selectedSize.includes(size) && enableSize
+                        ? "bg-[#6750A4] text-white "
+                        : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
+                    } ${!enableSize ? "opacity-50 cursor-not-allowed" : ""}`}
+                  >
+                    {size}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Right column */}
+          <div className="space-y-6 mt-5">
+            <div>
+              <h3 className="font-semibold text-gray-800 mb-2">Stock</h3>
+              <input
+                type="number"
+                name="stock"
+                required
+                value={formData.stock || ""}
+                onChange={(e) =>
+                  setFormData((p) => ({ ...p, stock: e.target.value }))
+                }
+                className="w-full border rounded-lg px-3 py-2"
+              />
+            </div>
+
+            <div>
+              <h3 className="font-semibold text-gray-800 mb-2">Catégorie</h3>
+              <select
+                name="category"
+                required
+                value={formData.category || ""}
+                onChange={(e) =>
+                  setFormData((p) => ({ ...p, category: e.target.value }))
+                }
+                className="w-full border rounded-lg px-3 py-2"
+              >
+                <option value="">Sélectionner catégorie </option>
+                <option value="vêtements">Vêtements</option>
+                <option value="chaussures">Chaussures</option>
+                <option value="accessoires">Accessoires</option>
+              </select>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                type="button"
+                className="px-6 py-2 rounded-full bg-[#6750A4] text-white font-sm"
+              >
+                Add Category
+              </button>
+              <button
+                type="button"
+                className="px-4 py-2 rounded-full bg-[#6750A4] text-white font-sm"
+              >
+                Create Category
+              </button>
             </div>
           </div>
         </div>
 
-        <div className="mx-auto w-90"> 
-        <h6 className=" text-sm font-medium my-2">
-          <FontAwesomeIcon icon={faCircleInfo} className="pr-1"/>Seuls les formats png ou jpg sont acceptables.
-        </h6>
-        <h6 className=" text-sm font-medium my-2">
-          <FontAwesomeIcon icon={faCircleInfo} /> La taille de chaque image ne doit pas dépasser 5 Mb.
-        </h6>
-        </div>
-
-        {/* navigation */}
-        <div className="flex justify-between max-w-lg mx-auto mt-6">
+        {/* Navigation */}
+        <div className="flex justify-between w-full mx-auto mt-10">
           <button
             type="button"
             onClick={() => navigate("/user/Products")}
@@ -237,41 +334,154 @@ function AddProductStep3({ formData, setFormData, prevStep, handleSubmit }) {
               size="lg"
               className="text-red-700 px-2"
             />
-            Discard Product
+            Jeter Produit
           </button>
 
-          <button
-            type="button"
-            onClick={prevStep}
-            className="px-4 py-2 bg-gray-900 text-white border rounded-lg hover:bg-gray-700"
-          >
-            <FontAwesomeIcon icon={faArrowLeft} /> précédent
-          </button>
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={prevStep}
+              className="px-4 py-2 bg-gray-900 text-white border rounded-lg hover:bg-gray-700"
+            >
+              <FontAwesomeIcon icon={faArrowLeft} /> précédent
+            </button>
 
-          {/* <button
-            type="submit"
-            className="px-4 py-2 bg-[#02B978] text-white rounded-lg hover:bg-[#04D18C]"
-          >
-            Soumettre <FontAwesomeIcon icon={faCheck} />
-          </button> */}
-
-           <button
-            type="submit"
-            disabled={loading}
-            className={`px-4 py-2 rounded-lg flex items-center gap-2 text-white 
-              ${loading ? "bg-[#02B978]/70 cursor-not-allowed" : "bg-[#02B978] hover:bg-[#04D18C]"}`}
-          >
-            {loading && (
-              <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-            )}
-            {loading ? "Soumettre..." : "Soumettre"} <FontAwesomeIcon icon={faCheck} />
-          </button>
-
+            <button
+              type="submit"
+              className="px-4 py-2 bg-[#02B978] text-white rounded-lg hover:bg-[#04D18C]"
+            >
+              Suivant <FontAwesomeIcon icon={faArrowRight} />
+            </button>
+          </div>
         </div>
       </form>
-      {/* FORM END */}
     </div>
   );
 }
 
-export default AddProductStep3;
+export default AddProductStep2;
+
+
+
+
+// product wizard
+// AddProductWizard.jsx
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import AddProductStep1 from "./AddProductStep1";
+import AddProductStep2 from "./AddProductStep2";
+import AddProductStep3 from "./AddProductStep3";
+import { useAlert } from "../../Components/AlertContext";
+
+export default function AddProductWizard() {
+  const navigate = useNavigate();
+  const { showAlert } = useAlert();
+  const [currentStep, setCurrentStep] = useState(1);
+
+  // centralised form data (files kept as File objects)
+  const [formData, setFormData] = useState({
+    tiktok_session_id: "",
+    price: "",
+    productName: "",
+    productCode: "",
+    status: "",
+    gender: "",
+    size: [],
+    color: [],
+    stock: "",
+    category: "",
+    images: [], // array of File (index -> file)
+  });
+
+  const nextStep = () => setCurrentStep((s) => Math.min(3, s + 1));
+  const prevStep = () => setCurrentStep((s) => Math.max(1, s - 1));
+  const goToStep = (n) => setCurrentStep(n);
+
+ 
+const handleSubmit = async () => {
+  try {
+    const data = new FormData();
+
+    // Append all scalar fields
+    data.append("productName", formData.productName || "");
+    data.append("productCode", formData.productCode || "");
+    data.append("price", formData.price || "");
+    data.append("tiktok_session_id", formData.tiktok_session_id || "");
+    data.append("gender", formData.gender || "Men");
+    data.append("stock", formData.stock || "");
+    data.append("category", formData.category || "");
+    data.append("status", formData.status || "");
+
+    // ✅ Append colors as array
+    if (Array.isArray(formData.color) && formData.color.length > 0) {
+      formData.color.forEach((clr) => data.append("color[]", clr) ) ;
+    }
+
+    // ✅ Append sizes as array
+    if (Array.isArray(formData.size) && formData.size.length > 0) {
+      formData.size.forEach((sz) => data.append("size[]", sz));
+    }
+
+    // ✅ Append images as array
+    if (Array.isArray(formData.images) && formData.images.length > 0) {
+      formData.images.forEach((file) => {
+        if (file) data.append("images", file);
+      });
+    }
+
+    // Debug log to verify FormData contents
+    for (let [key, value] of data.entries()) {
+      console.log(`${key}:`, value);
+    }
+
+    // ✅ Make POST request
+    const res = await axios.post(
+      "https://dev-api.payonlive.com/api/product/add-product",
+      data,
+      { withCredentials: true }
+    );
+
+    showAlert(" Product created successfully!", "success");
+    navigate("/user/Products");
+  } catch (err) {
+    console.error("Backend error:", err.response?.data );
+    showAlert(""+err.response.data.message, "info");
+  }
+};
+
+
+
+
+
+  return (
+    <div>
+      {currentStep === 1 && (
+        <AddProductStep1
+          formData={formData}
+          setFormData={setFormData}
+          nextStep={nextStep}
+          goToStep={goToStep}
+        />
+      )}
+
+      {currentStep === 2 && (
+        <AddProductStep2
+          formData={formData}
+          setFormData={setFormData}
+          prevStep={prevStep}
+          nextStep={nextStep}
+        />
+      )}
+
+      {currentStep === 3 && (
+        <AddProductStep3
+          formData={formData}
+          setFormData={setFormData}
+          prevStep={prevStep}
+          handleSubmit={handleSubmit}
+        />
+      )}
+    </div>
+  );
+}

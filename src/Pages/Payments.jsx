@@ -3,8 +3,13 @@ import Navbar from "../Components/Navbar";
 import PaymentDataTable from "../Components/PaymentDataTable";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faDownload, faUpload, faPlus } from "@fortawesome/free-solid-svg-icons";
+import {
+  faDownload,
+  faUpload,
+  faPlus,
+} from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
+import { useAlert } from "../Components/AlertContext";
 
 function Payments() {
   const navigate = useNavigate();
@@ -13,6 +18,7 @@ function Payments() {
   const [selectedPayments, setSelectedPayments] = useState([]);
   const [importResult, setImportResult] = useState(null);
   const [fadeOut, setFadeOut] = useState(false);
+  const { showAlert } = useAlert(); // ✅ useAlert context
 
   // ✅ Handle Import Excel File
   const handleImport = async (e) => {
@@ -41,6 +47,8 @@ function Payments() {
         }
       );
 
+      showAlert(res.data.message || "Import completed.", "success");
+
       setImportResult({
         success: true,
         message: res.data.message || "Payments imported successfully!",
@@ -48,6 +56,12 @@ function Payments() {
       });
     } catch (error) {
       console.error("Import error:", error);
+      // ❌ ERROR ALERT
+      showAlert(
+        error.response?.data?.message || "Failed to import payments.",
+        "error"
+      );
+
       setImportResult({
         success: false,
         message:

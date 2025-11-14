@@ -351,7 +351,7 @@ export default function ViewOrder() {
 
                 <div className="w-1/2 border-l border-gray-500 pl-6 text-sm text-gray-800">
                   <div className="flex justify-between mb-1">
-                    <span>Subtotal :</span>
+                    <span>Sous Total :</span>
                     <span>
                       €
                       {order.orderItems.reduce(
@@ -361,7 +361,7 @@ export default function ViewOrder() {
                     </span>
                   </div>
                   <div className="flex justify-between mb-1">
-                    <span>Shipping :</span>
+                    <span>Livraison :</span>
                     <span>{order.shippingMethod || "Standard"}</span>
                   </div>
                   <div className="flex justify-between font-semibold">

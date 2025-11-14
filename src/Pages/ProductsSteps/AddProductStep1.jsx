@@ -143,7 +143,7 @@ function AddProductStep1({ formData, setFormData, nextStep }) {
                 size="lg"
                 className="text-red-700 px-2"
               />
-              Discard Product
+              Jeter Produit
             </button>
 
             {/* ✅ make Next button submit the form */}

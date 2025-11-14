@@ -9,9 +9,11 @@ import {
   faPlus,
 } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
+import { useAlert } from "../Components/AlertContext";
 
 function Customers() {
   const navigate = useNavigate();
+  const { showAlert } = useAlert(); // ✅ useAlert context
 
   const [exporting, setExporting] = useState(false);
   const [exportError, setExportError] = useState(null);
@@ -25,10 +27,10 @@ function Customers() {
   const [fadeOut, setFadeOut] = useState(false);
 
   useEffect(() => {
-   if (
-    importResult?.failedCustomers?.length > 0 ||
-    importResult?.duplicateCustomers?.length > 0
-  )  {
+    if (
+      importResult?.failedCustomers?.length > 0 ||
+      importResult?.duplicateCustomers?.length > 0
+    ) {
       setFadeOut(false);
       const fadeTimer = setTimeout(() => setFadeOut(true), 2500); // start fade after 2.5s
       const removeTimer = setTimeout(() => setImportResult(null), 3000); // remove after 3s
@@ -142,6 +144,11 @@ function Customers() {
           email: d.data["Email"] || d.data.email,
           error: d.reason,
         }));
+        // show success alert
+        showAlert(
+          `Import completed — Total: ${data.summary.total}, Successful: ${data.summary.successful}, Failed: ${data.summary.failed}, Duplicates: ${data.summary.duplicates}`,
+          "success"
+        );
 
         setImportResult({
           total: data.summary.total,
@@ -168,7 +175,7 @@ function Customers() {
         err.response?.data?.error ||
         err.message ||
         "Import failed";
-      setImportError(message);
+      showAlert(message, "info")
     } finally {
       setImporting(false);
     }
@@ -246,11 +253,11 @@ function Customers() {
       {/* Duplicate Customers Details */}
       {importResult?.duplicateCustomers &&
         importResult.duplicateCustomers.length > 0 && (
-          <div 
-          // className="p-4 mx-6 bg-white rounded shadow mt-3"
-           className={`p-4 mx-6 bg-white rounded shadow mt-3 transition-opacity duration-500 ease-in-out ${
-            fadeOut ? "opacity-0" : "opacity-100"
-          }`}
+          <div
+            // className="p-4 mx-6 bg-white rounded shadow mt-3"
+            className={`p-4 mx-6 bg-white rounded shadow mt-3 transition-opacity duration-500 ease-in-out ${
+              fadeOut ? "opacity-0" : "opacity-100"
+            }`}
           >
             <h4 className="font-medium mb-2">
               Duplicate Customers ({importResult.duplicateCustomers.length})

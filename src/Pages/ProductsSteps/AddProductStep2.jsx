@@ -19,14 +19,25 @@ function AddProductStep2({ formData, setFormData, prevStep, nextStep }) {
   const [selectedGender, setSelectedGender] = useState(
     formData.gender || "Men"
   );
-  const [selectedSize, setSelectedSize] = useState(formData.size || []); // changed from single
+  // const [selectedSize, setSelectedSize] = useState(formData.size || []); // changed from single
+  const [selectedSize, setSelectedSize] = useState(
+  Array.isArray(formData.size) && formData.size.length > 0
+    ? formData.size
+    : []
+);
+
   const [colors, setColors] = useState([
     "#FF0000",
     "#2563EB",
     "#8B5CF6",
     "#6B7280",
   ]);
-  const [selectedColor, setSelectedColor] = useState(formData.color || []); // changed from single
+  // const [selectedColor, setSelectedColor] = useState(formData.color || []); // changed from single
+  const [selectedColor, setSelectedColor] = useState(
+  Array.isArray(formData.color) && formData.color.length > 0
+    ? formData.color
+    : []
+);
   const [showColorPicker, setShowColorPicker] = useState(false);
 
   // New enable/disable toggles
@@ -46,7 +57,7 @@ function AddProductStep2({ formData, setFormData, prevStep, nextStep }) {
   useEffect(() => {
     setFormData((prev) => ({
       ...prev,
-      color: enableColor ? selectedColor : [] || "N/A",
+      color: enableColor ? selectedColor :"N/A",
     }));
   }, [enableColor, selectedColor, setFormData]);
 
@@ -54,7 +65,7 @@ function AddProductStep2({ formData, setFormData, prevStep, nextStep }) {
   useEffect(() => {
     setFormData((prev) => ({
       ...prev,
-      size: enableSize ? selectedSize : [] || "N/A",
+      size: enableSize ? selectedSize :  "N/A",
     }));
   }, [enableSize, selectedSize, setFormData]);
 
@@ -334,7 +345,7 @@ function AddProductStep2({ formData, setFormData, prevStep, nextStep }) {
               size="lg"
               className="text-red-700 px-2"
             />
-            Discard Product
+            Jeter Produit
           </button>
 
           <div className="flex gap-3">

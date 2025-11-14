@@ -146,7 +146,7 @@ const UpdateOrder = () => {
     }
   } catch (err) {
     console.error("❌ Error updating order:", err);
-    showAlert("Server error. Please try again.", "error");
+    showAlert(""+ err.response.data.emessage, "error");
     setLoading(false);
   }
 };
@@ -541,15 +541,15 @@ const UpdateOrder = () => {
           </h3>
           <div className="text-sm text-gray-700 space-y-2">
             <div className="flex justify-between">
-              <span>Sub Total</span>
+              <span>Sous Total</span>
               <span>€ {summary.subTotal.toFixed(2)}</span>
             </div>
             <div className="flex justify-between">
-              <span>Tax (10%)</span>
+              <span>Impôt (10%)</span>
               <span>€ {summary.tax.toFixed(2)}</span>
             </div>
             <div className="flex justify-between">
-              <span>Shipping Fee</span>
+              <span>Livraison Frais</span>
               <span>€ {summary.shippingFee.toFixed(2)}</span>
             </div>
             <div className="border-t border-gray-400 mt-5 pt-2 font-semibold flex justify-between">

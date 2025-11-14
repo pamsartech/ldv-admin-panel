@@ -133,7 +133,7 @@ export default function CreatePayment() {
 
       if (res.data?.success || res.status === 200) {
         showAlert(
-          res.data.message || "Payment created successfully!",
+           "Payment created successfully!",
           "success"
         );
         navigate("/user/Payments");
@@ -160,7 +160,7 @@ export default function CreatePayment() {
           className="px-3 py-1 border rounded-md text-white bg-[#02B978] hover:bg-[#04D18C]"
         >
           <FontAwesomeIcon icon={faArrowLeft} className="text-white px-2" />
-          Back to Main View
+          Dos la vue principale
         </button>
       </div>
 
@@ -226,7 +226,7 @@ export default function CreatePayment() {
               ) : (
                 <>
                   <FontAwesomeIcon icon={faMagnifyingGlass} />
-                  Auto-Fill
+                  Remplissage-Automatique
                 </>
               )}
             </button>
@@ -323,12 +323,12 @@ export default function CreatePayment() {
         {/* Notes */}
         <div>
           <label className="block text-sm font-medium mb-1">
-            Notes (Optional)
+            Notes (Facultatif)
           </label>
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            placeholder="Add any additional notes about this payment"
+            placeholder="Ajoutez toute note complémentaire concernant ce paiement."
             className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm h-24"
           ></textarea>
         </div>
@@ -344,7 +344,7 @@ export default function CreatePayment() {
             className="w-full md:w-auto flex items-center justify-center border border-red-600 gap-2 bg-red-100 text-red-600 px-4 py-2 rounded-md font-medium hover:bg-red-200"
           >
             <FontAwesomeIcon icon={faXmark} />
-            Discard Payment
+            Jeter Paiement
           </button>
 
           <button
@@ -359,12 +359,12 @@ export default function CreatePayment() {
             {loading ? (
               <>
                 <FontAwesomeIcon icon={faSpinner} spin />
-                Processing...
+                Créer...
               </>
             ) : (
               <>
                 <FontAwesomeIcon icon={faCreditCard} />
-                Create Payment
+                Créer Paiement
               </>
             )}
           </button>

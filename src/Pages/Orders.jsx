@@ -10,9 +10,12 @@ import {
   faPlus,
 } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
+import { useAlert } from "../Components/AlertContext";
+
 
 function Orders() {
   const navigate = useNavigate();
+   const { showAlert } = useAlert(); // ✅ useAlert context
 
   // Export state
   const [exporting, setExporting] = useState(false);
@@ -132,10 +135,11 @@ function Orders() {
       if (response.data && response.data.success) {
         setImportResult(response.data);
         // show success toast / message
-        console.log(
-          `Import completed: ${response.data.successCount} successes, ${response.data.failedCount} failed.`
+        showAlert(
+          `Import completed: ${response.data.successCount} successes, ${response.data.failedCount} failed.`,"success"
         );
       } else {
+        showAlert(""+ response.data?.message, "info")
         setImportError(
           response.data?.message || "Import failed - unknown response"
         );
@@ -149,7 +153,8 @@ function Orders() {
         err.response?.data?.error ||
         err.message ||
         "Import failed";
-      setImportError(message);
+        showAlert(message, "error");
+      // setImportError(message);
     } finally {
       setImporting(false);
     }

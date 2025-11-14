@@ -11,9 +11,11 @@ import {
   faBoxArchive,
 } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
-
+import { useAlert } from "../Components/AlertContext";
+useAlert
 function Products() {
   const navigate = useNavigate();
+  const { showAlert } = useAlert(); // ✅ useAlert context
 
   const [bestSelling, setBestSelling] = useState([]);
   const [recentProducts, setRecentProducts] = useState([]);
@@ -65,42 +67,120 @@ function Products() {
       }, [importMessage]);
 
    // ✅ Handle file import
-   const handleImport = async (e) => {
-     const file = e.target.files[0];
-     if (!file) return;
+  //  const handleImport = async (e) => {
+  //    const file = e.target.files[0];
+  //    if (!file) return;
  
-     const formData = new FormData();
-     formData.append("file", file);
+  //    const formData = new FormData();
+  //    formData.append("file", file);
  
-     setImportMessage("Importing products... ⏳");
+  //    setImportMessage("Importing products... ⏳");
  
-     try {
-       const res = await axios.post(
-         "https://dev-api.payonlive.com/api/product/import-products",
-         formData,
-         {
-           headers: { "Content-Type": "multipart/form-data" },
-         }
-       );
-       console.log('response import', res)
+  //    try {
+  //      const res = await axios.post(
+  //        "https://dev-api.payonlive.com/api/product/import-products",
+  //        formData,
+  //        {
+  //          headers: { "Content-Type": "multipart/form-data" },
+  //        }
+  //      );
+  //      console.log('response import', res)
+
+  //      if (res.data?.success || res.status === 200) {
+  //       showAlert(
+  //          "Product imported successfully!",
+  //         "success"
+  //       );
+  //     } else {
+  //       showAlert(""+ response.data.message, "error");
+  //     }
  
-       // Show summary message
-       const summary = res.data.summary;
-       setImportMessage(
-         `✅ Imported successfully: ${summary.insertedToDatabase} / ${summary.totalRows} | Duplicates: ${summary.duplicatesSkipped} | Errors: ${summary.processingErrors + summary.insertionErrors}`
-       );
+  //      // Show summary message
+  //      const summary = res.data.summary;
+  //      setImportMessage(
+  //        `✅ Imported successfully: ${summary.insertedToDatabase} / ${summary.totalRows} | Duplicates: ${summary.duplicatesSkipped} | Errors: ${summary.processingErrors + summary.insertionErrors}`
+  //      );
  
-      //  // Refresh recently added products
-      //  const recentRes = await axios.get(
-      //    "http://dev-api.payonlive.com/api/product/latest-products"
-      //  );
-      //  setRecentProducts(recentRes.data.data || []);
-       setImportMessage(" ✅Products import successfully");
-     } catch (error) {
-       console.error(error);
-       setImportMessage("❌ Error importing products. Check console for details.");
-     }
-   };
+  //     //  // Refresh recently added products
+  //     //  const recentRes = await axios.get(
+  //     //    "http://dev-api.payonlive.com/api/product/latest-products"
+  //     //  );
+  //     //  setRecentProducts(recentRes.data.data || []);
+  //      setImportMessage(" ✅Products import successfully");
+  //    } catch (error) {
+  //      console.error(error);
+  //      setImportMessage("❌ Error importing products. Check console for details.");
+  //    }
+  //  };
+  // ✅ Handle Product Import
+const handleImport = async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const formData = new FormData();
+  formData.append("file", file);
+
+  setImportMessage("Importing products... ⏳");
+
+  try {
+    const res = await axios.post(
+      "https://dev-api.payonlive.com/api/product/import-products",
+      formData,
+      { headers: { "Content-Type": "multipart/form-data" } }
+    );
+
+    console.log("Import response:", res.data);
+
+    const data = res.data;
+
+    // ---------------------------------------------
+    // SUCCESS RESPONSE HANDLING
+    // ---------------------------------------------
+    if (data.success) {
+      // Build detailed success summary
+      const summaryText =
+        `Import completed successfully!\n\n` +
+        `Total Rows: ${data.summary.totalRows}\n` +
+        `Inserted: ${data.summary.insertedToDatabase}\n` +
+        `Duplicates Skipped: ${data.summary.duplicatesSkipped}\n` +
+        `Processing Errors: ${data.summary.processingErrors}\n` +
+        `Insertion Errors: ${data.summary.insertionErrors}\n`;
+
+      // Show SUCCESS alert
+      showAlert(summaryText, "success");
+
+      // Also update the small message on top
+      setImportMessage(
+        `✅ Imported: ${data.summary.insertedToDatabase} / ${data.summary.totalRows} • Duplicates: ${data.summary.duplicatesSkipped}`
+      );
+    }
+
+    // ---------------------------------------------
+    // INSERTION ERRORS (product code errors)
+    // ---------------------------------------------
+    if (data.details?.insertionErrors?.length > 0) {
+      let errorText = "Some products failed to import:\n\n";
+
+      data.details.insertionErrors.forEach((item) => {
+        errorText += `• ${item.productCode} → ${item.message}\n`;
+      });
+
+      // Show ERROR alert
+      showAlert(errorText, "info");
+    }
+  } catch (err) {
+    console.error("Import error:", err);
+
+    // Show backend message or fallback error
+    showAlert(
+      err.response?.data?.message || "❌ Error importing products.",
+      "error"
+    );
+
+    setImportMessage("❌ Import failed.");
+  }
+};
+
  
 
     // Click handler for export - downloads file returned from server

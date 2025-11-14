@@ -244,216 +244,150 @@ const CreateOrder = () => {
       } else {
         showAlert(res.data?.message || "Failed to create order.", "error");
       }
-    } catch (err) {
-      console.error("❌ Server Error:", err);
-      showAlert(""+ err.response.data.error, "info");
+    } catch (error) {
+      console.error("❌ Server Error:", error);
+      showAlert(""+ error.response.data.message, "info");
     } finally {
       setLoading(false);
     }
   };
 
-  //   const handleSubmit = async (e) => {
-  //   e.preventDefault();
-  //   setLoading(true);
+  
+//   const fetchProductByCode = async (index, code) => {
+//   if (!code) return;
 
-  //   // 1️⃣ Run your existing form validation
-  //   if (!validate()) {
-  //     setLoading(false);
-  //     return;
-  //   }
+//   try {
+//     console.log(`🔍 Fetching product for code: ${code}`);
+//     const res = await axios.get(
+//       `https://dev-api.payonlive.com/api/product/product-code/${code}`
+//     );
 
-  //   // 2️⃣ Custom condition for payment/shipping dependency
-  //   if (
-  //     paymentStatus !== "Paid" &&
-  //     (shippingStatus === "Shipped" || shippingStatus === "Delivered")
-  //   ) {
-  //     showAlert(
-  //       "You can only mark an order as Shipped or Delivered after payment is completed.",
-  //       "warning"
-  //     );
-  //     setLoading(false);
-  //     return;
-  //   }
+//     if (!res?.data?.success) {
+//       console.warn("⚠️ Product not found or API returned success=false:", res?.data);
+//       return;
+//     }
 
-  //   // ✅ Format order items (keep your existing logic)
-  //   const formattedItems = orderItems.map((item) => ({
-  //     productCode: item.productCode?.trim(),
-  //     quantity: Number(item.quantity),
-  //     size: Array.isArray(item.size)
-  //       ? item.size.join(",")
-  //       : String(item.size || ""),
-  //     color: Array.isArray(item.color)
-  //       ? item.color.join(",")
-  //       : String(item.color || ""),
-  //   }));
+//     const product = res.data.data;
+//     console.log("✅ Product fetched:", product);
 
-  //   // ✅ Final payload
-  //   const payload = {
-  //     customerName,
-  //     email,
-  //     phoneNumber,
-  //     address,
-  //     orderItems: formattedItems,
-  //     paymentMethod,
-  //     paymentStatus,
-  //     shippingMethod,
-  //     shippingStatus,
-  //   };
+//     // Helper to split and clean values whether input is array or string
+//     const splitAndClean = (value) => {
+//       if (!value && value !== 0) return []; // catches null/undefined/empty
+//       // If it's an array: flatten each entry
+//       if (Array.isArray(value)) {
+//         return value.flatMap((entry) => {
+//           if (entry == null) return [];
+//           const cleaned = String(entry).trim();
+//           if (!cleaned || cleaned.toLowerCase() === "null") return [];
+//           return cleaned.split(/[,;|]/).map((s) => s.trim()).filter(Boolean);
+//         });
+//       }
+//       // If it's a string
+//       if (typeof value === "string") {
+//         const cleaned = value.trim();
+//         if (!cleaned || cleaned.toLowerCase() === "null") return [];
+//         return cleaned.split(/[,;|]/).map((s) => s.trim()).filter(Boolean);
+//       }
+//       // For other types (numbers, etc.)
+//       return [String(value)].map((s) => s.trim()).filter(Boolean);
+//     };
 
-  //   console.log("📤 Clean Payload Sent to Backend:", payload);
+//     const normalizedColors = splitAndClean(product.color);
+//     const normalizedSizes = splitAndClean(product.size);
 
-  //   try {
-  //     const res = await axios.post(
-  //       "https://dev-api.payonlive.com/api/order/create-order",
-  //       payload,
-  //       { headers: { "Content-Type": "application/json" } }
-  //     );
+//     // Build new item object (keeps previous data if present)
+//     const newItems = [...orderItems];
+//     newItems[index] = {
+//       ...newItems[index],
+//       productCode: code,
+//       productName: product.productName || newItems[index].productName || "",
+//       price: typeof product.price === "number" ? product.price : Number(product.price) || 0,
+//       availableColors: normalizedColors,
+//       availableSizes: normalizedSizes,
+//       color: "",
+//       size: "",
+//     };
 
-  //     if (res.data?.success) {
-  //       showAlert("Order created successfully!", "success");
-  //       navigate("/user/Orders");
-  //     } else {
-  //       showAlert(res.data?.message || "Failed to create order.", "error");
-  //     }
-  //   } catch (err) {
-  //     console.error("❌ Server Error:", err);
-  //     showAlert("Server error. Please try again later.", "error");
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
+//     setOrderItems(newItems);
+//   } catch (error) {
+//     // Log full error but never crash due to split on null
+//     console.error("❌ Error fetching product:", error);
+//     showAlert(""+ error.response.data.message, "info")
+//   }
+// };
 
-  const fetchProductByCode = async (index, code) => {
-    if (!code) return;
+const fetchProductByCode = async (index, code) => {
+  if (!code) return;
 
-    try {
-      console.log(`🔍 Fetching product for code: ${code}`);
-      const res = await axios.get(
-        `https://dev-api.payonlive.com/api/product/product-code/${code}`
-      );
+  try {
+    const res = await axios.get(
+      `https://dev-api.payonlive.com/api/product/product-code/${code}`
+    );
 
-      if (res.data.success) {
-        const product = res.data.data;
-        console.log("✅ Product fetched:", product);
+    if (!res?.data?.success) return;
 
-        // 🧩 Normalize color and size
-        // let normalizedColors = [];
-        // let normalizedSizes = [];
+    const product = res.data.data;
 
-        // // Handle color
-        // if (Array.isArray(product.color)) {
-        //   normalizedColors = product.color.filter(Boolean);
-        // } else if (typeof product.color === "string" && product.color.trim() !== "") {
-        //   // Sometimes color is comma-separated or single value
-        //   if (product.color.includes(",")) {
-        //     normalizedColors = product.color.split(",").map((c) => c.trim());
-        //   } else {
-        //     normalizedColors = [product.color.trim()];
-        //   }
-        // }
-
-        // Handle size
-        // if (Array.isArray(product.size)) {
-        //   normalizedSizes = product.size.filter(Boolean);
-        // } else if (typeof product.size === "string" && product.size.trim() !== "") {
-        //   if (product.size.includes(",")) {
-        //     normalizedSizes = product.size.split(",").map((s) => s.trim());
-        //   } else {
-        //     normalizedSizes = [product.size.trim()];
-        //   }
-        // }
-
-        // const newItems = [...orderItems];
-        // newItems[index] = {
-        //   ...newItems[index],
-        //   productCode: code,
-        //   productName: product.productName || "",
-        //   price: product.price || 0,
-        //   availableColors: normalizedColors,
-        //   availableSizes: normalizedSizes,
-        //   color: "",
-        //   size: "",
-        // };
-
-        // 🧩 Normalize color and size arrays properly
-        let normalizedColors = [];
-        let normalizedSizes = [];
-
-        // ✅ Fix color array (handles nested comma-separated strings)
-        if (Array.isArray(product.color)) {
-          normalizedColors = product.color
-            .flatMap((c) => c.split(/[,;|]/)) // split even if each entry has commas
-            .map((c) => c.trim())
-            .filter(Boolean);
-        } else if (
-          typeof product.color === "string" &&
-          product.color.trim() !== ""
-        ) {
-          normalizedColors = product.color
-            .split(/[,;|]/)
-            .map((c) => c.trim())
-            .filter(Boolean);
-        }
-
-        // ✅ Fix size array (same logic)
-        if (Array.isArray(product.size)) {
-          normalizedSizes = product.size
-            .flatMap((s) => s.split(/[,;|]/))
-            .map((s) => s.trim())
-            .filter(Boolean);
-        } else if (
-          typeof product.size === "string" &&
-          product.size.trim() !== ""
-        ) {
-          normalizedSizes = product.size
+    const splitAndClean = (value) => {
+      if (!value && value !== 0) return [];
+      if (Array.isArray(value)) {
+        return value.flatMap((entry) => {
+          if (!entry) return [];
+          return String(entry)
             .split(/[,;|]/)
             .map((s) => s.trim())
             .filter(Boolean);
-        }
-
-        const newItems = [...orderItems];
-        newItems[index] = {
-          ...newItems[index],
-          productCode: code,
-          productName: product.productName || "",
-          price: product.price || 0,
-          availableColors: normalizedColors,
-          availableSizes: normalizedSizes,
-          color: "",
-          size: "",
-        };
-
-        setOrderItems(newItems);
-
-        // setOrderItems(newItems);
-      } else {
-        console.warn("⚠️ Product not found for code:", code);
+        });
       }
-    } catch (error) {
-      console.error("❌ Error fetching product:", error);
-    }
-  };
+      if (typeof value === "string") {
+        return value
+          .split(/[,;|]/)
+          .map((s) => s.trim())
+          .filter(Boolean);
+      }
+      return [String(value).trim()];
+    };
 
-  // ✅ Multi-select color handler
+    let normalizedColors = splitAndClean(product.color);
+    let normalizedSizes = splitAndClean(product.size);
+
+    // ❗ Hide color/size when only “N/A”
+    const isColorNA =
+      normalizedColors.length === 1 && normalizedColors[0].toUpperCase() === "N/A";
+    const isSizeNA =
+      normalizedSizes.length === 1 && normalizedSizes[0].toUpperCase() === "N/A";
+
+    const newItems = [...orderItems];
+    newItems[index] = {
+      ...newItems[index],
+      productCode: code,
+      productName: product.productName || "",
+      price:
+        typeof product.price === "number"
+          ? product.price
+          : Number(product.price) || 0,
+
+      availableColors: isColorNA ? [] : normalizedColors,
+      availableSizes: isSizeNA ? [] : normalizedSizes,
+
+      // Set default N/A for backend when no color/size
+      color: isColorNA ? "N/A" : "",
+      size: isSizeNA ? "N/A" : "",
+    };
+
+    setOrderItems(newItems);
+  } catch (error) {
+    console.error("Error fetching product:", error);
+    showAlert("" + error.response.data.message, "info");
+  }
+};
+
+
   const handleColorSelect = (index, selectedColor) => {
     const newItems = [...orderItems];
-    // const currentColors = Array.isArray(newItems[index].color)
-    //   ? [...newItems[index].color]
-    //   : [];
-    // toggle: deselect if same color clicked again
     newItems[index].color =
       newItems[index].color === selectedColor ? "" : selectedColor;
     setOrderItems(newItems);
-
-    // if (currentColors.includes(selectedColor)) {
-    //   // remove if already selected
-    //   newItems[index].color = currentColors.filter((c) => c !== selectedColor);
-    // } else {
-    //   // add new color
-    //   newItems[index].color = [...currentColors, selectedColor];
-    // }
-
-    // setOrderItems(newItems);
   };
 
   // ✅ Multi-select size handler
@@ -971,7 +905,7 @@ const CreateOrder = () => {
           </h3>
           <div className="text-sm text-gray-700 space-y-2">
             <div className="flex justify-between">
-              <span>Sub Total</span>
+              <span>Sous Total</span>
               <span> € {subtotal} </span>
             </div>
             <div className="flex justify-between">
