@@ -179,11 +179,7 @@ const CreateCustomer = () => {
         showAlert("Failed to create customer. Please try again.", "error");
       }
     } catch (err) {
-      const message =
-        err.response?.data?.error ||
-        err.response?.data?.message ||
-        "Server error. Please try again.";
-      showAlert(message, "info");
+     showAlert(""+err.response.data.error, "info")
     } finally {
       // ✅ Always stop spinner no matter what
       setLoading(false);

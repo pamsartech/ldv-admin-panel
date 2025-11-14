@@ -246,75 +246,12 @@ const CreateOrder = () => {
       }
     } catch (error) {
       console.error("❌ Server Error:", error);
-      showAlert(""+ error.response.data.message, "info");
+      showAlert(""+ error.response.data.error, "info");
     } finally {
       setLoading(false);
     }
   };
 
-  
-//   const fetchProductByCode = async (index, code) => {
-//   if (!code) return;
-
-//   try {
-//     console.log(`🔍 Fetching product for code: ${code}`);
-//     const res = await axios.get(
-//       `https://dev-api.payonlive.com/api/product/product-code/${code}`
-//     );
-
-//     if (!res?.data?.success) {
-//       console.warn("⚠️ Product not found or API returned success=false:", res?.data);
-//       return;
-//     }
-
-//     const product = res.data.data;
-//     console.log("✅ Product fetched:", product);
-
-//     // Helper to split and clean values whether input is array or string
-//     const splitAndClean = (value) => {
-//       if (!value && value !== 0) return []; // catches null/undefined/empty
-//       // If it's an array: flatten each entry
-//       if (Array.isArray(value)) {
-//         return value.flatMap((entry) => {
-//           if (entry == null) return [];
-//           const cleaned = String(entry).trim();
-//           if (!cleaned || cleaned.toLowerCase() === "null") return [];
-//           return cleaned.split(/[,;|]/).map((s) => s.trim()).filter(Boolean);
-//         });
-//       }
-//       // If it's a string
-//       if (typeof value === "string") {
-//         const cleaned = value.trim();
-//         if (!cleaned || cleaned.toLowerCase() === "null") return [];
-//         return cleaned.split(/[,;|]/).map((s) => s.trim()).filter(Boolean);
-//       }
-//       // For other types (numbers, etc.)
-//       return [String(value)].map((s) => s.trim()).filter(Boolean);
-//     };
-
-//     const normalizedColors = splitAndClean(product.color);
-//     const normalizedSizes = splitAndClean(product.size);
-
-//     // Build new item object (keeps previous data if present)
-//     const newItems = [...orderItems];
-//     newItems[index] = {
-//       ...newItems[index],
-//       productCode: code,
-//       productName: product.productName || newItems[index].productName || "",
-//       price: typeof product.price === "number" ? product.price : Number(product.price) || 0,
-//       availableColors: normalizedColors,
-//       availableSizes: normalizedSizes,
-//       color: "",
-//       size: "",
-//     };
-
-//     setOrderItems(newItems);
-//   } catch (error) {
-//     // Log full error but never crash due to split on null
-//     console.error("❌ Error fetching product:", error);
-//     showAlert(""+ error.response.data.message, "info")
-//   }
-// };
 
 const fetchProductByCode = async (index, code) => {
   if (!code) return;
@@ -327,6 +264,15 @@ const fetchProductByCode = async (index, code) => {
     if (!res?.data?.success) return;
 
     const product = res.data.data;
+
+     if (product.status !== "actif") {
+          showAlert(
+            `Product "${product.productName}" is out of stock.`,
+            "error"
+          );
+          code('')
+          return;
+        }
 
     const splitAndClean = (value) => {
       if (!value && value !== 0) return [];
@@ -392,36 +338,12 @@ const fetchProductByCode = async (index, code) => {
 
   // ✅ Multi-select size handler
   const handleSizeSelect = (index, selectedSize) => {
-    // const newItems = [...orderItems];
-    // const currentSizes = Array.isArray(newItems[index].size)
-    //   ? [...newItems[index].size]
-    //   : [];
-
-    // if (currentSizes.includes(selectedSize)) {
-    //   newItems[index].size = currentSizes.filter((s) => s !== selectedSize);
-    // } else {
-    //   newItems[index].size = [...currentSizes, selectedSize];
-    // }
-
-    // setOrderItems(newItems);
     const newItems = [...orderItems];
     newItems[index].size =
       newItems[index].size === selectedSize ? "" : selectedSize;
     setOrderItems(newItems);
   };
 
-  // const handleColorSelect = (index, color) => {
-  //   const newItems = [...orderItems];
-  //   newItems[index].color = color;
-  //   setOrderItems(newItems);
-  // };
-
-  // // ✅ Handle size click
-  // const handleSizeSelect = (index, size) => {
-  //   const newItems = [...orderItems];
-  //   newItems[index].size = size;
-  //   setOrderItems(newItems);
-  // };
 
   // calculate
   const subtotal = orderItems.reduce(
