@@ -169,38 +169,6 @@ export default function CreatePayment() {
         onSubmit={handleSubmit}
         className="p-6 max-w-4xl mx-5 mt-6 border border-gray-300 rounded-2xl space-y-6 bg-white shadow-sm"
       >
-        {/* Order ID with Auto-Fill Button */}
-        {/* <div>
-          <label className="block text-sm font-medium mb-1">Order ID*</label>
-          <div className="flex gap-1">
-            <input
-              required
-              type="text"
-              value={orderID}
-              onChange={(e) => setOrderID(e.target.value)}
-              placeholder="e.g. 100007"
-              className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm"
-            />
-            <button
-              type="button"
-              onClick={handleFetchOrderDetails}
-              disabled={fetching || !orderID.trim()}
-              className="flex items-center gap-1 bg-[#114E9D] text-white px-4 py-2 rounded-lg hover:bg-blue-600 disabled:opacity-50"
-            >
-              {fetching ? (
-                <>
-                  <FontAwesomeIcon icon={faSpinner} spin />
-                  Fetching...
-                </>
-              ) : (
-                <>
-                  <FontAwesomeIcon icon={faMagnifyingGlass} />
-                  Auto-Fill
-                </>
-              )}
-            </button>
-          </div>
-        </div> */}
         <div>
           <label className="block text-sm font-medium mb-1">ID commande*</label>
           <div className="flex items-center gap-2">
@@ -209,7 +177,7 @@ export default function CreatePayment() {
               type="text"
               value={orderID}
               onChange={(e) => setOrderID(e.target.value)}
-              placeholder="e.g. 100007"
+              placeholder="Veuillez saisir un numéro de commande valide."
               className="flex-grow border border-gray-400 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <button
