@@ -378,7 +378,7 @@ const ViewProduct = () => {
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600 font-semibold">Prix</span>
-                <span className="font-bold">€ {product.price}</span>
+                <span className="font-bold">€ {product.price.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600 font-semibold">Catégorie</span>
