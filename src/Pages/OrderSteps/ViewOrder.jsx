@@ -307,7 +307,7 @@ export default function ViewOrder() {
             </section>
 
             {/* TikTok Live Ref */}
-            <section className="p-6 border-b border-gray-500">
+            {/* <section className="p-6 border-b border-gray-500">
               <h3 className="font-medium mb-3">TikTok Live Ref</h3>
               <div className="text-sm text-gray-700 space-y-2">
                 <div className="flex justify-between">
@@ -319,7 +319,7 @@ export default function ViewOrder() {
                   <span>13121232</span>
                 </div>
               </div>
-            </section>
+            </section> */}
 
             {/* Products sold */}
             <section className="p-6 border-t border-gray-500">

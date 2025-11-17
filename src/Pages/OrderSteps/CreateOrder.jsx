@@ -401,7 +401,6 @@ const CreateOrder = () => {
                 Nom du client
               </label>
               <input
-                readOnly
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
                 placeholder="Nom complet"
@@ -424,7 +423,7 @@ const CreateOrder = () => {
                 // onBlur={() => fetchUserByEmail(email)}
                 onBlur={(e) => fetchUserByEmail(e.target.value)}
                 type="email"
-                placeholder="client@email.com"
+                placeholder="Saisissez l'adresse e-mail pour obtenir les détails du client"
                 className="w-full rounded-lg border px-3 py-2 text-sm"
               />
               {errors.email && (
@@ -436,7 +435,6 @@ const CreateOrder = () => {
                 Numéro de téléphone
               </label>
               <input
-                readOnly
                 value={phoneNumber}
                 onChange={(e) => setphoneNumber(e.target.value)}
                 type="number"
@@ -452,7 +450,6 @@ const CreateOrder = () => {
                 Adresse de livraison
               </label>
               <input
-                readOnly
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
                 placeholder="123, ville principale, état"
@@ -506,23 +503,6 @@ const CreateOrder = () => {
                   </p>
                 )}
               </div>
-
-              {/* <div className="md:col-span-2">
-                <input
-                  placeholder="Product Code"
-                  value={item.productCode}
-                  onChange={(e) => {
-                    const newItems = [...orderItems];
-                    newItems[idx].productCode = e.target.value;
-                    setOrderItems(newItems);
-                  }}
-                  onBlur={() => fetchProductByCode(idx, item.productCode)}
-                  className="border rounded p-2 w-full"
-                />
-                {errors[`product_${idx}`] && (
-                  <p className="text-red-500 text-sm">{errors[`product_${idx}`]}</p>
-                )}
-              </div> */}
 
               {/* product name */}
               <div className="md:col-span-2">
