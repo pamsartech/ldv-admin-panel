@@ -25,12 +25,12 @@ import {
 } from "@mui/material";
 
 const statusStyles = {
-  enattente : "bg-yellow-100 text-yellow-700 border border-yellow-300",
+  enattente: "bg-yellow-100 text-yellow-700 border border-yellow-300",
   payé: "bg-green-100 text-green-700 border border-green-300",
   expédié: "bg-blue-100 text-blue-700 border border-blue-300",
   annulé: "bg-red-100 text-red-700 border border-red-300",
-  échoué:"bg-red-100 text-red-700 border border-red-300",
-  remboursé : "bg-blue-100 text-blue-700 border border-blue-300",//"bg-blue-100 text-blue-700 border border-blue-300"
+  échoué: "bg-red-100 text-red-700 border border-red-300",
+  remboursé: "bg-blue-100 text-blue-700 border border-blue-300", //"bg-blue-100 text-blue-700 border border-blue-300"
 };
 
 export default function PaymentDataTable({ onSelectionChange }) {
@@ -51,6 +51,13 @@ export default function PaymentDataTable({ onSelectionChange }) {
   const [search, setSearch] = useState("");
   const [deleting, setDeleting] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [stats, setStats] = useState({
+  totalRevenue: 0,
+  outstandingCount: 0,
+  outstandingAmount: 0,
+  refunds: 0,
+});
+
 
   const paymentsPerPage = 8;
 
@@ -81,6 +88,26 @@ export default function PaymentDataTable({ onSelectionChange }) {
   }, []);
 
   if (error) return <p className="p-6 text-red-500">{error}</p>;
+
+  useEffect(() => {
+    axios
+      .get("https://dev-api.payonlive.com/api/payment/stats")
+      .then((res) => {
+        if (res.data.success) {
+          const s = res.data.data;
+
+          setStats({
+            totalRevenue: s.totalRevenue || "€0",
+            outstandingCount: s.outstandingPayments?.count || 0,
+            outstandingAmount: s.outstandingPayments?.amount || "€0",
+            refunds: s.refunds || "€0",
+          });
+        }
+      })
+      .catch((err) => {
+        console.error("Stats API Error:", err);
+      });
+  }, []);
 
   // ---- Filtering ----
   let tabFiltered = payments;
@@ -123,14 +150,6 @@ export default function PaymentDataTable({ onSelectionChange }) {
     setSelectAll(!selectAll);
     onSelectionChange(newSelected); // ✅ Notify parent
   };
-  // const handleSelectAll = () => {
-  //   if (selectAll) {
-  //     setSelectedRows([]);
-  //   } else {
-  //     setSelectedRows(currentPayments.map((p) => p.id));
-  //   }
-  //   setSelectAll(!selectAll);
-  // };
 
   const handleSelectRow = (id) => {
     let newSelected;
@@ -142,11 +161,6 @@ export default function PaymentDataTable({ onSelectionChange }) {
     setSelectedRows(newSelected);
     onSelectionChange(newSelected); // ✅ Notify parent
   };
-  // const handleSelectRow = (id) => {
-  //   setSelectedRows((prev) =>
-  //     prev.includes(id) ? prev.filter((r) => r !== id) : [...prev, id]
-  //   );
-  // };
 
   // ✅ Open confirmation dialog
   const handleOpenConfirm = () => {
@@ -162,17 +176,19 @@ export default function PaymentDataTable({ onSelectionChange }) {
     setConfirmOpen(false);
   };
 
+  const addDecimal = (value) => {
+  if (!value) return "€  0.00";
+
+  // If value already contains a dot, leave it as is
+  if (value.includes(".")) return value;
+
+  // Otherwise add .00
+  return `${value}.00`;
+};
+
+
   // ---- Bulk Delete Functionality ----
   const handleBulkDelete = async () => {
-    // if (selectedRows.length === 0) {
-    //   alert("Please select at least one item to delete.");
-    //   return;
-    // }
-
-    // const confirmDelete = window.confirm(
-    //   `Are you sure you want to delete ${selectedRows.length} selected payments?`
-    // );
-    // if (!confirmDelete) return;
 
     try {
       setDeleting(true);
@@ -218,34 +234,33 @@ export default function PaymentDataTable({ onSelectionChange }) {
       {/* Tabs and Filters */}
       <div className="flex justify-between items-center border-2 mb-5 border-gray-300 px-6 rounded-md p-2 relative">
         {/* Tabs Section */}
-<div className="flex gap-6">
-  {[
-    { key: "all", label: "Tous", icon: faCircleCheck },
-    { key: "payé", label: "Payés", icon: faCheckCircle },
-    { key: "remboursés", label: "Remboursés", icon: faUndo },
-  ].map(({ key, label, icon }) => {
-    const isActive = activeTab === key;
+        <div className="flex gap-6">
+          {[
+            { key: "all", label: "Tous", icon: faCircleCheck },
+            { key: "payé", label: "Payés", icon: faCheckCircle },
+            { key: "remboursés", label: "Remboursés", icon: faUndo },
+          ].map(({ key, label, icon }) => {
+            const isActive = activeTab === key;
 
-    return (
-      <button
-        key={key}
-        onClick={() => {
-          setActiveTab(key);
-          setCurrentPage(1);
-        }}
-        className={`flex items-center gap-2 text-sm px-2 pb-1 transition-colors duration-150 ${
-          isActive
-            ? "text-black font-medium border-b-2 border-black"
-            : "text-gray-600 hover:text-black"
-        }`}
-      >
-        <FontAwesomeIcon icon={icon} />
-        <span>{label}</span>
-      </button>
-    );
-  })}
-</div>
-
+            return (
+              <button
+                key={key}
+                onClick={() => {
+                  setActiveTab(key);
+                  setCurrentPage(1);
+                }}
+                className={`flex items-center gap-2 text-sm px-2 pb-1 transition-colors duration-150 ${
+                  isActive
+                    ? "text-black font-medium border-b-2 border-black"
+                    : "text-gray-600 hover:text-black"
+                }`}
+              >
+                <FontAwesomeIcon icon={icon} />
+                <span>{label}</span>
+              </button>
+            );
+          })}
+        </div>
 
         {/* Filter + Sort */}
         <div className="flex gap-2 relative">
@@ -473,17 +488,17 @@ export default function PaymentDataTable({ onSelectionChange }) {
       <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-4 md:w-3xl lg:w-3xl border-1 rounded-lg px-2 mt-6 mx-auto">
         <div className="bg-white border-r-1 border-gray-400 shadow p-6 text-center">
           <h3 className="text-gray-800 text-xl">Revenu total</h3>
-          <p className="md:text-md lg:text-2xl font-medium mt-2">€28000</p>
+          <p className="md:text-md lg:text-2xl font-medium mt-2">{addDecimal(stats.totalRevenue)} </p>
         </div>
 
         <div className="bg-white col-span-2 shadow p-6 border-r-1 border-gray-400 text-center">
           <h3 className="text-gray-800 text-xl">Paiements en attente</h3>
-          <p className="md:text-md lg:text-2xl font-medium mt-2">37 (€540)</p>
+          <p className="md:text-md lg:text-2xl font-medium mt-2">{stats.outstandingCount} ({addDecimal(stats.outstandingAmount)}) </p>
         </div>
 
         <div className="bg-white rounded-lg shadow p-6 text-center">
           <h3 className="text-gray-800 text-xl">Remboursements</h3>
-          <p className="md:text-md lg:text-2xl font-medium mt-2">€178</p>
+          <p className="md:text-md lg:text-2xl font-medium mt-2">{addDecimal(stats.refunds)} </p>
         </div>
       </div>
     </div>
