@@ -76,31 +76,79 @@ function UpdateProduct() {
         const res = await axios.get(
           `https://dev-api.payonlive.com/api/product/product-details/${productId}`
         );
+        // if (res.data.success) {
+        //   const data = res.data.data;
+
+        //   // ✅ Normalize color
+        //   let normalizedColor = "#FF0000";
+        //   if (Array.isArray(data.color)) {
+        //     // pick first valid color if array
+        //     normalizedColor = data.color[0] || "#FF0000";
+        //   } else if (
+        //     typeof data.color === "string" &&
+        //     data.color.trim() !== ""
+        //   ) {
+        //     normalizedColor = data.color;
+        //   }
+
+        //   // ✅ Normalize size
+        //   let normalizedSize = "M";
+        //   if (Array.isArray(data.size)) {
+        //     // pick first valid size if array
+        //     normalizedSize = data.size[0] || "M";
+        //   } else if (typeof data.size === "string" && data.size.trim() !== "") {
+        //     normalizedSize = data.size;
+        //   }
+
+        //   // ✅ Set all states
+        //   setProductDetails({
+        //     productName: data.productName || "",
+        //     productCode: data.productCode || "",
+        //     price: data.price || "",
+        //     stock: data.stock || "",
+        //     category: data.category || "",
+        //     status: data.status || "",
+        //   });
+        //   setSelectedGender(data.gender || "Men");
+        //   setSelectedSize(Array.isArray(data.size) ? data.size : [data.size]);
+        //   // setSelectedColor(
+        //   //   Array.isArray(data.color) ? data.color : [data.color]
+        //   // );
+        //   setSelectedColor(
+        //     Array.isArray(data.color)
+        //       ? data.color.filter(Boolean)
+        //       : data.color
+        //       ? [data.color]
+        //       : []
+        //   );
+
+        //   setImages(data.images || []);
+        // }
         if (res.data.success) {
           const data = res.data.data;
 
-          // ✅ Normalize color
-          let normalizedColor = "#FF0000";
-          if (Array.isArray(data.color)) {
-            // pick first valid color if array
-            normalizedColor = data.color[0] || "#FF0000";
-          } else if (
-            typeof data.color === "string" &&
-            data.color.trim() !== ""
-          ) {
-            normalizedColor = data.color;
-          }
+          // ---------- FIX N/A SIZE & COLOR ----------
+          const normalizeArray = (value) => {
+            // backend sends: "N/A", [], ["N/A"], or real array
+            if (!value) return [];
+            if (value === "N/A") return [];
+            if (Array.isArray(value)) {
+              return value.filter((v) => v !== "N/A" && v.trim() !== "");
+            }
+            if (typeof value === "string") {
+              return value === "N/A" ? [] : [value];
+            }
+            return [];
+          };
 
-          // ✅ Normalize size
-          let normalizedSize = "M";
-          if (Array.isArray(data.size)) {
-            // pick first valid size if array
-            normalizedSize = data.size[0] || "M";
-          } else if (typeof data.size === "string" && data.size.trim() !== "") {
-            normalizedSize = data.size;
-          }
+          const cleanColors = normalizeArray(data.color);
+          const cleanSizes = normalizeArray(data.size);
 
-          // ✅ Set all states
+          // apply to state
+          setSelectedColor(cleanColors);
+          setSelectedSize(cleanSizes);
+
+          // The rest of your code continues...
           setProductDetails({
             productName: data.productName || "",
             productCode: data.productCode || "",
@@ -109,19 +157,8 @@ function UpdateProduct() {
             category: data.category || "",
             status: data.status || "",
           });
-          setSelectedGender(data.gender || "Men");
-          setSelectedSize(Array.isArray(data.size) ? data.size : [data.size]);
-          // setSelectedColor(
-          //   Array.isArray(data.color) ? data.color : [data.color]
-          // );
-          setSelectedColor(
-            Array.isArray(data.color)
-              ? data.color.filter(Boolean)
-              : data.color
-              ? [data.color]
-              : []
-          );
 
+          setSelectedGender(data.gender || "Men");
           setImages(data.images || []);
         }
       } catch (err) {
@@ -160,19 +197,6 @@ function UpdateProduct() {
   const handleUpdate = async (e) => {
     e.preventDefault();
     setBtnLoading(true);
-
-    // const payload = {
-    //   productName: productDetails.productName,
-    //   productCode: productDetails.productCode,
-    //   price: Number(productDetails.price),
-    //   status: productDetails.status,
-    //   gender: selectedGender,
-    //   color: selectedColor,
-    //   size: selectedSize,
-    //   stock: Number(productDetails.stock),
-    //   category: productDetails.category,
-    //   images: images,
-    // };
 
     const payload = {
       productName: productDetails.productName,
@@ -237,7 +261,9 @@ function UpdateProduct() {
 
       {/* Top Bar */}
       <div className="flex justify-between mt-5 mx-10">
-        <h1 className="font-medium text-lg">Mettre à jour les détails du produit</h1>
+        <h1 className="font-medium text-lg">
+          Mettre à jour les détails du produit
+        </h1>
         <button
           onClick={() => navigate("/user/Products")}
           className="px-3 py-1 border rounded-md text-white bg-[#02B978] hover:bg-[#04D18C]"
@@ -313,7 +339,9 @@ function UpdateProduct() {
 
           {/* Image Upload */}
           <section className="bg-gray-100 mx-auto p-6 rounded-2xl w-full max-w-5xl">
-            <h3 className="font-semibold text-gray-800 mb-3">Ajouter des images</h3>
+            <h3 className="font-semibold text-gray-800 mb-3">
+              Ajouter des images
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Main Image */}
               <div className="relative col-span-2">
@@ -572,7 +600,9 @@ function UpdateProduct() {
             {/* Right */}
             <div className="space-y-6">
               <div>
-                <h3 className="font-semibold text-gray-800 mb-2">Produits en stock</h3>
+                <h3 className="font-semibold text-gray-800 mb-2">
+                  Produits en stock
+                </h3>
                 <input
                   required
                   type="number"
@@ -635,8 +665,3 @@ function UpdateProduct() {
 }
 
 export default UpdateProduct;
-
-
-
-
-

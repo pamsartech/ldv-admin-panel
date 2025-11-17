@@ -104,8 +104,9 @@ const CreateOrder = () => {
       if (!item.productName.trim())
         newErrors[`product_${idx}`] = `Product code is required`;
       if (item.price <= 0)
-        newErrors[`price_${idx}`] = `Price must be greater than 0 for item ${idx + 1
-          }`;
+        newErrors[`price_${idx}`] = `Price must be greater than 0 for item ${
+          idx + 1
+        }`;
     });
 
     setErrors(newErrors);
@@ -238,7 +239,7 @@ const CreateOrder = () => {
         { headers: { "Content-Type": "application/json" } }
       );
 
-      if (res.data?.success) {
+      if (res.data.success) {
         showAlert("Order created successfully!", "success");
         navigate("/user/Orders");
       } else {
@@ -246,88 +247,99 @@ const CreateOrder = () => {
       }
     } catch (error) {
       console.error("❌ Server Error:", error);
-      showAlert(""+ error.response.data.error, "info");
+      //
+      const message =
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        error?.message ||
+        "Failed to fetch product details.";
+
+      showAlert(message, "error");
     } finally {
       setLoading(false);
     }
   };
 
+  const fetchProductByCode = async (index, code) => {
+    if (!code) return;
 
-const fetchProductByCode = async (index, code) => {
-  if (!code) return;
+    try {
+      const res = await axios.get(
+        `https://dev-api.payonlive.com/api/product/product-code/${code}`
+      );
 
-  try {
-    const res = await axios.get(
-      `https://dev-api.payonlive.com/api/product/product-code/${code}`
-    );
+      if (!res?.data?.success) return;
 
-    if (!res?.data?.success) return;
+      const product = res.data.data;
 
-    const product = res.data.data;
+      if (product.status !== "actif") {
+        showAlert(`Product "${product.productName}" is out of stock.`, "error");
+        code("");
+        return;
+      }
 
-     if (product.status !== "actif") {
-          showAlert(
-            `Product "${product.productName}" is out of stock.`,
-            "error"
-          );
-          code('')
-          return;
+      const splitAndClean = (value) => {
+        if (!value && value !== 0) return [];
+        if (Array.isArray(value)) {
+          return value.flatMap((entry) => {
+            if (!entry) return [];
+            return String(entry)
+              .split(/[,;|]/)
+              .map((s) => s.trim())
+              .filter(Boolean);
+          });
         }
-
-    const splitAndClean = (value) => {
-      if (!value && value !== 0) return [];
-      if (Array.isArray(value)) {
-        return value.flatMap((entry) => {
-          if (!entry) return [];
-          return String(entry)
+        if (typeof value === "string") {
+          return value
             .split(/[,;|]/)
             .map((s) => s.trim())
             .filter(Boolean);
-        });
-      }
-      if (typeof value === "string") {
-        return value
-          .split(/[,;|]/)
-          .map((s) => s.trim())
-          .filter(Boolean);
-      }
-      return [String(value).trim()];
-    };
+        }
+        return [String(value).trim()];
+      };
 
-    let normalizedColors = splitAndClean(product.color);
-    let normalizedSizes = splitAndClean(product.size);
+      let normalizedColors = splitAndClean(product.color);
+      let normalizedSizes = splitAndClean(product.size);
 
-    // ❗ Hide color/size when only “N/A”
-    const isColorNA =
-      normalizedColors.length === 1 && normalizedColors[0].toUpperCase() === "N/A";
-    const isSizeNA =
-      normalizedSizes.length === 1 && normalizedSizes[0].toUpperCase() === "N/A";
+      // ❗ Hide color/size when only “N/A”
+      const isColorNA =
+        normalizedColors.length === 1 &&
+        normalizedColors[0].toUpperCase() === "N/A";
+      const isSizeNA =
+        normalizedSizes.length === 1 &&
+        normalizedSizes[0].toUpperCase() === "N/A";
 
-    const newItems = [...orderItems];
-    newItems[index] = {
-      ...newItems[index],
-      productCode: code,
-      productName: product.productName || "",
-      price:
-        typeof product.price === "number"
-          ? product.price
-          : Number(product.price) || 0,
+      const newItems = [...orderItems];
+      newItems[index] = {
+        ...newItems[index],
+        productCode: code,
+        productName: product.productName || "",
+        price:
+          typeof product.price === "number"
+            ? product.price
+            : Number(product.price) || 0,
 
-      availableColors: isColorNA ? [] : normalizedColors,
-      availableSizes: isSizeNA ? [] : normalizedSizes,
+        availableColors: isColorNA ? [] : normalizedColors,
+        availableSizes: isSizeNA ? [] : normalizedSizes,
 
-      // Set default N/A for backend when no color/size
-      color: isColorNA ? "N/A" : "",
-      size: isSizeNA ? "N/A" : "",
-    };
+        // Set default N/A for backend when no color/size
+        color: isColorNA ? "N/A" : "",
+        size: isSizeNA ? "N/A" : "",
+      };
 
-    setOrderItems(newItems);
-  } catch (error) {
-    console.error("Error fetching product:", error);
-    showAlert("" + error.response.data.message, "info");
-  }
-};
+      setOrderItems(newItems);
+    } catch (error) {
+      console.error("Error fetching product:", error);
+      // showAlert("" + error.response.data.message, "info");
+      const message =
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        error?.message ||
+        "Failed to fetch product details.";
 
+      showAlert(message, "error");
+    }
+  };
 
   const handleColorSelect = (index, selectedColor) => {
     const newItems = [...orderItems];
@@ -343,7 +355,6 @@ const fetchProductByCode = async (index, code) => {
       newItems[index].size === selectedSize ? "" : selectedSize;
     setOrderItems(newItems);
   };
-
 
   // calculate
   const subtotal = orderItems.reduce(
@@ -381,13 +392,16 @@ const fetchProductByCode = async (index, code) => {
       >
         {/* Create New Order */}
         <section className="border border-gray-400 rounded-lg p-6 space-y-6">
-          <h2 className="text-lg font-semibold pb-3">Créer une nouvelle commande</h2>
+          <h2 className="text-lg font-semibold pb-3">
+            Créer une nouvelle commande
+          </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div>
               <label className="block mb-1 text-sm font-medium">
                 Nom du client
               </label>
               <input
+                readOnly
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
                 placeholder="Nom complet"
@@ -422,6 +436,7 @@ const fetchProductByCode = async (index, code) => {
                 Numéro de téléphone
               </label>
               <input
+                readOnly
                 value={phoneNumber}
                 onChange={(e) => setphoneNumber(e.target.value)}
                 type="number"
@@ -437,6 +452,7 @@ const fetchProductByCode = async (index, code) => {
                 Adresse de livraison
               </label>
               <input
+                readOnly
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
                 placeholder="123, ville principale, état"
@@ -458,7 +474,7 @@ const fetchProductByCode = async (index, code) => {
               className="flex items-center gap-2 bg-green-600 text-white text-[12px] px-3 py-2 rounded-lg hover:bg-green-700"
               type="button"
             >
-              <FontAwesomeIcon icon={faPlus} /> Ajouter un produit 
+              <FontAwesomeIcon icon={faPlus} /> Ajouter un produit
             </button>
           </div>
 
@@ -526,54 +542,27 @@ const fetchProductByCode = async (index, code) => {
                   placeholder="Nom du produit"
                   className="w-full text-sm  rounded-xl border px-2 py-2"
                 />
-               {errors.productName && (
-                <p className="text-red-500 text-sm">{errors.productName}</p>
-              )}
+                {errors.productName && (
+                  <p className="text-red-500 text-sm">{errors.productName}</p>
+                )}
               </div>
 
               {/* Color Section */}
               {/* Color Section */}
               <div className="md:col-span-2">
-                <label className="block mb-1 text-sm font-medium">Couleur</label>
+                <label className="block mb-1 text-sm font-medium">
+                  Couleur
+                </label>
 
                 {Array.isArray(item.availableColors) &&
-                  item.availableColors.length > 0 ? (
+                item.availableColors.length > 0 ? (
                   <div className="flex flex-wrap items-center gap-2 mt-1">
-                    {/* {item.availableColors.map((c, i) => {
-        // normalize color value
-        const normalizedColor = c?.trim();
-        const isSelected = Array.isArray(item.color)
-          ? item.color.includes(normalizedColor)
-          : false;
-
-        // detect if it's a valid color code or color name
-        const bgColor =
-          normalizedColor?.startsWith("#") ||
-          normalizedColor?.startsWith("rgb")
-            ? normalizedColor
-            : normalizedColor?.toLowerCase();
-
-        return (
-          <span
-            key={i}
-            onClick={() => handleColorSelect(idx, normalizedColor)}
-            className={`w-7 h-7 rounded-full border cursor-pointer shadow-sm transition ${
-              isSelected ? "ring-2 ring-gray-800 scale-105" : ""
-            }`}
-            style={{
-              backgroundColor: bgColor || "#ccc",
-            }}
-            title={normalizedColor}
-          ></span>
-        );
-      })} */}
-
                     {item.availableColors.map((c, i) => {
                       const normalizedColor = c?.trim();
                       // const isSelected = Array.isArray(item.color)
                       //   ? item.color.includes(normalizedColor)
                       //   : false;
-                      const isSelected = item.color === normalizedColor
+                      const isSelected = item.color === normalizedColor;
 
                       // ✅ Safely detect color value
                       let bgColor = "#ccc";
@@ -591,8 +580,9 @@ const fetchProductByCode = async (index, code) => {
                           onClick={() =>
                             handleColorSelect(idx, normalizedColor)
                           }
-                          className={`w-7 h-7 rounded-full border cursor-pointer shadow-sm transition ${isSelected ? "ring-2 ring-gray-800 scale-105" : ""
-                            }`}
+                          className={`w-7 h-7 rounded-full border cursor-pointer shadow-sm transition ${
+                            isSelected ? "ring-2 ring-gray-800 scale-105" : ""
+                          }`}
                           style={{ backgroundColor: bgColor }}
                           title={normalizedColor}
                         ></span>
@@ -624,7 +614,7 @@ const fetchProductByCode = async (index, code) => {
                 <label className="block mb-1 text-sm font-medium">Taille</label>
 
                 {Array.isArray(item.availableSizes) &&
-                  item.availableSizes.length > 0 ? (
+                item.availableSizes.length > 0 ? (
                   <div className="flex flex-wrap items-center gap-2 mt-1">
                     {item.availableSizes.map((sz, i) => {
                       // const isSelected = Array.isArray(item.size)
@@ -636,10 +626,11 @@ const fetchProductByCode = async (index, code) => {
                         <span
                           key={i}
                           onClick={() => handleSizeSelect(idx, sz)}
-                          className={`w-8 h-8 flex items-center justify-center text-sm rounded-full cursor-pointer border transition ${isSelected
+                          className={`w-8 h-8 flex items-center justify-center text-sm rounded-full cursor-pointer border transition ${
+                            isSelected
                               ? "bg-gray-900 text-white border-gray-900"
                               : "bg-white text-gray-800 border-gray-300 hover:bg-gray-100"
-                            }`}
+                          }`}
                         >
                           {sz}
                         </span>
@@ -656,10 +647,11 @@ const fetchProductByCode = async (index, code) => {
                         <span
                           key={sz}
                           onClick={() => handleSizeSelect(idx, sz)}
-                          className={`w-8 h-8 flex items-center justify-center text-sm rounded-full cursor-pointer border transition ${isSelected
+                          className={`w-8 h-8 flex items-center justify-center text-sm rounded-full cursor-pointer border transition ${
+                            isSelected
                               ? "bg-gray-900 text-white border-gray-900"
                               : "bg-white text-gray-800 border-gray-300 hover:bg-gray-100"
-                            }`}
+                          }`}
                         >
                           {sz}
                         </span>
@@ -786,6 +778,7 @@ const fetchProductByCode = async (index, code) => {
             >
               <option value="">Sélectionnez mode de livraison</option>
               <option>Flat Rate</option>
+              <option>Free Shipping</option>
               <option>Express</option>
               <option>Local Pickup</option>
             </select>
