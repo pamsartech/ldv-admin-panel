@@ -27,9 +27,10 @@ import {
 const statusStyles = {
   enattente : "bg-yellow-100 text-yellow-700 border border-yellow-300",
   payé: "bg-green-100 text-green-700 border border-green-300",
-  expédié: "bg-red-100 text-red-700 border border-red-300",
+  expédié: "bg-blue-100 text-blue-700 border border-blue-300",
   annulé: "bg-red-100 text-red-700 border border-red-300",
-  remboursé : "bg-blue-100 text-blue-700 border border-blue-300",
+  échoué:"bg-red-100 text-red-700 border border-red-300",
+  remboursé : "bg-blue-100 text-blue-700 border border-blue-300",//"bg-blue-100 text-blue-700 border border-blue-300"
 };
 
 export default function PaymentDataTable({ onSelectionChange }) {
@@ -216,34 +217,6 @@ export default function PaymentDataTable({ onSelectionChange }) {
     <div className="p-6">
       {/* Tabs and Filters */}
       <div className="flex justify-between items-center border-2 mb-5 border-gray-300 px-6 rounded-md p-2 relative">
-        {/* Tabs */}
-        {/* <div className="flex gap-6">
-          {["all", "Paid", "Remboursés"].map((tab) => (
-            <button
-              key={tab}
-              onClick={() => {
-                setActiveTab(tab);
-                setCurrentPage(1);
-              }}
-              className={`flex items-center gap-2 text-sm px-2 pb-1 ${
-                activeTab === tab
-                  ? "text-black font-medium border-b-2 border-black"
-                  : "text-gray-600 hover:text-black"
-              }`}
-            >
-              <FontAwesomeIcon
-                icon={
-                  tab === "all"
-                    ? faCircleCheck
-                    : tab === "Paid"
-                    ? faCheckCircle
-                    : faUndo
-                }
-              />
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
-            </button>
-          ))}
-        </div> */}
         {/* Tabs Section */}
 <div className="flex gap-6">
   {[
@@ -313,18 +286,6 @@ export default function PaymentDataTable({ onSelectionChange }) {
             <img src="/icons/flowbite_sort-outline.svg" alt="icon" />
             Trier par date {sortOrder === "desc" ? "↓" : "↑"}
           </button>
-
-          {/* bulk delete button */}
-          {/* <button
-          onClick={handleBulkDelete}
-          disabled={selectedRows.length === 0 || deleting}
-          className={`flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-red-700 transition ${
-            deleting ? "opacity-70 cursor-not-allowed" : ""
-          }`}
-        >
-          <FontAwesomeIcon icon={faTrashAlt} />
-          {deleting ? "Deleting..." : `Delete Selected (${selectedRows.length})`}
-        </button> */}
 
           <button
             // onClick={handleBulkDelete}

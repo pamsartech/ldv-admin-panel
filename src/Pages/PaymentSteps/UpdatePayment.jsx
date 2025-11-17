@@ -308,7 +308,7 @@ export default function UpdatePayment() {
                 )}`}
               >
                 <FontAwesomeIcon icon={faClock} className="pr-2" />
-                {paymentData.paymentStatus || "En-attente"}
+                {paymentData.paymentStatus || "enattente"}
               </span>
             </div>
             <div>
@@ -319,7 +319,7 @@ export default function UpdatePayment() {
                   "delivery"
                 )}`}
               >
-                {paymentData.deliveryStatus || "En-attente"}
+                {paymentData.deliveryStatus || "enattente"}
               </span>
             </div>
           </div>
