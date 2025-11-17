@@ -250,7 +250,7 @@ export default function CreatePayment() {
                   : ""
               }`}
             >
-              <option value="en-attente">En-attente</option>
+              <option value="enattente">En-attente</option>
               <option value="payé">Payé</option>
               <option value="échoué">Échoué</option>
             </select>
