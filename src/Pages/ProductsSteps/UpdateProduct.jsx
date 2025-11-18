@@ -221,15 +221,15 @@ function UpdateProduct() {
       );
 
       if (response.data.success) {
-        showAlert("Product updated successfully!", "success", () =>
+        showAlert("Produit mis à jour avec succès !", "succès", () =>
           navigate("/user/products")
         );
       } else {
-        showAlert("Failed to update product.", "error");
+        showAlert("La mise à jour du produit a échoué.", "erreur");
       }
     } catch (error) {
       console.error("Error updating product:", error);
-      showAlert("Failed to update product.", "error");
+      showAlert("La mise à jour du produit a échoué.", "erreur");
     } finally {
       // ✅ Always stop the spinner
       setBtnLoading(false);

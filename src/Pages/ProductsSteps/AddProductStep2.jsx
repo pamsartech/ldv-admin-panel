@@ -21,10 +21,10 @@ function AddProductStep2({ formData, setFormData, prevStep, nextStep }) {
   );
   // const [selectedSize, setSelectedSize] = useState(formData.size || []); // changed from single
   const [selectedSize, setSelectedSize] = useState(
-  Array.isArray(formData.size) && formData.size.length > 0
-    ? formData.size
-    : []
-);
+    Array.isArray(formData.size) && formData.size.length > 0
+      ? formData.size
+      : []
+  );
 
   const [colors, setColors] = useState([
     "#FF0000",
@@ -32,12 +32,14 @@ function AddProductStep2({ formData, setFormData, prevStep, nextStep }) {
     "#8B5CF6",
     "#6B7280",
   ]);
+  const [errors, setErrors] = useState({});
+
   // const [selectedColor, setSelectedColor] = useState(formData.color || []); // changed from single
   const [selectedColor, setSelectedColor] = useState(
-  Array.isArray(formData.color) && formData.color.length > 0
-    ? formData.color
-    : []
-);
+    Array.isArray(formData.color) && formData.color.length > 0
+      ? formData.color
+      : []
+  );
   const [showColorPicker, setShowColorPicker] = useState(false);
 
   // New enable/disable toggles
@@ -57,7 +59,7 @@ function AddProductStep2({ formData, setFormData, prevStep, nextStep }) {
   useEffect(() => {
     setFormData((prev) => ({
       ...prev,
-      color: enableColor ? selectedColor :"N/A",
+      color: enableColor ? selectedColor : "N/A",
     }));
   }, [enableColor, selectedColor, setFormData]);
 
@@ -65,7 +67,7 @@ function AddProductStep2({ formData, setFormData, prevStep, nextStep }) {
   useEffect(() => {
     setFormData((prev) => ({
       ...prev,
-      size: enableSize ? selectedSize :  "N/A",
+      size: enableSize ? selectedSize : "N/A",
     }));
   }, [enableSize, selectedSize, setFormData]);
 
@@ -87,6 +89,33 @@ function AddProductStep2({ formData, setFormData, prevStep, nextStep }) {
     setSelectedSize((prev) =>
       prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size]
     );
+  };
+
+  const validateStep2 = () => {
+    const newErrors = {};
+
+    if (enableGender && (!formData.gender || formData.gender === "N/A")) {
+      newErrors.gender = "Veuillez sélectionner un genre.";
+    }
+
+    if (enableColor && (!formData.color || formData.color.length === 0)) {
+      newErrors.color = "Veuillez sélectionner au moins une couleur.";
+    }
+
+    if (enableSize && (!formData.size || formData.size.length === 0)) {
+      newErrors.size = "Veuillez sélectionner au moins une taille.";
+    }
+
+    if (!formData.stock || Number(formData.stock) < 0) {
+      newErrors.stock = "Le stock doit être un nombre positif.";
+    }
+
+    if (!formData.category) {
+      newErrors.category = "Catégorie est requise.";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   return (
@@ -140,6 +169,7 @@ function AddProductStep2({ formData, setFormData, prevStep, nextStep }) {
         className="max-w-5xl mx-auto mt-10 p-6 border border-gray-300 rounded-2xl shadow-md bg-white"
         onSubmit={(e) => {
           e.preventDefault();
+          if (!validateStep2()) return;
           nextStep();
         }}
       >
@@ -176,6 +206,8 @@ function AddProductStep2({ formData, setFormData, prevStep, nextStep }) {
                   </button>
                 ))}
               </div>
+              {errors.gender && <p className="text-red-600 text-xs">{errors.gender}</p>}
+
             </div>
 
             {/* Colors */}
@@ -218,6 +250,9 @@ function AddProductStep2({ formData, setFormData, prevStep, nextStep }) {
                   <FontAwesomeIcon icon={faPlus} />
                 </button>
               </div>
+              {errors.color && (
+                <p className="text-red-600 text-xs">{errors.color}</p>
+              )}
 
               {enableColor && showColorPicker && (
                 <div className="mt-3">
@@ -279,6 +314,8 @@ function AddProductStep2({ formData, setFormData, prevStep, nextStep }) {
                   </button>
                 ))}
               </div>
+              {errors.size && <p className="text-red-600 text-xs">{errors.size}</p>}
+
             </div>
           </div>
 
@@ -289,20 +326,20 @@ function AddProductStep2({ formData, setFormData, prevStep, nextStep }) {
               <input
                 type="number"
                 name="stock"
-                required
                 value={formData.stock || ""}
                 onChange={(e) =>
                   setFormData((p) => ({ ...p, stock: e.target.value }))
                 }
                 className="w-full border rounded-lg px-3 py-2"
               />
+              {errors.stock && <p className="text-red-600 text-xs">{errors.stock}</p>}
+
             </div>
 
             <div>
               <h3 className="font-semibold text-gray-800 mb-2">Catégorie</h3>
               <select
                 name="category"
-                required
                 value={formData.category || ""}
                 onChange={(e) =>
                   setFormData((p) => ({ ...p, category: e.target.value }))
@@ -314,6 +351,8 @@ function AddProductStep2({ formData, setFormData, prevStep, nextStep }) {
                 <option value="chaussures">Chaussures</option>
                 <option value="accessoires">Accessoires</option>
               </select>
+              {errors.category && <p className="text-red-600 text-xs">{errors.category}</p>}
+
             </div>
 
             <div className="flex gap-3">

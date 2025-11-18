@@ -84,7 +84,7 @@ export default function UpdatePayment() {
           });
         } catch (error) {
           console.error("Error fetching payment:", error);
-          showAlert("Failed to load payment details.", "error");
+          showAlert("Impossible de charger les informations de paiement.", "erreur");
         } finally {
           setLoading(false);
         }
@@ -117,11 +117,11 @@ export default function UpdatePayment() {
       payload
     );
     console.log("API Response:", res.data);
-    showAlert("Payment updated successfully!", "success");
+    showAlert("Paiementt mis à jour Avec succès!", "success");
     navigate("/user/Payments");
   } catch (error) {
     console.error("Error updating payment:", error.response?.data || error);
-    showAlert("Failed to update payment. Please try again.", "error");
+    showAlert("Échec de la mise à jour du paiement. Veuillez réessayer.", "erreur");
     btnLoading(false);
   }
 };
@@ -156,7 +156,7 @@ export default function UpdatePayment() {
   };
 
   if (loading) {
-    return <p className="text-center mt-10">Loading payment details...</p>;
+    return <p className="text-center mt-10">Chargement des détails de paiement...</p>;
   }
 
   return (

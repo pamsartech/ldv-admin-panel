@@ -2,17 +2,48 @@
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../Components/Navbar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowRight, faXmark ,faCheck } from "@fortawesome/free-solid-svg-icons";
+import {
+  faArrowRight,
+  faXmark,
+  faCheck,
+} from "@fortawesome/free-solid-svg-icons";
+import { useState } from "react";
 
 function AddProductStep1({ formData, setFormData, nextStep }) {
   const navigate = useNavigate();
+  const [errors, setErrors] = useState({});
+
+  const validateStep1 = async () => {
+    const newErrors = {};
+
+    if (!formData.productName?.trim()) {
+      newErrors.productName = "Le nom du produit est requis.";
+    }
+
+    if (!formData.productCode?.trim()) {
+      newErrors.productCode = "Le code produit est requis.";
+    }
+
+    if (!formData.price || Number(formData.price) < 0) {
+      newErrors.price = "Le prix du produit est requis";
+    }
+
+    if (!formData.status) {
+      newErrors.status = "Le statut est requis.";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleChange = (e) =>
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
 
   // handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault(); // stop page reload
+    const ok = await validateStep1();
+    if (!ok) return;
     nextStep(); // only called if all required fields are valid
   };
 
@@ -20,38 +51,45 @@ function AddProductStep1({ formData, setFormData, nextStep }) {
     <div>
       <Navbar heading="Gestion des produits" />
 
-      <h1 className="mt-5 text-start mx-5 font-medium text-lg">Création de produits</h1>
+      <h1 className="mt-5 text-start mx-5 font-medium text-lg">
+        Création de produits
+      </h1>
       <h1 className="text-center mt-5 text-gray-800 font-medium text-2xl">
         Créer un produit
       </h1>
 
       <div className="max-w-3xl mx-auto mt-2 bg-white p-6 shadow rounded">
-
         {/* Progress indicator unchanged */}
-          <div className="flex justify-center items-center gap-4 mb-10">
+        <div className="flex justify-center items-center gap-4 mb-10">
           <div className="flex flex-col items-center text-black font-semibold">
             <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[#02B978] text-white border border-[#02B978]">
-             1
+              1
             </div>
-            <span className="mt-3 text-sm font-bold text-[#02B978] ">Saisir les informations sur le produit</span>
+            <span className="mt-3 text-sm font-bold text-[#02B978] ">
+              Saisir les informations sur le produit
+            </span>
           </div>
 
           <div className="flex-1 pb-5 border-t-3 border-gray-800"></div>
 
           <div className="flex flex-col items-center text-gray-400 font-semibold">
-            <div className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-400 text-white border border-gray-300">2</div>
-            <span className="mt-3 font-bold text-sm">Ajouter des variations</span>
+            <div className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-400 text-white border border-gray-300">
+              2
+            </div>
+            <span className="mt-3 font-bold text-sm">
+              Ajouter des variations
+            </span>
           </div>
 
           <div className="flex-1 pb-5 border-t-3 border-gray-800"></div>
 
           <div className="flex flex-col items-center text-gray-400 font-semibold">
-            <div className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-400 text-white border border-gray-300">3</div>
+            <div className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-400 text-white border border-gray-300">
+              3
+            </div>
             <span className="mt-3 text-sm">Ajouter des images</span>
           </div>
         </div>
-
-
 
         {/* ✅ Wrap inputs in a <form> */}
         <form
@@ -61,7 +99,7 @@ function AddProductStep1({ formData, setFormData, nextStep }) {
           <div className="grid grid-cols-2 gap-4">
             <div className="rounded-xl">
               <label className="block text-sm font-medium mb-1">
-               Session TikTok
+                Session TikTok
               </label>
               <input
                 name="tiktok_session_id"
@@ -75,7 +113,6 @@ function AddProductStep1({ formData, setFormData, nextStep }) {
             <div>
               <label className="block text-sm font-medium mb-1">Prix</label>
               <input
-                required
                 name="price"
                 type="number"
                 placeholder="€12"
@@ -83,14 +120,20 @@ function AddProductStep1({ formData, setFormData, nextStep }) {
                 onChange={handleChange}
                 className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm"
               />
+              {errors.price && (
+                <p className="text-red-600 text-xs mt-1">
+                  {errors.price}
+                </p>
+              )}
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Nom du produit</label>
+              <label className="block text-sm font-medium mb-1">
+                Nom du produit
+              </label>
               <input
-                required
                 name="productName"
                 type="text"
                 placeholder="Denim shirt 202045"
@@ -98,11 +141,17 @@ function AddProductStep1({ formData, setFormData, nextStep }) {
                 onChange={handleChange}
                 className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm"
               />
+              {errors.productName && (
+                <p className="text-red-600 text-xs mt-1">
+                  {errors.productName}
+                </p>
+              )}
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Code produit</label>
+              <label className="block text-sm font-medium mb-1">
+                Code produit
+              </label>
               <input
-                required
                 name="productCode"
                 type="text"
                 placeholder="3211"
@@ -110,25 +159,32 @@ function AddProductStep1({ formData, setFormData, nextStep }) {
                 onChange={handleChange}
                 className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm"
               />
+              {errors.productCode && (
+                <p className="text-red-600 text-xs mt-1">
+                  {errors.productCode}
+                </p>
+              )}
             </div>
-            
 
-         {/* ✅ Status Dropdown */}
-          <div className=" col-span-2"> 
-            <label className=" text-sm font-medium mb-1">Statut</label>
-            <select
-              required
-              name="status"
-              value={formData.status || ""}
-              onChange={handleChange}
-              className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm bg-white"
-            >
-              <option value="">Sélectionner le statut</option>
-              <option value="actif">Actifs</option>
-              <option value="inactif">Inactif</option>
-            </select>
-          </div>
-             
+            {/* ✅ Status Dropdown */}
+            <div className=" col-span-2">
+              <label className=" text-sm font-medium mb-1">Statut</label>
+              <select
+                name="status"
+                value={formData.status || ""}
+                onChange={handleChange}
+                className="w-full border border-gray-400 rounded-lg px-3 py-2 text-sm bg-white"
+              >
+                <option value="">Sélectionner le statut</option>
+                <option value="actif">Actifs</option>
+                <option value="inactif">Inactif</option>
+              </select>
+               {errors.status && (
+                <p className="text-red-600 text-xs mt-1">
+                  {errors.status}
+                </p>
+              )}
+            </div>
           </div>
 
           {/* navigation buttons */}
@@ -166,5 +222,3 @@ function AddProductStep1({ formData, setFormData, nextStep }) {
 }
 
 export default AddProductStep1;
-
-

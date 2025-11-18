@@ -155,7 +155,7 @@ function ViewPayment() {
   // Error handling
   if (error) return <p className="text-center mt-10 text-red-600">{error}</p>;
   if (!paymentData)
-    return <p className="text-center mt-10">No payment data found</p>;
+    return <p className="text-center mt-10">Aucune donnée de paiement trouvée</p>;
 
   // ✅ Destructure all fields directly from API response
   const {
@@ -220,17 +220,16 @@ function ViewPayment() {
         aria-describedby="confirm-delete-description"
       >
         <DialogTitle id="confirm-delete-title">
-          {"Confirm Payment Deletion"}
+          {"Confirmateur Paiement Supprimer"}
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="confirm-delete-description">
-            Are you sure you want to permanently delete this payment? This
-            action cannot be undone.
+            Êtes-vous sûr de vouloir supprimer définitivement ce paiement?  Cette action est irréversible.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenConfirm(false)} color="primary">
-            Cancel
+            Annuler
           </Button>
           <Button
             onClick={handleDelete}
@@ -238,7 +237,7 @@ function ViewPayment() {
             variant="contained"
             disabled={isDeleting}
           >
-            {isDeleting ? "Deleting..." : "Delete"}
+            {isDeleting ? "Supprimer..." : "Supprimer"}
           </Button>
         </DialogActions>
       </Dialog>
@@ -388,7 +387,7 @@ function ViewPayment() {
                   </div>
                 ))
               ) : (
-                <p className="text-gray-500 text-sm">No order items found.</p>
+                <p className="text-gray-500 text-sm">Aucun article de commande trouvé.</p>
               )}
             </div>
           </div>

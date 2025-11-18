@@ -61,7 +61,7 @@ function CreateLiveEvent() {
   // ----------------------
   const handleCopyLink = () => {
     navigator.clipboard.writeText(eventDetails.eventLink);
-    setPopupMessage("TikTok live event link copied to clipboard!");
+    showAlert("Lien de l'événement TikTok en direct copié dans le presse-papiers !", "succès");
     setShowPopup(true);
   };
 
@@ -88,37 +88,19 @@ function CreateLiveEvent() {
         if (!products.some((p) => p._id === productData._id)) {
           setProducts((prev) => [...prev, productData]);
         } else {
-          showAlert("Product already added.", "info");
+          showAlert("Produit déjà ajouté.", "info");
         }
       } else {
-        showAlert(response.data.message || "Product not found.", "error");
+        showAlert(response.data.message || "Produit introuvable.", "Erreur");
         console.log(response)
       }
     } catch (error) {
-      console.error("❌ Error fetching product:", error);
-      showAlert("Error fetching product. Please try again.", "error");
+      console.error("❌ Erreur lors de la récupération du produit:", error);
+      showAlert("Erreur lors de la récupération du produit. Veuillez réessayer.", "Erreur");
     }
 
     setProductId("");
   };
-
-//   const [existingSessions, setExistingSessions] = useState([]);
-
-// useEffect(() => {
-//   const fetchExistingSessions = async () => {
-//     try {
-//       const res = await axios.get("https://dev-api.payonlive.com/api/event/all");
-//       if (res.data?.success && Array.isArray(res.data.data)) {
-//         const sessions = res.data.data.map((event) => event.eventDetails.sessionID);
-//         setExistingSessions(sessions);
-//       }
-//     } catch (error) {
-//       console.error("❌ Error fetching sessions:", error);
-//     }
-//   };
-//   fetchExistingSessions();
-// }, []);
-
 
   // ----------------------
   // Validation
@@ -139,67 +121,65 @@ function CreateLiveEvent() {
     const { hostName, hostEmailAddress, hostPhoneNumber } = hostInfo;
 
     // Event Name
-    if (!eventName.trim()) newErrors.eventName = "Event name is required.";
+    if (!eventName.trim()) newErrors.eventName = "Le nom de l'événement est obligatoire.";
     else if (eventName.length < 3)
-      newErrors.eventName = "Event name must be at least 3 characters long.";
+      newErrors.eventName = "Le nom de l'événement doit comporter au moins 3 caractères.";
     else if (eventName.length > 50)
-      newErrors.eventName = "Event name cannot exceed 50 characters.";
+      newErrors.eventName = "Le nom de l'événement ne peut pas dépasser 50 caractères.";
 
     // Event Description
     if (!eventDescription.trim())
-      newErrors.eventDescription = "Event description is required.";
+      newErrors.eventDescription = "Une description de l'événement est requise.";
     else if (eventDescription.length < 10)
       newErrors.eventDescription =
-        "Description should be at least 10 characters.";
+        "La description doit comporter au moins 10 caractères.";
     else if (eventDescription.length > 500)
-      newErrors.eventDescription = "Description cannot exceed 500 characters.";
+      newErrors.eventDescription = "La description ne peut pas dépasser 500 caractères.";
 
     // Session ID
-    if (!sessionID.trim()) newErrors.sessionID = "Session ID is required.";
-    // else if (sessionID.includes(sessionID.trim()))
-    //   newErrors.sessionID = "Session ID already exists.";
+    if (!sessionID.trim()) newErrors.sessionID = "Un identifiant de session est requis.";
 
     // Status
     const validStatuses = ["actif", "inactif", "sur-point-d'arriver", "suspendu"];
-    if (!status.trim()) newErrors.status = "Status is required.";
+    if (!status.trim()) newErrors.status = "Statut est requis..";
     else if (!validStatuses.includes(status))
-      newErrors.status = "Invalid status selected.";
+      newErrors.status = "Statut invalide sélectionné.";
 
      // Start & End Date
     if (!startDateTime.trim())
-      newErrors.startDateTime = "Start date & time is required.";
+      newErrors.startDateTime = "La date et l'heure de début sont obligatoires.";
     if (!endDateTime.trim())
-      newErrors.endDateTime = "End date & time is required.";
+      newErrors.endDateTime = "Une date et une heure de fin sont requises.";
     else if (
       startDateTime &&
       endDateTime &&
       new Date(endDateTime) <= new Date(startDateTime)
     )
       newErrors.endDateTime =
-        "End date and time must be after start date and time.";
+        "La date et l'heure de fin doivent être postérieures à la date et à l'heure de début.";
 
-    if (!eventLink.trim()) newErrors.eventLink = "Event link is required.";
+    if (!eventLink.trim()) newErrors.eventLink = "Le lien vers l'événement est requis.";
 
     if (!eventCategory.trim())
-      newErrors.eventCategory = "Event category is required.";
+      newErrors.eventCategory = "La catégorie de événement est obligatoire..";
 
      // Host Name
-    if (!hostName.trim()) newErrors.hostName = "Host name is required.";
+    if (!hostName.trim()) newErrors.hostName = "Le nom d'hôte est requis.";
     else if (hostName.length < 3)
-      newErrors.hostName = "Host name must be at least 3 characters long.";
+      newErrors.hostName = "Le nom d'hôte doit comporter au moins 3 caractères.";
     else if (hostName.length > 100)
-      newErrors.hostName = "Host name cannot exceed 100 characters.";
+      newErrors.hostName = "Le nom hôte ne peut pas dépasser 100 caractères.";
 
 
     if (!hostEmailAddress.trim())
-      newErrors.hostEmailAddress = "Host email is required.";
+      newErrors.hostEmailAddress = "Adresse e-mail de hôte est requise.";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(hostEmailAddress))
-      newErrors.hostEmailAddress = "Please enter a valid email.";
+      newErrors.hostEmailAddress = "Veuillez fournir une adresse courriel valide..";
 
     if (!hostPhoneNumber.trim())
-      newErrors.hostPhoneNumber = "Phone number is required.";
+      newErrors.hostPhoneNumber = "Un numéro de téléphone est requis.";
     else if (!/^\d{9,15}$/.test(hostPhoneNumber))
-      newErrors.hostPhoneNumber = "Phone number must be 9–15 digits.";
+      newErrors.hostPhoneNumber = "Le numéro de téléphone doit comporter entre 9 et 15 chiffres.";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -213,7 +193,7 @@ const handleSave = async (e) => {
 
   // 2️⃣ Ensure product selection
   if (products.length === 0) {
-    showAlert("Please select at least one product.", "info");
+    showAlert("Veuillez sélectionner au moins un produit.", "info");
     return;
   }
 
@@ -244,14 +224,14 @@ const handleSave = async (e) => {
     );
 
     if (response.data?.success || response.status === 200) {
-      showAlert("Event created successfully!", "success", () => {
+      showAlert("Événement créé avec succès !", "Succès", () => {
         navigate("/user/tiktok");
       });
     } else {
-      showAlert(response.data.message || "Failed to create event.", "error");
+      showAlert(response.data.message || "Impossible de créer événement.", "Erreur");
     }
   } catch (error) {
-    console.error("❌ Error creating event:", error);
+    console.error("❌ Erreur lors de la création de événement :", error);
     showAlert("" + error.response.data.error, "info" );
   } finally {
     setBtnLoading(false);
@@ -280,7 +260,7 @@ const handleSave = async (e) => {
             size="lg"
             className="text-red-700 px-2"
           />
-          Discard Event
+          Jeter Événement
         </button>
       </div>
 

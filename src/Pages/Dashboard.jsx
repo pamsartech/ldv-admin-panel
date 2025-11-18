@@ -6,6 +6,7 @@ import LiveOrder from "../Components/LiveOrder";
 import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import DiscountOutlinedIcon from "@mui/icons-material/DiscountOutlined";
+import { Skeleton } from "@mui/material";
 
 function Dashboard() {
   const [stats, setStats] = useState({
@@ -58,10 +59,52 @@ function Dashboard() {
     fetchData();
   }, []);
 
+  // if (loading) {
+  //   return (
+  //     <div className="flex items-center justify-center h-screen">
+  //       <p className="text-gray-600 text-lg font-medium">Loading dashboard...</p>
+  //     </div>
+  //   );
+  // }
+
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <p className="text-gray-600 text-lg font-medium">Loading dashboard...</p>
+      <div className="bg-white min-h-screen">
+        {/* Navbar Skeleton */}
+        <div className="p-4 shadow-md bg-white">
+          <Skeleton width={200} height={35} animation="wave" />
+        </div>
+
+        {/* Cards Skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 p-6">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="p-5 rounded-2xl shadow-md bg-white">
+              <Skeleton width="60%" height={25} animation="wave" />
+              <Skeleton
+                width="40%"
+                height={35}
+                className="mt-7"
+                animation="wave"
+              />
+              <Skeleton
+                width="50%"
+                height={20}
+                className="mt-7"
+                animation="wave"
+              />
+            </div>
+          ))}
+        </div>
+
+        {/* Selling Chart Skeleton */}
+        <div className="mx-6 mt-4 p-6 rounded-xl shadow bg-white">
+          <Skeleton variant="rectangular" height={250} animation="wave" />
+        </div>
+
+        {/* Live Orders Skeleton */}
+        <div className="mx-6 mt-6 p-6 rounded-xl shadow bg-white">
+          <Skeleton variant="rectangular" height={300} animation="wave" />
+        </div>
       </div>
     );
   }
@@ -86,7 +129,7 @@ function Dashboard() {
           <span className="text-gray-700">Ventes totales aujourd’hui </span>
           <p className="text-xl mt-7 font-medium">€{stats.totalSales}</p>
           <p className="text-sm mt-7 text-gray-700">
-            <span className="text-[#02B978]"> 4%</span>  depuis hier
+            <span className="text-[#02B978]"> 4%</span> depuis hier
           </p>
         </div>
 

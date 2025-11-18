@@ -37,9 +37,9 @@ export const AlertProvider = ({ children }) => {
   const getIcon = (type) => {
     const iconProps = { fontSize: "large" };
     switch (type) {
-      case "success":
+      case "succès":
         return <CheckCircleIcon sx={{ color: "#4CAF50", ...iconProps }} />;
-      case "error":
+      case "erreur":
         return <ErrorIcon sx={{ color: "#F44336", ...iconProps }} />;
       case "info":
       default:
@@ -48,7 +48,7 @@ export const AlertProvider = ({ children }) => {
   };
 
   const getTitle = (type) =>
-    type === "success" ? "Success" : type === "error" ? "Error" : "Info";
+    type === "succès" ? "Succès" : type === "erreur" ? "Erreur" : "Info";
 
   return (
     <AlertContext.Provider value={{ showAlert }}>
@@ -102,7 +102,7 @@ export const AlertProvider = ({ children }) => {
               },
             }}
           >
-            OK
+            D'accord
           </Button>
         </DialogActions>
       </Dialog>

@@ -90,14 +90,17 @@ function UpdateEvent() {
               }));
 
             setProducts(formatted);
-            console.log("✅ Existing products loaded:", formatted);
+            console.log("✅ Produits existants chargés :", formatted);
           } else {
-            console.log("⚠️ No products found for this event");
+            console.log("⚠️Aucun produit trouvé pour cet événement");
           }
         }
       } catch (error) {
         console.error("❌ Error fetching existing products:", error);
-        showAlert("Error fetching existing products.", "error");
+        showAlert(
+          "Erreur lors de la récupération des produits existants.",
+          "Erreur"
+        );
       }
     };
 
@@ -116,7 +119,10 @@ function UpdateEvent() {
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(eventDetails.eventLink);
-    showAlert("TikTok live event link copied to clipboard!", "success");
+    showAlert(
+      "Lien de l'événement TikTok en direct copié dans le presse-papiers !",
+      "Succès"
+    );
   };
 
   // 🟩 Search & Add Product
@@ -135,16 +141,16 @@ function UpdateEvent() {
         // avoid duplicate product
         if (!products.some((p) => p._id === productData._id)) {
           setProducts((prev) => [...prev, productData]);
-          showAlert("Product added successfully!", "success");
+          showAlert("Produit ajouté avec succès !", "Succès");
         } else {
-          showAlert("Product already added.", "info");
+          showAlert("Produit déjà ajouté.", "Info");
         }
       } else {
-        showAlert(response.data.message || "Product not found.", "error");
+        showAlert(response.data.message || "Produit introuvable.", "Erreur");
       }
     } catch (error) {
       console.error("❌ Error fetching product:", error);
-      showAlert("Error fetching product. Please try again.", "error");
+      showAlert("Error fetching product. Please try again.", "Erreur");
     }
 
     setProductId("");
@@ -153,13 +159,24 @@ function UpdateEvent() {
   // 🟩 Remove Product
   const removeProduct = (id) => {
     setProducts((prev) => prev.filter((item) => item._id !== id));
-    showAlert("Product removed.", "info");
+    showAlert("Produit retiré.", "info");
   };
 
   // 🟩 Update Event
   const handleUpdate = async (e) => {
     e.preventDefault();
     setLoading(true);
+
+    // 🔍 VALIDATION BEFORE UPDATE
+    if (
+      !eventDetails.eventCategory ||
+      eventDetails.eventCategory.trim() === ""
+    ) {
+      setLoading(false);
+      showAlert("La catégorie de événement est obligatoire.", "info");
+      return;
+    }
+
     try {
       const payload = {
         eventDetails,
@@ -173,16 +190,16 @@ function UpdateEvent() {
       );
 
       if (response.data.success) {
-        showAlert("Event updated successfully!", "success", () => {
+        showAlert("Événement mis à jour avec succès !", "Succès", () => {
           navigate("/user/tiktok");
         });
       } else {
-        showAlert("Failed to update event.", "error");
+        showAlert("La mise à jour de l'événement a échoué.", "Erreur");
       }
     } catch (error) {
       console.error("Error updating event:", error);
       // showAlert("Failed to update event. Please try again.", "error");
-       showAlert(""+error.response.data.error, "error");
+      showAlert("" + error.response.data.error, "error");
     } finally {
       setLoading(false);
     }
@@ -193,7 +210,9 @@ function UpdateEvent() {
       <Navbar heading="Gestion des événements TikTok Live" />
 
       <div className="flex justify-between mt-5 mx-10">
-        <h1 className="font-medium text-lg ">Mise à jour des détails de l'événement</h1>
+        <h1 className="font-medium text-lg ">
+          Mise à jour des détails de l'événement
+        </h1>
         <button
           onClick={() => navigate("/user/tiktok")}
           className="mr-20 px-3 py-1 border border-red-700 text-red-700 bg-red-50 rounded-md hover:bg-gray-100"
@@ -272,7 +291,9 @@ function UpdateEvent() {
                 >
                   <option value="inactif">Inactif</option>
                   <option value="actif">Actif</option>
-                  <option value="sur-point-d'arriver">Sur-point-d'arriver</option>
+                  <option value="sur-point-d'arriver">
+                    Sur-point-d'arriver
+                  </option>
                   <option value="suspendu">Suspendu</option>
                 </select>
               </div>
@@ -341,7 +362,6 @@ function UpdateEvent() {
                   value={eventDetails.eventCategory}
                   onChange={handleEventChange}
                   className="w-full border border-gray-400 rounded-md px-3 py-2"
-                  required
                 >
                   <option value="">Sélectionnez une catégorie</option>
                   <option value="mode">Mode</option>

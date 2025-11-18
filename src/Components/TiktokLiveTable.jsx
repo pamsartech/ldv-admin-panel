@@ -75,7 +75,7 @@ export default function TiktokLiveTable() {
         setLiveData(formatted);
       } catch (err) {
         console.error("API Error:", err);
-        setError("Failed to fetch live events");
+        setError("Impossible de récupérer les événements en direct");
       } finally {
         setLoading(false);
       }
@@ -137,7 +137,7 @@ const sortedData = [...filteredData].sort((a, b) => {
   // ---- Bulk Delete ----
   const handleBulkDelete = () => {
     if (selectedRows.length === 0) {
-      alert("Please select at least one event to delete.");
+      alert("Veuillez sélectionner au moins un événement à supprimer.");
       return;
     }
     setOpenConfirm(true);
@@ -163,7 +163,7 @@ const sortedData = [...filteredData].sort((a, b) => {
       setOpenConfirm(false);
     } catch (error) {
       console.error("Error deleting events:", error);
-      alert("Failed to delete selected events.");
+      alert("Impossible de supprimer les événements sélectionnés.");
     } finally {
       setDeleting(false);
     }
@@ -435,17 +435,16 @@ const sortedData = [...filteredData].sort((a, b) => {
 
       {/* ✅ Confirmation Modal */}
       <Dialog open={openConfirm} onClose={handleCloseConfirm}>
-        <DialogTitle>Confirm Bulk Delete</DialogTitle>
+        <DialogTitle>Confirmer Suppression En Masse</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to delete{" "}
-            <strong>{selectedRows.length}</strong> selected event(s)? This
-            action cannot be undone.
+            Êtes-vous sûr de vouloir supprimer{" "}
+            <strong>{selectedRows.length}</strong> événement sélectionné(s)? Cette action est irréversible.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseConfirm} color="inherit">
-            Cancel
+            Annuler
           </Button>
           <Button
             onClick={confirmDelete}
@@ -456,7 +455,7 @@ const sortedData = [...filteredData].sort((a, b) => {
             {deleting ? (
               <CircularProgress size={20} color="inherit" />
             ) : (
-              "Delete"
+              "Supprimer"
             )}
           </Button>
         </DialogActions>

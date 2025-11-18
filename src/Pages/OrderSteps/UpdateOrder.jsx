@@ -66,45 +66,6 @@ const UpdateOrder = () => {
     setOrderItems(orderItems.filter((_, i) => i !== index));
   };
 
-  // const handleUpdate = async (e) => {
-  //   e.preventDefault();
-  //   setLoading(true);
-
-  //   try {
-  //     // Include _id in payload just in case backend needs it
-  //     const payload = { ...orderData };
-
-  //     const response = await axios.put(
-  //       `https://dev-api.payonlive.com/api/order/update-order/${existingOrder._id}`,
-  //       payload,
-  //       {
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //           // Authorization: `Bearer ${token}`,
-  //         },
-  //       }
-  //     );
-
-  //     if (response.status === 200 && response.data.success) {
-  //       showAlert("Order updated successfully!", "success");
-  //       navigate("/user/Orders");
-  //     } else {
-  //       showAlert("Failed to update order. Please try again.", "error");
-  //       setLoading(false); // 🔹 Stop spinner on failed response
-  //     }
-  //   } catch (err) {
-  //     console.error("❌ Error updating order:", err);
-  //     showAlert("Server error. Please try again.", "error");
-  //     setLoading(false); // 🔹 Stop spinner if an exception occurs
-  //   }
-  // };
-
-  //  const handleCopyLink = () => {
-  //     navigator.clipboard.writeText(orderData.trackLink);
-  //     setPopupMessage("TikTok live event link copied to clipboard!");
-  //     setShowPopup(true);
-  //   };
-
   const handleUpdate = async (e) => {
   e.preventDefault();
   setLoading(true);
@@ -117,7 +78,7 @@ const UpdateOrder = () => {
     (shippingStatus === "expédié" || shippingStatus === "livraison")
   ) {
     showAlert(
-      "You can only mark an order as Shipped or Delivered after payment is completed.",
+      "Vous ne pouvez marquer une commande comme Expédiée ou Livrée qu’après la confirmation du paiement.",
       "warning"
     );
     setLoading(false);
@@ -138,15 +99,15 @@ const UpdateOrder = () => {
     );
 
     if (response.status === 200 && response.data.success) {
-      showAlert("Order updated successfully!", "success");
+      showAlert("Commande mise à jour avec succès!", "succès");
       navigate("/user/Orders");
     } else {
-      showAlert("Failed to update order. Please try again.", "error");
+      showAlert("Échec de la mise à jour de la commande. Veuillez réessayer.", "erreur");
       setLoading(false);
     }
   } catch (err) {
     console.error("❌ Error updating order:", err);
-    showAlert(""+ err.response.data.emessage, "error");
+    showAlert(""+ err.response.data.emessage, "erreur");
     setLoading(false);
   }
 };
