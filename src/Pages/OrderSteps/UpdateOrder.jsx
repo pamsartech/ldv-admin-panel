@@ -67,51 +67,54 @@ const UpdateOrder = () => {
   };
 
   const handleUpdate = async (e) => {
-  e.preventDefault();
-  setLoading(true);
+    e.preventDefault();
+    setLoading(true);
 
-  const { paymentStatus, shippingStatus } = orderData;
 
-  // ✅ Validation: prevent shipped/delivered if payment not paid
-  if (
-    paymentStatus !== "payé" &&
-    (shippingStatus === "expédié" || shippingStatus === "livraison")
-  ) {
-    showAlert(
-      "Vous ne pouvez marquer une commande comme Expédiée ou Livrée qu’après la confirmation du paiement.",
-      "warning"
-    );
-    setLoading(false);
-    return;
-  }
+    const { paymentStatus, shippingStatus } = orderData;
 
-  try {
-    const payload = { ...orderData };
+    // ✅ Validation: prevent shipped/delivered if payment not paid
+    if (
+      paymentStatus !== "payé" &&
+      (shippingStatus === "expédié" || shippingStatus === "livraison")
+    ) {
+      showAlert(
+        "Vous ne pouvez marquer une commande comme Expédiée ou Livrée qu’après la confirmation du paiement.",
+        "warning"
+      );
+      setLoading(false);
+      return;
+    }
 
-    const response = await axios.put(
-      `https://dev-api.payonlive.com/api/order/update-order/${existingOrder._id}`,
-      payload,
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
+    try {
+      const payload = { ...orderData };
+
+      const response = await axios.put(
+        `https://dev-api.payonlive.com/api/order/update-order/${existingOrder._id}`,
+        payload,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.status === 200 && response.data.success) {
+        showAlert("Commande mise à jour avec succès!", "succès");
+        navigate("/user/Orders");
+      } else {
+        showAlert(
+          "Échec de la mise à jour de la commande. Veuillez réessayer.",
+          "erreur"
+        );
+        setLoading(false);
       }
-    );
-
-    if (response.status === 200 && response.data.success) {
-      showAlert("Commande mise à jour avec succès!", "succès");
-      navigate("/user/Orders");
-    } else {
-      showAlert("Échec de la mise à jour de la commande. Veuillez réessayer.", "erreur");
+    } catch (err) {
+      console.error("❌ Error updating order:", err);
+      showAlert("" + err.response.data.emessage, "erreur");
       setLoading(false);
     }
-  } catch (err) {
-    console.error("❌ Error updating order:", err);
-    showAlert(""+ err.response.data.emessage, "erreur");
-    setLoading(false);
-  }
-};
-
+  };
 
   // Calculate order summary
   const summary = useMemo(() => {
@@ -228,13 +231,6 @@ const UpdateOrder = () => {
         <section className="border border-gray-400 rounded-lg p-6 overflow-x-auto">
           <div className="flex justify-between items-center border-gray-200 pb-3 mb-4">
             <h2 className="text-lg font-semibold">Articles commandés</h2>
-            {/* <button
-              type="button"
-              onClick={addProduct}
-              className="flex items-center gap-2 bg-green-600 text-white text-[12px] font-semibold px-3 py-2 rounded-lg hover:bg-green-700"
-            >
-              <FontAwesomeIcon icon={faPlus} /> Add product
-            </button> */}
           </div>
 
           {orderItems.map((item, idx) => (
@@ -242,22 +238,6 @@ const UpdateOrder = () => {
               key={idx}
               className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center py-3 border-b border-gray-400 last:border-b-0"
             >
-              {/* <div className="md:col-span-5">
-                <select
-                  required
-                  value={item.productName}
-                  onChange={(e) => handleProductChange(idx, "productName", e.target.value)}
-                  className="w-full rounded-xl border border-gray-300 px-2 py-2 text-sm"
-                >
-                  <option value="">Select product</option>
-                  <option>Travel bag</option>
-                  <option>clothes</option>
-                  <option>boots</option>
-                  <option>Asus</option>
-                  <option >Adidas shoes</option>
-                
-                </select>
-              </div> */}
               <div className="md:col-span-5">
                 <label className="block mb-1 text-sm font-medium">
                   Nom du produit
@@ -265,7 +245,7 @@ const UpdateOrder = () => {
                 <input
                   required
                   type="text"
-                   readOnly
+                  readOnly
                   value={item.productName}
                   onChange={(e) =>
                     handleProductChange(idx, "productName", e.target.value)
@@ -282,7 +262,7 @@ const UpdateOrder = () => {
                   required
                   type="number"
                   min="1"
-                   readOnly
+                  readOnly
                   value={item.quantity}
                   onChange={(e) =>
                     handleProductChange(
@@ -301,7 +281,7 @@ const UpdateOrder = () => {
                   type="number"
                   min="0.01"
                   step="0.01"
-                   readOnly
+                  readOnly
                   value={item.price}
                   onChange={(e) =>
                     handleProductChange(
@@ -346,7 +326,7 @@ const UpdateOrder = () => {
 
         {/* Payment & Shipping */}
         <section className="border border-gray-400 rounded-lg p-6 grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <div>
+          {/* <div>
             <label
               htmlFor="paymentMethod"
               className="block mb-1 text-sm font-medium text-gray-600"
@@ -354,7 +334,7 @@ const UpdateOrder = () => {
               Mode de paiement
             </label>
             <select
-              required
+              readOnly
               id="paymentMethod"
               value={orderData.paymentMethod}
               onChange={handleChange}
@@ -365,7 +345,18 @@ const UpdateOrder = () => {
               <option value="paypal">Paypal</option>
               <option value="stripe">Stripe</option>
             </select>
-          </div>
+          </div> */}
+           <div>
+                <label className="block mb-1 text-sm font-medium text-gray-600">
+                  Mode de paiement
+                </label>
+                <input
+                  type="text"
+                  readOnly
+                  value={orderData.paymentMethod}
+                  className="w-full rounded-lg border border-gray-400 px-3 py-2 text-sm "
+                />
+              </div>
           <div>
             <label
               htmlFor="paymentStatus"
@@ -374,7 +365,6 @@ const UpdateOrder = () => {
               Statut du paiement
             </label>
             <select
-              required
               id="paymentStatus"
               value={orderData.paymentStatus}
               onChange={handleChange}
@@ -386,7 +376,7 @@ const UpdateOrder = () => {
               <option value="échoué">Échoué</option>
             </select>
           </div>
-          <div>
+          {/* <div>
             <label
               htmlFor="shippingMethod"
               className="block mb-1 text-sm font-medium text-gray-600"
@@ -406,46 +396,57 @@ const UpdateOrder = () => {
               <option>Local Pickup</option>
               <option>Express</option>
             </select>
-          </div>
+          </div> */}
+           <div>
+                <label className="block mb-1 text-sm font-medium text-gray-600">
+                  Statut de livraison
+                </label>
+                <input
+                  type="text"
+                  readOnly
+                  value={orderData.shippingMethod}
+                  className="w-full rounded-lg border border-gray-400 px-3 py-2 text-sm "
+                />
+              </div>
+         
 
           <div>
-  <label
-    htmlFor="shippingStatus"
-    className="block mb-1 text-sm font-medium text-gray-600"
-  >
-    Statut de livraison
-  </label>
-  <select
-    required
-    id="shippingStatus"
-    value={orderData.shippingStatus}
-    onChange={handleChange}
-    className="w-full rounded-lg border border-gray-400 px-3 py-2 text-sm"
-  >
-    <option value="">Sélectionnez statut de la livraison</option>
-    <option value="Processing">Processing</option>
-    <option
-      value="expédié"
-      disabled={orderData.paymentStatus !== "payé"}
-    >
-      Expédié
-    </option>
-    <option
-      value="livraison"
-      disabled={orderData.paymentStatus !== "payé"}
-    >
-      Livraison
-    </option>
-  </select>
+            <label
+              htmlFor="shippingStatus"
+              className="block mb-1 text-sm font-medium text-gray-600"
+            >
+              Statut de livraison
+            </label>
+            <select
+              required
+              id="shippingStatus"
+              value={orderData.shippingStatus}
+              onChange={handleChange}
+              className="w-full rounded-lg border border-gray-400 px-3 py-2 text-sm"
+            >
+              <option value="">Sélectionnez statut de la livraison</option>
+              <option value="Processing">Processing</option>
+              <option
+                value="expédié"
+                disabled={orderData.paymentStatus !== "payé"}
+              >
+                Expédié
+              </option>
+              <option
+                value="livraison"
+                disabled={orderData.paymentStatus !== "payé"}
+              >
+                Livraison
+              </option>
+            </select>
 
-  {/* 🧩 Optional inline message */}
-  {orderData.paymentStatus !== "payé" && (
-    <p className="text-xs text-gray-500 mt-1">
-      Complete payment before marking as Shipped or Delivered.
-    </p>
-  )}
-</div>
-
+            {/* 🧩 Optional inline message */}
+            {orderData.paymentStatus !== "payé" && (
+              <p className="text-xs text-gray-500 mt-1">
+                Effectuez le paiement avant de marquer comme Expédié ou Livré.
+              </p>
+            )}
+          </div>
 
           {/* <div>
             <label

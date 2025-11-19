@@ -11,6 +11,7 @@ import { Skeleton } from "@mui/material";
 function Dashboard() {
   const [stats, setStats] = useState({
     totalSales: 0,
+    percentageChange: 0,
     pendingOrders: 0,
     totalProducts: 0,
     activeTikTokSales: 0,
@@ -43,7 +44,8 @@ function Dashboard() {
         ]);
 
         setStats({
-          totalSales: totalSalesRes.data.totalSales ?? 0,
+          totalSales: totalSalesRes.data.todaySales ?? 0,
+          percentageChange: totalSalesRes.data.percentageChange ?? 0,
           pendingOrders: pendingOrdersRes.data.pendingOrderCount ?? 0,
           totalProducts: totalProductsRes.data.totalProducts ?? 0,
           activeTikTokSales: activeTikTokRes.data.totalActiveEvents ?? 0,
@@ -129,7 +131,7 @@ function Dashboard() {
           <span className="text-gray-700">Ventes totales aujourd’hui </span>
           <p className="text-xl mt-7 font-medium">€{stats.totalSales}</p>
           <p className="text-sm mt-7 text-gray-700">
-            <span className="text-[#02B978]"> 4%</span> depuis hier
+            <span className="text-[#02B978]"> {stats.percentageChange.toFixed(2)}%</span> depuis hier
           </p>
         </div>
 

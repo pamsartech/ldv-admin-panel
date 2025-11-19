@@ -35,44 +35,43 @@ const UpdateCustomer = () => {
 
   // --- Fetch from API only ---
   useEffect(() => {
-  const fetchCustomer = async () => {
-    try {
-      const res = await axios.get(
-        `https://dev-api.payonlive.com/api/user/user-details/${customerId}`
-      );
+    const fetchCustomer = async () => {
+      try {
+        const res = await axios.get(
+          `https://dev-api.payonlive.com/api/user/user-details/${customerId}`
+        );
 
-      const user = res.data?.data?.user || {};
+        const user = res.data?.data?.user || {};
 
-      setFormData({
-        customerName: user.customerName || "",
-        email: user.email || "",
-        phone: user.phoneNumber || "",
-        dob: user.dob ? user.dob.split("T")[0] : "",
-        street: user.address?.street || "",
-        city: user.address?.city || "",
-        state: user.address?.state || "",
-        zip: user.address?.zipcode || "",
-        country: user.address?.country || "Italy",
-      });
+        setFormData({
+          customerName: user.customerName || "",
+          email: user.email || "",
+          phone: user.phoneNumber || "",
+          dob: user.dob ? user.dob.split("T")[0] : "",
+          street: user.address?.street || "",
+          city: user.address?.city || "",
+          state: user.address?.state || "",
+          zip: user.address?.zipcode || "",
+          country: user.address?.country || "Italy",
+        });
 
-      setIsActive(user.isActive ?? true);
-      setCommunicationMethod(user.communicationMethod || "email");
-      setMarketingPrefs({
-        offers: user.marketingPrefs?.offers || false,
-        newsletter: user.marketingPrefs?.newsletter || false,
-      });
+        setIsActive(user.isActive ?? true);
+        setCommunicationMethod(user.communicationMethod || "email");
+        setMarketingPrefs({
+          offers: user.marketingPrefs?.offers || false,
+          newsletter: user.marketingPrefs?.newsletter || false,
+        });
 
-      setLoading(false);
-    } catch (err) {
-      console.error("❌ Error fetching customer:", err);
-      showAlert("Échec du chargement des données client.", "erreur");
-      setLoading(false);
-    }
-  };
+        setLoading(false);
+      } catch (err) {
+        console.error("❌ Error fetching customer:", err);
+        showAlert("Échec du chargement des données client.", "erreur");
+        setLoading(false);
+      }
+    };
 
-  fetchCustomer();
-}, [customerId, showAlert]);
-
+    fetchCustomer();
+  }, [customerId, showAlert]);
 
   // --- Handle Input Change ---
   const handleChange = (e) => {
@@ -84,67 +83,73 @@ const UpdateCustomer = () => {
     setMarketingPrefs({ ...marketingPrefs, [field]: !marketingPrefs[field] });
   };
 
-
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  setBtnLoading(true);
+    e.preventDefault();
+    setBtnLoading(true);
 
-  // ✅ Basic validation before API call
-  if (
-    !formData.customerName ||
-    !formData.email ||
-    !formData.phone ||
-    !formData.street
-  ) {
-    showAlert("Veuillez remplir tous les champs obligatoires..", "erreur");
-    setBtnLoading(false); // Stop spinner if validation fails
-    return;
-  }
-
-   const payload = {
-       customerName: formData.customerName,
-       email: formData.email,
-       phoneNumber: formData.phone,
-       dob: formData.dob,
-       address: {
-         street: formData.street,
-         city: formData.city,
-         state: formData.state,
-         zipcode: formData.zip,
-         country: formData.country,
-       },
-      isActive,
-       communicationMethod,
-     };
-
-  try {
-    const res = await axios.put(
-      `https://dev-api.payonlive.com/api/user/update-customer/${customerId}`,
-      payload,
-      { headers: { "Content-Type": "application/json" } }
-    );
-
-    console.log("✅ Customer updated:", res.data);
-
-    if (res.data?.success || res.status === 200) {
-      showAlert("Client mis à jour avec succès !", "succès");
-      navigate("/user/Customers");
-    } else {
-      showAlert("Échec de la mise à jour du client. Veuillez réessayer.", "erreur");
+    // ✅ Basic validation before API call
+    if (
+      !formData.customerName ||
+      !formData.email ||
+      !formData.phone ||
+      !formData.street
+    ) {
+      showAlert("Veuillez remplir tous les champs obligatoires.", "info");
+      setBtnLoading(false); // Stop spinner if validation fails
+      return;
     }
-  } catch (err) {
-    console.error("❌ Error updating customer:", err.response?.data || err.message);
-    showAlert("Erreur serveur. Veuillez réessayer.", "erreur");
-  } finally {
-    // ✅ Always stop spinner no matter what
-    setBtnLoading(false);
-  }
-};
 
+    const payload = {
+      customerName: formData.customerName,
+      email: formData.email,
+      phoneNumber: formData.phone,
+      dob: formData.dob,
+      address: {
+        street: formData.street,
+        city: formData.city,
+        state: formData.state,
+        zipcode: formData.zip,
+        country: formData.country,
+      },
+      isActive,
+      communicationMethod,
+    };
+
+    try {
+      const res = await axios.put(
+        `https://dev-api.payonlive.com/api/user/update-customer/${customerId}`,
+        payload,
+        { headers: { "Content-Type": "application/json" } }
+      );
+
+      console.log("✅ Customer updated:", res.data);
+
+      if (res.data?.success || res.status === 200) {
+        showAlert("Client mis à jour avec succès !", "succès");
+        navigate("/user/Customers");
+      } else {
+        showAlert(
+          "Échec de la mise à jour du client. Veuillez réessayer.",
+          "erreur"
+        );
+      }
+    } catch (err) {
+      console.error(
+        "❌ Error updating customer:",
+        err.response?.data || err.message
+      );
+      showAlert("Erreur serveur. Veuillez réessayer.", "erreur");
+    } finally {
+      // ✅ Always stop spinner no matter what
+      setBtnLoading(false);
+    }
+  };
 
   if (loading)
     return (
-      <p className="p-4 text-gray-600 animate-pulse">Chargement des données client...</p>
+      <p className="p-4 text-gray-600 animate-pulse">
+        Chargement des données client...
+      </p>
     );
 
   return (
@@ -153,7 +158,9 @@ const UpdateCustomer = () => {
 
       {/* Header */}
       <div className="flex justify-between mt-5 mx-10">
-        <h1 className="font-medium text-lg">Mise à jour des informations client</h1>
+        <h1 className="font-medium text-lg">
+          Mise à jour des informations client
+        </h1>
         <button
           onClick={() => navigate("/user/Customers")}
           className="px-3 py-1 border border-red-700 text-red-700 bg-red-50 rounded-md hover:bg-gray-100"
@@ -169,6 +176,7 @@ const UpdateCustomer = () => {
 
       {/* Form */}
       <form
+        noValidate
         onSubmit={handleSubmit}
         className="max-w-6xl mx-6 p-6 space-y-8 font-sans text-gray-700"
       >

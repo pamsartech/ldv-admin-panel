@@ -257,7 +257,7 @@ export default function UpdatePayment() {
               id="paymentStatus"
               value={paymentData.paymentStatus}
               onChange={handleChange}
-              options={["en-attente", "payé", "expédié"]}
+              options={["enattente", "payé", "expédié"]}
             />
             {/* <SelectField
              disabled
