@@ -680,17 +680,17 @@ export default function OrdersDataTable({ onSelectionChange }) {
 
       {/* ✅ Confirmation Modal */}
       <Dialog open={confirmOpen} onClose={handleCloseConfirm}>
-        <DialogTitle>Confirm Bulk Delete</DialogTitle>
+        <DialogTitle>Confirmer Suppression En Masse</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to delete{" "}
-            <strong>{selectedRows.length}</strong> selected orders? This action
+            Êtes-vous sûr de vouloir supprimer{" "}
+            <strong>{selectedRows.length}</strong> commandes sélectionnés? This action
             cannot be undone.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseConfirm} color="primary">
-            Cancel
+            Annuler
           </Button>
           <Button
             onClick={handleBulkDelete}
@@ -701,7 +701,7 @@ export default function OrdersDataTable({ onSelectionChange }) {
             {deleting ? (
               <CircularProgress size={18} color="inherit" />
             ) : (
-              "Delete"
+              "Supprimer"
             )}
           </Button>
         </DialogActions>

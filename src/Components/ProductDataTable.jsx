@@ -719,16 +719,16 @@ export default function ProductTable({ onSelectionChange }) {
         onClose={handleCloseConfirm}
         aria-labelledby="confirm-delete-title"
       >
-        <DialogTitle id="confirm-delete-title">Confirm Bulk Delete</DialogTitle>
+        <DialogTitle id="confirm-delete-title">Confirmer Suppression En Masse</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to delete <strong>{selected.length}</strong>{" "}
-            selected product(s)? This action cannot be undone.
+            Êtes-vous sûr de vouloir supprimer <strong>{selected.length}</strong>{" "}
+            produit sélectionné(s)? Cette action est irréversible.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseConfirm} color="inherit">
-            Cancel
+             Annuler
           </Button>
           <Button
             onClick={handleBulkDelete}
@@ -739,7 +739,7 @@ export default function ProductTable({ onSelectionChange }) {
             {deleteLoading ? (
               <CircularProgress size={20} color="inherit" />
             ) : (
-              "Delete"
+              "Supprimer"
             )}
           </Button>
         </DialogActions>

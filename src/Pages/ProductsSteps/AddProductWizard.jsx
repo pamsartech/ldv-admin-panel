@@ -79,7 +79,7 @@ export default function AddProductWizard() {
         { withCredentials: true }
       );
 
-      showAlert(" Product created successfully!", "success");
+      showAlert(" Produit créé avec succès !", "succès");
       navigate("/user/Products");
     } catch (err) {
       console.error("Backend error:", err.response?.data);

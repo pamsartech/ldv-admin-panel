@@ -33,7 +33,7 @@ export default function CreatePayment() {
   // 🔹 Auto-fill function (fetch order details)
   const handleFetchOrderDetails = async () => {
     if (!orderID.trim()) {
-      showAlert("Please enter an Order ID first.", "error");
+      showAlert("Veuillez d'abord saisir un ID commande.", "Erreur");
       return;
     }
 
@@ -47,7 +47,7 @@ export default function CreatePayment() {
       console.log("📦 Order details fetched:", data);
 
       if (!data) {
-        showAlert("No order found for this ID.", "error");
+        showAlert("Aucune commande trouvée pour cet id.", "Erreur");
         return;
       }
 
@@ -77,13 +77,13 @@ export default function CreatePayment() {
       //   );
       // }
 
-      showAlert("Order details loaded successfully!", "success");
+      showAlert("Détails de la commande chargés avec succès !", "succès");
     } catch (err) {
       console.error(
         "❌ Error fetching order details:",
         err.response?.data || err
       );
-      showAlert("Order not found or failed to fetch details.", "error");
+      showAlert("Commande introuvable ou échec de la récupération des détails.", "erreur");
     } finally {
       setFetching(false);
     }
@@ -95,7 +95,7 @@ export default function CreatePayment() {
     setLoading(true);
 
     if (!orderID || !amount || !paymentMethod || !date) {
-      showAlert("Please fill in all required fields.", "error");
+      showAlert("Veuillez remplir tous les champs obligatoires.", "erreur");
       setLoading(false);
       return;
     }
@@ -105,7 +105,7 @@ export default function CreatePayment() {
       paymentStatus !== "payé"
     ) {
       showAlert(
-        "When delivery status is 'Delivered' or 'Shipped', payment status must be 'Paid'.",
+        "Lorsque le statut de livraison est 'Livré' ou 'Expédié', le statut du paiement devrait être 'Payé'.",
         "warning"
       );
       setLoading(false);
@@ -133,16 +133,16 @@ export default function CreatePayment() {
 
       if (res.data?.success || res.status === 200) {
         showAlert(
-           "Payment created successfully!",
-          "success"
+           "Paiement effectué avec succès !",
+          "succès"
         );
         navigate("/user/Payments");
       } else {
-        showAlert("Failed to create payment. Please try again.", "error");
+        showAlert("Échec de la création du paiement. Veuillez réessayer..", "erreur");
       }
     } catch (err) {
       console.error("❌ Error creating payment:", err.response?.data || err);
-      showAlert("Server error. Please try again.", "error");
+      showAlert("Erreur serveur. Veuillez réessayer..", "erreur");
     } finally {
       setLoading(false);
     }

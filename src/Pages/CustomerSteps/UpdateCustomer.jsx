@@ -65,7 +65,7 @@ const UpdateCustomer = () => {
       setLoading(false);
     } catch (err) {
       console.error("❌ Error fetching customer:", err);
-      showAlert("Failed to load customer data.", "error");
+      showAlert("Échec du chargement des données client.", "erreur");
       setLoading(false);
     }
   };
@@ -84,43 +84,6 @@ const UpdateCustomer = () => {
     setMarketingPrefs({ ...marketingPrefs, [field]: !marketingPrefs[field] });
   };
 
-  // --- Handle Form Submit ---
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-  //   setBtnLoading(true);
-
-  //   const payload = {
-  //     customerName: formData.customerName,
-  //     email: formData.email,
-  //     phoneNumber: formData.phone,
-  //     dob: formData.dob,
-  //     address: {
-  //       street: formData.street,
-  //       city: formData.city,
-  //       state: formData.state,
-  //       zipcode: formData.zip,
-  //       country: formData.country,
-  //     },
-  //     isActive,
-  //     communicationMethod,
-  //   };
-
-  //   try {
-  //     const res = await axios.put(
-  //       `https://dev-api.payonlive.com/api/user/update-customer/${customerId}`,
-  //       payload
-  //     );
-
-  //     console.log("✅ Customer updated:", res.data);
-  //     showAlert("Customer updated successfully!", "success");
-  //     navigate("/user/Customers");
-  //   } catch (err) {
-  //     console.error("❌ Error updating customer:", err);
-  //     showAlert("Failed to update customer. Please try again.", "error");
-  //   } finally {
-  //     setBtnLoading(false);
-  //   }
-  // };
 
   const handleSubmit = async (e) => {
   e.preventDefault();
@@ -133,7 +96,7 @@ const UpdateCustomer = () => {
     !formData.phone ||
     !formData.street
   ) {
-    showAlert("Please fill in all required fields.", "error");
+    showAlert("Veuillez remplir tous les champs obligatoires..", "erreur");
     setBtnLoading(false); // Stop spinner if validation fails
     return;
   }
@@ -164,14 +127,14 @@ const UpdateCustomer = () => {
     console.log("✅ Customer updated:", res.data);
 
     if (res.data?.success || res.status === 200) {
-      showAlert("Customer updated successfully!", "success");
+      showAlert("Client mis à jour avec succès !", "succès");
       navigate("/user/Customers");
     } else {
-      showAlert("Failed to update customer. Please try again.", "error");
+      showAlert("Échec de la mise à jour du client. Veuillez réessayer.", "erreur");
     }
   } catch (err) {
     console.error("❌ Error updating customer:", err.response?.data || err.message);
-    showAlert("Server error. Please try again.", "error");
+    showAlert("Erreur serveur. Veuillez réessayer.", "erreur");
   } finally {
     // ✅ Always stop spinner no matter what
     setBtnLoading(false);
@@ -181,7 +144,7 @@ const UpdateCustomer = () => {
 
   if (loading)
     return (
-      <p className="p-4 text-gray-600 animate-pulse">Loading customer data...</p>
+      <p className="p-4 text-gray-600 animate-pulse">Chargement des données client...</p>
     );
 
   return (

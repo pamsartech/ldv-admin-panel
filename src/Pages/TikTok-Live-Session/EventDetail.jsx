@@ -56,7 +56,7 @@ export default function EventDetail() {
 
   useEffect(() => {
     if (!eventId) {
-      setError("Event ID is missing in the URL.");
+      setError("Identifiant de événement est absent de URL.");
       setLoading(false);
       return;
     }
@@ -69,7 +69,7 @@ export default function EventDetail() {
         if (response.data.success && response.data.data) {
           setEvent(response.data.data);
         } else {
-          setError(response.data.message || "Failed to fetch event.");
+          setError(response.data.message || "Impossible de récupérer l'événement.");
         }
       } catch (err) {
         setError(err.response?.data?.message || err.message);
@@ -107,13 +107,13 @@ export default function EventDetail() {
       );
 
       if (response.data.success) {
-        showAlert("Event deleted successfully!", "success");
+        showAlert("Événement supprimé avec succès !", "Succès");
         navigate("/user/tiktok");
       } else {
-        showAlert(response.data.message || "Failed to delete product", "info");
+        showAlert(response.data.message || "L'élimination du produit a échoué", "info");
       }
     } catch (error) {
-      showAlert(`Error: ${error.response?.data?.message || error.message}`, "error");
+      showAlert(`Error: ${error.response?.data?.message || error.message}`, "Erreur");
     } finally {
       setIsDeleting(false);
       setOpenConfirm(false); // close confirmation dialog
@@ -299,17 +299,16 @@ export default function EventDetail() {
         aria-describedby="confirm-delete-description"
       >
         <DialogTitle id="confirm-delete-title">
-          {"Confirm Event Deletion"}
+          {"Confirmateur Événement Supprimer"}
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="confirm-delete-description">
-            Are you sure you want to permanently delete this event? This
-            action cannot be undone.
+             Êtes-vous sûr de vouloir annuler définitivement ce événement? Cette action est irréversible.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenConfirm(false)} color="primary">
-            Cancel
+            Annuler
           </Button>
           <Button
             onClick={handleDelete}
@@ -317,7 +316,7 @@ export default function EventDetail() {
             variant="contained"
             disabled={isDeleting}
           >
-            {isDeleting ? "Deleting..." : "Delete"}
+            {isDeleting ? "Supprimer..." : "Supprimer"}
           </Button>
         </DialogActions>
       </Dialog>

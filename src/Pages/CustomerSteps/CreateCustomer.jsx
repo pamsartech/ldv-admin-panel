@@ -39,44 +39,44 @@ const CreateCustomer = () => {
 
     switch (name) {
       case "customerName":
-        if (!value.trim()) error = "Name is required";
-        else if (value.length < 2) error = "Name must be at least 2 characters";
+        if (!value.trim()) error = "Le nom est requis.";
+        else if (value.length < 2) error = "Le nom doit comporter au moins 2 caractères.";
         break;
 
       case "email":
-        if (!value.trim()) error = "Email is required";
+        if (!value.trim()) error = "E-mail est requise.";
         else if (!/^\S+@\S+\.\S+$/.test(value))
-          error = "Please enter a valid email address";
+          error = "S'il vous plaît, mettez une adresse email valide";
         break;
 
       case "phoneNumber":
-        if (!value.trim()) error = "Phone number is required";
+        if (!value.trim()) error = "Numéro de téléphone est requise.";
         else if (!/^\d{9,15}$/.test(value))
-          error = "Phone number must be 9–15 digits";
+          error = "Le numéro de téléphone doit comporter entre 9 et 15 chiffres.";
         break;
 
       case "password":
-        if (!value.trim()) error = "Password is required";
+        if (!value.trim()) error = "mot de passe est requis.";
         else if (value.length < 6)
-          error = "Password must be at least 6 characters";
+          error = "Le mot de passe doit comporter au moins 6 caractères.";
         break;
 
       case "city":
-        if (!value.trim()) error = "City is required";
+        if (!value.trim()) error = "Ville est requise";
         break;
       case "street":
-        if (!value.trim()) error = "Street address is required";
+        if (!value.trim()) error = "Adresse est requise.";
         break;
       case "state":
-        if (!value.trim()) error = "State is required";
+        if (!value.trim()) error = "État est requise.";
         break;
       case "zipcode":
-        if (!value.trim()) error = "Zip code is required";
+        if (!value.trim()) error = "Code postal  est requise.";
         else if (!/^\d{5,6}$/.test(value.trim()))
-          error = "Zip code must be 5 or 6 digits";
+          error = "Code postal doit contenir 5 ou 6 chiffres";
         break;
       case "country":
-        if (!value.trim()) error = "Please select the Country";
+        if (!value.trim()) error = "Veuillez sélectionner le pays";
         break;
 
       default:
@@ -127,23 +127,12 @@ const CreateCustomer = () => {
     e.preventDefault();
 
     if (!validateForm()) {
-      showAlert("Please fill the all input feilds.", "info");
+      showAlert("Veuillez remplir tous les champs de saisie.", "info");
       return;
     }
 
     setLoading(true);
 
-    // // ✅ Basic validation (optional)
-    // if (
-    //   !formData.customerName ||
-    //   !formData.email ||
-    //   !formData.phoneNumber ||
-    //   !formData.password
-    // ) {
-    //   showAlert("Please fill in all required fields.", "error");
-    //   setLoading(false); // stop spinner if validation fails
-    //   return;
-    // }
 
     // ✅ Construct payload
     const payload = {
@@ -173,13 +162,21 @@ const CreateCustomer = () => {
       console.log("✅ Customer created:", res.data);
 
       if (res.data?.success || res.status === 200) {
-        showAlert("Customer created successfully!", "success");
+        showAlert("Client créé avec succès !", "succès");
         navigate("/user/Customers");
       } else {
-        showAlert("Failed to create customer. Please try again.", "error");
+        showAlert("La création du client a échoué. Veuillez réessayer..", "erreur");
       }
-    } catch (err) {
-     showAlert(""+err.response.data.error, "info")
+    } catch (error) {
+      console.error("Error fetching product:", error);
+
+      const message =
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        error?.message ||
+        "Échec de la récupération des détails du produit.";
+
+      showAlert(message, "error");
     } finally {
       // ✅ Always stop spinner no matter what
       setLoading(false);
@@ -202,7 +199,7 @@ const CreateCustomer = () => {
             size="lg"
             className="text-red-700 px-2"
           />
-          Discard
+          Jeter
         </button>
       </div>
 

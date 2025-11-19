@@ -16,6 +16,8 @@ function AddProductStep3({ formData, setFormData, prevStep, handleSubmit }) {
   const [loading, setLoading] = useState(false);
   const [previews, setPreviews] = useState([null, null, null, null]);
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [error, setError] = useState("");
+
 
   // 🧩 Load existing images from formData when returning to this step
   useEffect(() => {
@@ -84,20 +86,57 @@ function AddProductStep3({ formData, setFormData, prevStep, handleSubmit }) {
   };
 
   // 🧩 Submit with image validation
+  // const onSubmit = async (e) => {
+  //   e.preventDefault();
+
+  //   const validImages = (formData.images || []).filter((img) => img instanceof File);
+  //   if (validImages.length === 0) {
+  //     alert("Veuillez télécharger au moins une image avant de soumettre."); // simple validation alert
+  //     return;
+  //   }
+
+  //   setLoading(true);
+  //   try {
+  //     await handleSubmit();
+  //   } catch (error) {
+  //     console.error("Error submitting:", error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
   const onSubmit = async (e) => {
     e.preventDefault();
 
-    const validImages = (formData.images || []).filter((img) => img instanceof File);
-    if (validImages.length === 0) {
-      alert("Veuillez télécharger au moins une image avant de soumettre."); // simple validation alert
+    const files = (formData.images || []).filter(Boolean);
+
+    if (files.length === 0) {
+      setError("Veuillez télécharger au moins une image.");
+      return;
+    }
+    if (files.length > 4) {
+      setError("Maximum 4 images autorisées.");
       return;
     }
 
+    for (let f of files) {
+      if (!(f instanceof File)) continue;
+
+      if (f.size > 5 * 1024 * 1024) {
+        setError("Chaque image doit être inférieure à 5MB.");
+        return;
+      }
+
+      if (!["image/png", "image/jpeg", "image/jpg"].includes(f.type)) {
+        setError("Seuls les formats PNG ou JPG sont acceptés.");
+        return;
+      }
+    }
+
+    setError("");
     setLoading(true);
+
     try {
       await handleSubmit();
-    } catch (error) {
-      console.error("Error submitting:", error);
     } finally {
       setLoading(false);
     }
@@ -182,7 +221,10 @@ function AddProductStep3({ formData, setFormData, prevStep, handleSubmit }) {
                         onClick={() => handleSelectMain(index)}
                       />
                     ) : (
-                      <FontAwesomeIcon icon={faPlus} className="text-gray-600" />
+                      <FontAwesomeIcon
+                        icon={faPlus}
+                        className="text-gray-600"
+                      />
                     )}
                   </label>
                   <input
@@ -217,6 +259,8 @@ function AddProductStep3({ formData, setFormData, prevStep, handleSubmit }) {
             doit pas dépasser 5 Mb.
           </h6>
         </div>
+        {error && <p className="text-red-600 text-sm mt-2 text-center">{error}</p>}
+
 
         {/* navigation */}
         <div className="flex justify-between max-w-lg mx-auto mt-6">

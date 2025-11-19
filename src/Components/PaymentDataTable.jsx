@@ -447,18 +447,17 @@ export default function PaymentDataTable({ onSelectionChange }) {
           aria-labelledby="confirm-delete-title"
         >
           <DialogTitle id="confirm-delete-title">
-            Confirm Bulk Delete
+            Confirmer Suppression En Masse
           </DialogTitle>
           <DialogContent>
             <DialogContentText>
-              Are you sure you want to delete{" "}
-              <strong>{selectedRows.length}</strong> selected payment(s)? This
-              action cannot be undone.
+              Êtes-vous sûr de vouloir supprimer{" "}
+              <strong>{selectedRows.length}</strong> paiement sélectionné(s)? Cette action est irréversible.
             </DialogContentText>
           </DialogContent>
           <DialogActions>
             <Button onClick={handleCloseConfirm} color="inherit">
-              Cancel
+              Annuler
             </Button>
             <Button
               onClick={handleBulkDelete}
@@ -469,7 +468,7 @@ export default function PaymentDataTable({ onSelectionChange }) {
               {deleting ? (
                 <CircularProgress size={20} color="inherit" />
               ) : (
-                "Delete"
+                "Supprimer"
               )}
             </Button>
           </DialogActions>

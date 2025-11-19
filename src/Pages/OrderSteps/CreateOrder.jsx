@@ -1,5 +1,4 @@
 // --- existing imports ---
-// --- existing imports ---
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../Components/Navbar";
@@ -78,35 +77,37 @@ const CreateOrder = () => {
     const newErrors = {};
 
     if (!customerName.trim())
-      newErrors.customerName = "Customer name is required.";
-    if (!email.trim()) newErrors.email = "Email is required.";
+      newErrors.customerName = "Le nom du client est requis.";
+    if (!email.trim()) newErrors.email = "E-mail est requis.";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
-      newErrors.email = "Please enter a valid email.";
+      newErrors.email = "Veuillez entrer une adresse e-mail valide.";
 
     if (!phoneNumber.trim())
-      newErrors.phoneNumber = "Phone number is required.";
+      newErrors.phoneNumber = "Le numéro de téléphone est requis.";
     else if (!/^\d{9,15}$/.test(phoneNumber))
-      newErrors.phoneNumber = "Phone number must be 9–15 digits.";
+      newErrors.phoneNumber =
+        "Le numéro de téléphone doit contenir entre 9 et 15 chiffres.";
 
-    if (!address.trim()) newErrors.address = "Shipping address is required.";
+    if (!address.trim())
+      newErrors.address = "L’adresse de livraison est requise.";
 
     if (!paymentMethod.trim())
-      newErrors.paymentMethod = "Select a payment method.";
+      newErrors.paymentMethod = "Veuillez sélectionner un mode de paiement.";
     if (!paymentStatus.trim())
-      newErrors.paymentStatus = "Select a payment status.";
+      newErrors.paymentStatus = "Veuillez sélectionner un statut de paiement.";
     if (!shippingMethod.trim())
-      newErrors.shippingMethod = "Select a shipping method.";
+      newErrors.shippingMethod = "Choisissez un mode de livraison.";
     if (!shippingStatus.trim())
-      newErrors.shippingStatus = "Select a shipping status.";
+      newErrors.shippingStatus = "Sélectionnez un statut d'expédition.";
 
     // Validate order items
     orderItems.forEach((item, idx) => {
       if (!item.productName.trim())
-        newErrors[`product_${idx}`] = `Product code is required`;
+        newErrors[`product_${idx}`] = `Le code produit est requis.`;
       if (item.price <= 0)
-        newErrors[`price_${idx}`] = `Price must be greater than 0 for item ${
-          idx + 1
-        }`;
+        newErrors[
+          `price_${idx}`
+        ] = `Le prix de l'article doit être supérieur à 0 ${idx + 1}`;
     });
 
     setErrors(newErrors);
@@ -144,7 +145,10 @@ const CreateOrder = () => {
         }
         setUserExists(true);
         setUserChecked(true);
-        showAlert("User details loaded successfully!", "success");
+        showAlert(
+          "Informations de l’utilisateur chargées avec succès !",
+          "succès"
+        );
       } else {
         // ✅ User not found (no crash)
         console.warn("⚠️ User not found:", res.data);
@@ -154,8 +158,8 @@ const CreateOrder = () => {
         setphoneNumber("");
         setAddress("");
         showAlert(
-          "User does not exist. Please create the user first.",
-          "warning"
+          "L’utilisateur n’existe pas. Veuillez d’abord créer l’utilisateur.",
+          "info"
         );
       }
     } catch (error) {
@@ -171,11 +175,14 @@ const CreateOrder = () => {
       // Show warning instead of error for user not found
       if (error.response && error.response.status === 404) {
         showAlert(
-          "User does not exist. Please create the user first.",
+          "L’utilisateur n’existe pas. Veuillez d’abord créer l’utilisateur..",
           "warning"
         );
       } else {
-        showAlert("Error fetching user details. Please try again.", "error");
+        showAlert(
+          "Erreur lors de la récupération des détails de l’utilisateur. Veuillez réessayer.",
+          "erreur"
+        );
       }
     } finally {
       setLoading(false);
@@ -201,7 +208,7 @@ const CreateOrder = () => {
       (shippingStatus === "expédié" || shippingStatus === "livraison")
     ) {
       showAlert(
-        "You can only mark an order as Shipped or Delivered after payment is completed.",
+        "Vous pouvez uniquement marquer une commande comme Expédiée ou Livrée une fois le paiement effectué.",
         "warning"
       );
       setLoading(false);
@@ -240,10 +247,13 @@ const CreateOrder = () => {
       );
 
       if (res.data.success) {
-        showAlert("Order created successfully!", "success");
+        showAlert("Commande créée avec succès!", "succès");
         navigate("/user/Orders");
       } else {
-        showAlert(res.data?.message || "Failed to create order.", "error");
+        showAlert(
+          res.data?.message || "Échec de la création de la commande..",
+          "erreur"
+        );
       }
     } catch (error) {
       console.error("❌ Server Error:", error);
@@ -252,9 +262,9 @@ const CreateOrder = () => {
         error?.response?.data?.message ||
         error?.response?.data?.error ||
         error?.message ||
-        "Failed to fetch product details.";
+        "Échec de la récupération des détails du produit.";
 
-      showAlert(message, "error");
+      showAlert(message, "erreur");
     } finally {
       setLoading(false);
     }
@@ -273,7 +283,10 @@ const CreateOrder = () => {
       const product = res.data.data;
 
       if (product.status !== "actif") {
-        showAlert(`Product "${product.productName}" is out of stock.`, "error");
+        showAlert(
+          `Produit "${product.productName}" est en rupture de stock.`,
+          "erreur"
+        );
         code("");
         return;
       }
@@ -330,12 +343,12 @@ const CreateOrder = () => {
       setOrderItems(newItems);
     } catch (error) {
       console.error("Error fetching product:", error);
-      // showAlert("" + error.response.data.message, "info");
+
       const message =
         error?.response?.data?.message ||
         error?.response?.data?.error ||
         error?.message ||
-        "Failed to fetch product details.";
+        "Échec de la récupération des détails du produit.";
 
       showAlert(message, "error");
     }

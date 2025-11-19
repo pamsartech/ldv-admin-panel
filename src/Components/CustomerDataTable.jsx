@@ -435,16 +435,15 @@ export default function CustomersTable({ onSelectionChange }) {
 
       {/* ✅ Confirmation Modal */}
       <Dialog open={confirmOpen} onClose={handleCloseConfirm}>
-        <DialogTitle>Confirm Bulk Delete</DialogTitle>
+        <DialogTitle>Confirmer Suppression En Masse</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to delete{" "}
-            <strong>{selectedRows.length}</strong> selected customers? This
-            action cannot be undone.
+            Êtes-vous sûr de vouloir supprimer{" "}
+            <strong>{selectedRows.length}</strong> clients sélectionnés? Cette action est irréversible.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseConfirm}>Cancel</Button>
+          <Button onClick={handleCloseConfirm}>Annuler</Button>
           <Button
             onClick={handleBulkDelete}
             color="error"
@@ -454,7 +453,7 @@ export default function CustomersTable({ onSelectionChange }) {
             {deleting ? (
               <CircularProgress size={18} color="inherit" />
             ) : (
-              "Delete"
+              "Supprimer"
             )}
           </Button>
         </DialogActions>

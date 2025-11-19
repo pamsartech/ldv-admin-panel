@@ -415,17 +415,16 @@ const ViewProduct = () => {
         aria-describedby="confirm-delete-description"
       >
         <DialogTitle id="confirm-delete-title">
-          {"Confirm Product Deletion"}
+          {"Confirmateur Produit Supprimer"}
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="confirm-delete-description">
-            Are you sure you want to permanently delete this product? This
-            action cannot be undone.
+            Êtes-vous sûr de vouloir supprimer définitivement ce produit? Cette action est irréversible.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenConfirm(false)} color="primary">
-            Cancel
+            Annuler
           </Button>
           <Button
             onClick={handleDelete}
@@ -433,7 +432,7 @@ const ViewProduct = () => {
             variant="contained"
             disabled={isDeleting}
           >
-            {isDeleting ? "Deleting..." : "Delete"}
+            {isDeleting ? "Supprimer..." : "Supprimer"}
           </Button>
         </DialogActions>
       </Dialog>

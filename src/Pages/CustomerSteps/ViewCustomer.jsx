@@ -43,7 +43,7 @@ const STATUS_STYLES = {
   },
   general: {
     actif: "text-green-700 bg-green-100 border-green-700",
-    inactif: "text-gray-600 bg-gray-100 border-gray-600",
+    inactif: "text-red-600 bg-red-100 border-red-600",
   },
 };
 
@@ -128,9 +128,9 @@ const ViewCustomer = () => {
 
       if (response.data?.success) {
         showAlert(
-          `Customer has been ${
-            currentlyBlocked ? "unblocked" : "blocked"
-          } successfully!`, "success"
+          `Le client était ${
+            currentlyBlocked ? "débloqué" : "bloquée"
+          } avec succès!`, "succès"
         );
         // Refresh UI immediately
         setCustomer((prev) => ({
@@ -138,7 +138,7 @@ const ViewCustomer = () => {
           status: currentlyBlocked ? "Actif" : "Inactif",
         }));
       } else {
-        showAlert(response.data?.message || "Failed to update block status.", "info");
+        showAlert(response.data?.message || "Impossible de mettre à jour l'état du bloc.", "info");
       }
     } catch (error) {
       showAlert(error.response?.data?.message || error.message,"info");
@@ -215,16 +215,16 @@ const ViewCustomer = () => {
         `https://dev-api.payonlive.com/api/user/delete-customer/${customerId}`
       );
       if (response.status === 200) {
-        showAlert("Customer deleted successfully!", "success");
+        showAlert("Le client a supprimé avec succès!", "succès");
         navigate("/user/Customers");
       } else
         showAlert(
-          `Failed to delete customer: ${
+          `La suppression du client a échoué: ${
             response.data.message || "Unknown error"
           }`, "info"
         );
     } catch (err) {
-      showAlert(`Error: ${err.response?.data?.message || err.message}`, "info");
+      showAlert(`Error: ${err.response?.data?.message || err.message}`, "erreur");
     } finally {
       setIsDeleting(false);
       setOpenConfirm(false); // close confirmation dialog
@@ -298,17 +298,16 @@ const ViewCustomer = () => {
         aria-describedby="confirm-delete-description"
       >
         <DialogTitle id="confirm-delete-title">
-          {"Confirm Customer Deletion"}
+          {"Confirmateur Client Supprimer"}
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="confirm-delete-description">
-            Are you sure you want to permanently delete this customer? This
-            action cannot be undone.
+          Êtes-vous sûr de vouloir supprimer définitivement ce client?  Cette action est irréversible.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenConfirm(false)} color="primary">
-            Cancel
+            Annuler
           </Button>
           <Button
             onClick={handleDeleteCustomer}
@@ -316,7 +315,7 @@ const ViewCustomer = () => {
             variant="contained"
             disabled={isDeleting}
           >
-            {isDeleting ? "Deleting..." : "Delete"}
+            {isDeleting ? "Supprimer..." : "Supprimer"}
           </Button>
         </DialogActions>
       </Dialog>

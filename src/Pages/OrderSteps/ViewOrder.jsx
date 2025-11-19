@@ -46,7 +46,7 @@ export default function ViewOrder() {
   // Fetch order details
   useEffect(() => {
     if (!orderId) {
-      setError("Order ID is missing in the URL.");
+      setError("L’ID de la commande est manquant dans l’URL.");
       setLoading(false);
       return;
     }
@@ -60,11 +60,11 @@ export default function ViewOrder() {
           setOrder(response.data.data);
           setOrderStatus(response.data.data.shippingStatus || "En-attente");
         } else {
-          setError(response.data.message || "Failed to fetch order.");
+          setError(response.data.message || "Échec de la récupération de la commande.");
         }
       } catch (err) {
         setError(
-          err.response?.data?.message || err.message || "Something went wrong."
+          err.response?.data?.message || err.message || "Quelque chose a mal fonctionné."
         );
       } finally {
         setLoading(false);
@@ -78,7 +78,7 @@ export default function ViewOrder() {
   const handleCopy = (text, label = "copied") => {
     if (!text) return;
     navigator.clipboard.writeText(text);
-    showAlert(`${label} Copied successfully to clipboard!`, "success");
+    showAlert(`${label} Copié avec succès dans le presse-papier!`, "succès");
   };
 
 
@@ -214,17 +214,16 @@ export default function ViewOrder() {
         aria-describedby="confirm-delete-description"
       >
         <DialogTitle id="confirm-delete-title">
-          {"Confirm Order Deletion"}
+          {"Confirmateur Commande Supprimer"}
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="confirm-delete-description">
-            Are you sure you want to permanently delete this order? This
-            action cannot be undone.
+             Êtes-vous sûr de vouloir supprimer définitivement ce commande?  Cette action est irréversible.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenConfirm(false)} color="primary">
-            Cancel
+            Annuler
           </Button>
           <Button
             onClick={handleDelete}
@@ -232,7 +231,7 @@ export default function ViewOrder() {
             variant="contained"
             disabled={isDeleting}
           >
-            {isDeleting ? "Deleting..." : "Delete"}
+            {isDeleting ? "Supprimer..." : "Supprimer"}
           </Button>
         </DialogActions>
       </Dialog>
