@@ -484,7 +484,7 @@ const ViewCustomer = () => {
                             type="delivery"
                           />
                         </td>
-                        <td className="py-2 px-3">{price}</td>
+                        <td className="py-2 px-3">€ {price.toFixed(2)}</td>
                         <td className="py-2 px-3">
                           <button
                             onClick={() => handleCancelOrder(id)}

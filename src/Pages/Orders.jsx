@@ -72,6 +72,7 @@ function Orders() {
       document.body.appendChild(link);
       link.click();
       link.remove();
+      showAlert("Commandes exportées avec succès", "succès")
     } catch (error) {
       console.error("❌ Error exporting orders:", error);
       if (error.response) {
@@ -92,7 +93,7 @@ function Orders() {
     const allowed = [".xlsx", ".xls", ".csv"];
     const ext = file.name.slice(file.name.lastIndexOf(".")).toLowerCase();
     if (!allowed.includes(ext)) {
-      alert("Please upload an .xlsx, .xls or .csv file");
+      alert("Veuillez télécharger un fichier .xlsx, .xls ou .csv");
       e.target.value = "";
       return;
     }
@@ -136,14 +137,14 @@ function Orders() {
         setImportResult(response.data);
         // show success toast / message
         showAlert(
-          `Import completed: ${response.data.successCount} successes, ${response.data.failedCount} failed.`,"success"
+          `Importation terminée: ${response.data.successCount} succès, ${response.data.failedCount} échoué.`,"succès"
         );
       } else {
         showAlert(""+ response.data?.message, "info")
         setImportError(
-          response.data?.message || "Import failed - unknown response"
+          response.data?.message || "Échec de l'importation - réponse inconnue"
         );
-        console.warn("Import returned false success flag:", response.data);
+        console.warn("L'importation a renvoyé un indicateur de réussite erroné :", response.data);
       }
     } catch (err) {
       console.error("Import failed:", err);
@@ -152,8 +153,8 @@ function Orders() {
         err.response?.data?.message ||
         err.response?.data?.error ||
         err.message ||
-        "Import failed";
-        showAlert(message, "error");
+        "Importation a échoué";
+        showAlert(message, "erreur");
       // setImportError(message);
     } finally {
       setImporting(false);
@@ -178,7 +179,7 @@ function Orders() {
             }`}
           >
             <FontAwesomeIcon icon={faDownload} className="text-gray-600" />
-            {importing ? "Importing..." : "Importer"}
+            {importing ? "Importer..." : "Importer"}
             <input
               ref={fileInputRef}
               type="file"
@@ -196,7 +197,7 @@ function Orders() {
             disabled={exporting}
           >
             <FontAwesomeIcon icon={faUpload} className="text-gray-600" />
-            {exporting ? "Exporting..." : "Exporter"}
+            {exporting ? "Exporter..." : "Exporter"}
           </button>
 
           {/* Add Product Button */}
@@ -226,8 +227,8 @@ function Orders() {
                 <div>
                   <strong>{f.customerName || f.orderKey}</strong>
                 </div>
-                <div className="text-gray-600">Email: {f.email}</div>
-                <div className="text-red-600">Error: {f.error}</div>
+                <div className="text-gray-600">E-mail: {f.email}</div>
+                <div className="text-red-600">Erreur: {f.error}</div>
               </div>
             ))}
           </div>

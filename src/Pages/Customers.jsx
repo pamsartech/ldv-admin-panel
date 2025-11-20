@@ -73,13 +73,14 @@ function Customers() {
       document.body.appendChild(link);
       link.click();
       link.remove();
+      showAlert('Clients exportées avec succès', "succès")
     } catch (error) {
       console.error("❌ Error exporting customer:", error);
       if (error.response) {
         console.error("Response data:", error.response.data);
         console.error("Response status:", error.response.status);
       }
-      alert("Failed to export customer");
+      showAlert("L'exportation client a échoué", "erreur");
     } finally {
       setExporting(false);
     }
@@ -93,7 +94,7 @@ function Customers() {
     const allowed = [".xlsx", ".xls", ".csv"];
     const ext = file.name.slice(file.name.lastIndexOf(".")).toLowerCase();
     if (!allowed.includes(ext)) {
-      alert("Please upload an .xlsx, .xls or .csv file");
+      showAlert("Veuillez téléverser un fichier .xlsx, .xls ou .csve", "info");
       e.target.value = "";
       return;
     }
@@ -146,8 +147,8 @@ function Customers() {
         }));
         // show success alert
         showAlert(
-          `Import completed — Total: ${data.summary.total}, Successful: ${data.summary.successful}, Failed: ${data.summary.failed}, Duplicates: ${data.summary.duplicates}`,
-          "success"
+          `Importation terminée — Total: ${data.summary.total}, succès: ${data.summary.successful}, Échoué: ${data.summary.failed}, Doublons: ${data.summary.duplicates}`,
+          "succès"
         );
 
         setImportResult({
@@ -160,7 +161,7 @@ function Customers() {
         });
 
         console.log(
-          `Import completed: ${data.summary.successful} successes, ${data.summary.failed} failed, ${data.summary.duplicates} duplicates.`
+          `Importation terminé: ${data.summary.successful} succès, ${data.summary.failed} Échoué, ${data.summary.duplicates} doublons.`
         );
       } else {
         setImportError(
@@ -174,7 +175,7 @@ function Customers() {
         err.response?.data?.message ||
         err.response?.data?.error ||
         err.message ||
-        "Import failed";
+        "Iimportation a échoué";
       showAlert(message, "info")
     } finally {
       setImporting(false);
@@ -195,7 +196,7 @@ function Customers() {
             }`}
           >
             <FontAwesomeIcon icon={faDownload} className="text-gray-600" />
-            {importing ? "Importing..." : "Importer"}
+            {importing ? "Importer..." : "Importer"}
             <input
               ref={fileInputRef}
               type="file"
@@ -212,7 +213,7 @@ function Customers() {
             disabled={exporting}
           >
             <FontAwesomeIcon icon={faUpload} className="text-gray-600" />
-            {exporting ? "Exporting..." : "Exporter"}
+            {exporting ? "Exporter..." : "Exporter"}
           </button>
 
           {exportError && (
@@ -234,7 +235,7 @@ function Customers() {
         importResult.failedCustomers.length > 0 && (
           <div className="p-4 mx-6 bg-white rounded shadow mt-3">
             <h4 className="font-medium mb-2">
-              Failed Customers ({importResult.failedCustomers.length})
+              Clients échoués ({importResult.failedCustomers.length})
             </h4>
             <div className="text-xs text-gray-700 space-y-2 max-h-48 overflow-auto">
               {importResult.failedCustomers.map((f, idx) => (
@@ -242,8 +243,8 @@ function Customers() {
                   <div>
                     <strong>{f.name}</strong>
                   </div>
-                  <div>Email: {f.email}</div>
-                  <div className="text-red-600">Error: {f.error}</div>
+                  <div>E-mail: {f.email}</div>
+                  <div className="text-red-600">Erreur: {f.error}</div>
                 </div>
               ))}
             </div>
@@ -260,7 +261,7 @@ function Customers() {
             }`}
           >
             <h4 className="font-medium mb-2">
-              Duplicate Customers ({importResult.duplicateCustomers.length})
+              Clients en double({importResult.duplicateCustomers.length})
             </h4>
             <div className="text-xs text-gray-700 space-y-2 max-h-48 overflow-auto">
               {importResult.duplicateCustomers.map((d, idx) => (
@@ -268,8 +269,8 @@ function Customers() {
                   <div>
                     <strong>{d.name}</strong>
                   </div>
-                  <div>Email: {d.email}</div>
-                  <div className="text-yellow-600">Error: {d.error}</div>
+                  <div>E-mail: {d.email}</div>
+                  <div className="text-yellow-600">Errurr: {d.error}</div>
                 </div>
               ))}
             </div>

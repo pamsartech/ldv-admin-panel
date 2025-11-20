@@ -66,52 +66,7 @@ function Products() {
         }
       }, [importMessage]);
 
-   // ✅ Handle file import
-  //  const handleImport = async (e) => {
-  //    const file = e.target.files[0];
-  //    if (!file) return;
- 
-  //    const formData = new FormData();
-  //    formData.append("file", file);
- 
-  //    setImportMessage("Importing products... ⏳");
- 
-  //    try {
-  //      const res = await axios.post(
-  //        "https://dev-api.payonlive.com/api/product/import-products",
-  //        formData,
-  //        {
-  //          headers: { "Content-Type": "multipart/form-data" },
-  //        }
-  //      );
-  //      console.log('response import', res)
-
-  //      if (res.data?.success || res.status === 200) {
-  //       showAlert(
-  //          "Product imported successfully!",
-  //         "success"
-  //       );
-  //     } else {
-  //       showAlert(""+ response.data.message, "error");
-  //     }
- 
-  //      // Show summary message
-  //      const summary = res.data.summary;
-  //      setImportMessage(
-  //        `✅ Imported successfully: ${summary.insertedToDatabase} / ${summary.totalRows} | Duplicates: ${summary.duplicatesSkipped} | Errors: ${summary.processingErrors + summary.insertionErrors}`
-  //      );
- 
-  //     //  // Refresh recently added products
-  //     //  const recentRes = await axios.get(
-  //     //    "http://dev-api.payonlive.com/api/product/latest-products"
-  //     //  );
-  //     //  setRecentProducts(recentRes.data.data || []);
-  //      setImportMessage(" ✅Products import successfully");
-  //    } catch (error) {
-  //      console.error(error);
-  //      setImportMessage("❌ Error importing products. Check console for details.");
-  //    }
-  //  };
+  
   // ✅ Handle Product Import
 const handleImport = async (e) => {
   const file = e.target.files[0];
@@ -139,19 +94,19 @@ const handleImport = async (e) => {
     if (data.success) {
       // Build detailed success summary
       const summaryText =
-        `Import completed successfully!\n\n` +
-        `Total Rows: ${data.summary.totalRows}\n` +
-        `Inserted: ${data.summary.insertedToDatabase}\n` +
-        `Duplicates Skipped: ${data.summary.duplicatesSkipped}\n` +
-        `Processing Errors: ${data.summary.processingErrors}\n` +
-        `Insertion Errors: ${data.summary.insertionErrors}\n`;
+        `Importation terminée avec succès!\n\n` +
+        `Total Rangées: ${data.summary.totalRows}\n` +
+        `Inséré: ${data.summary.insertedToDatabase}\n` +
+        `Doublons ignorés: ${data.summary.duplicatesSkipped}\n` +
+        `Erreurs de traitement: ${data.summary.processingErrors}\n` +
+        `Erreurs d'insertion: ${data.summary.insertionErrors}\n`;
 
       // Show SUCCESS alert
-      showAlert(summaryText, "success");
+      showAlert(summaryText, "succès");
 
       // Also update the small message on top
       setImportMessage(
-        `✅ Imported: ${data.summary.insertedToDatabase} / ${data.summary.totalRows} • Duplicates: ${data.summary.duplicatesSkipped}`
+        `✅ Importé: ${data.summary.insertedToDatabase} / ${data.summary.totalRows} • Doublons: ${data.summary.duplicatesSkipped}`
       );
     }
 
@@ -159,7 +114,7 @@ const handleImport = async (e) => {
     // INSERTION ERRORS (product code errors)
     // ---------------------------------------------
     if (data.details?.insertionErrors?.length > 0) {
-      let errorText = "Some products failed to import:\n\n";
+      let errorText = "Certains produits n'ont pas pu être importés.:\n\n";
 
       data.details.insertionErrors.forEach((item) => {
         errorText += `• ${item.productCode} → ${item.message}\n`;
@@ -174,10 +129,10 @@ const handleImport = async (e) => {
     // Show backend message or fallback error
     showAlert(
       err.response?.data?.message || "❌ Error importing products.",
-      "error"
+      "erreyr"
     );
 
-    setImportMessage("❌ Import failed.");
+    setImportMessage("❌Importation a échoué.");
   }
 };
 
@@ -212,13 +167,14 @@ const handleImport = async (e) => {
         document.body.appendChild(link);
         link.click();
         link.remove();
+        showAlert("Produits exportés avec succès", "succès")
       } catch (error) {
         console.error("❌ Error exporting products:", error);
         if (error.response) {
           console.error("Response data:", error.response.data);
           console.error("Response status:", error.response.status);
         }
-        alert("Failed to export products");
+        showAlert("Échec de l'exportation des produits.", "erreur");
       } finally {
         setExporting(false);
       }
@@ -252,7 +208,7 @@ const handleImport = async (e) => {
                      className="flex items-center gap-2 border border-gray-400 px-3 py-1.5 rounded-md text-sm text-gray-700 hover:bg-gray-100 transition cursor-pointer"
                    >
                      <FontAwesomeIcon icon={faUpload} className="text-gray-600" />
-                     {exporting ? "Exporting..." : "Exporter"}
+                     {exporting ? "Exporter..." : "Exporter"}
                    </button>
 
           {/* Add Product */}
