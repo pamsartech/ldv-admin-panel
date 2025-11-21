@@ -549,7 +549,7 @@ export default function ProductTable({ onSelectionChange }) {
           {/* Paste your original table JSX from currentProducts mapping here */}
           {/* Your full table rendering remains exactly as before */}
           <div className="overflow-x-auto border-gray-400 rounded-lg shadow bg-white mx-6 mt-5">
-            <table className="w-full text-sm text-left text-gray-700">
+            <table className="w-full text-sm text-center text-gray-700">
               <thead className="bg-gray-50 text-gray-600 border-b">
                 <tr>
                   <th className="p-3">
@@ -613,7 +613,7 @@ export default function ProductTable({ onSelectionChange }) {
                     <td className="p-3">{item.size || "N/A"}</td>
 
                     <td className="p-3">
-                      <div className="flex flex-wrap items-center gap-3">
+                      <div className="flex flex-wrap items-center justify-center gap-3">
                         {(() => {
                           const colors = normalizeColors(item.color);
                           if (!colors.length)

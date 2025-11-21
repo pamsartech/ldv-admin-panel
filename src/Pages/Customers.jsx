@@ -32,7 +32,7 @@ function Customers() {
       importResult?.duplicateCustomers?.length > 0
     ) {
       setFadeOut(false);
-      const fadeTimer = setTimeout(() => setFadeOut(true), 2500); // start fade after 2.5s
+      const fadeTimer = setTimeout(() => setFadeOut(true), 10000); // start fade after 2.5s
       const removeTimer = setTimeout(() => setImportResult(null), 3000); // remove after 3s
 
       return () => {
@@ -73,7 +73,7 @@ function Customers() {
       document.body.appendChild(link);
       link.click();
       link.remove();
-      showAlert('Clients exportées avec succès', "succès")
+      showAlert("Clients exportées avec succès", "succès");
     } catch (error) {
       console.error("❌ Error exporting customer:", error);
       if (error.response) {
@@ -137,25 +137,45 @@ function Customers() {
         const failedCustomers = data.details.failed.map((f) => ({
           name: f.data["Customer Name"] || f.data.customerName,
           email: f.data["Email"] || f.data.email,
+          phoneNumber: f.data["Phone Number"] || f.data.phoneNumber,
           error: f.reason,
         }));
 
         const duplicateCustomers = data.details.duplicates.map((d) => ({
           name: d.data["Customer Name"] || d.data.customerName,
           email: d.data["Email"] || d.data.email,
+          phoneNumber: d.data["Phone Number"] || d.data.phoneNumber,
           error: d.reason,
         }));
         // show success alert
+        // showAlert(
+        //   `Importation terminée — Total: ${data.summary.total}, succès: ${data.summary.successful}, Échoué: ${data.summary.failed}, Doublons: ${data.summary.duplicates}`,duplicateCustomers,failedCustomers,
+        //   "succès"
+        // );
+        // Extract duplicate emails for alert
+        const duplicateEmails = duplicateCustomers
+          .map((d, i) => `${i + 1}. ${d.email}`)
+          .join("\n");
+
+        // Show alert with duplicate email list
         showAlert(
-          `Importation terminée — Total: ${data.summary.total}, succès: ${data.summary.successful}, Échoué: ${data.summary.failed}, Doublons: ${data.summary.duplicates}`,
+          `Importation terminée — Total: ${data.summary.total}, 
+           Succès: ${data.summary.successful}, 
+           Échoués: ${failedCustomers.length}, 
+           Doublons: ${duplicateCustomers.length}
+  ${
+    duplicateCustomers.length > 0
+      ? "\nEmails dupliqués: " + duplicateEmails
+      : ""
+  }`,
           "succès"
         );
 
         setImportResult({
           total: data.summary.total,
-          successful: data.summary.successful,
-          failed: data.summary.failed,
-          duplicates: data.summary.duplicates,
+          succès: data.summary.successful,
+          Échoué: data.summary.failed,
+          Doublons: data.summary.duplicates,
           failedCustomers,
           duplicateCustomers,
         });
@@ -176,7 +196,7 @@ function Customers() {
         err.response?.data?.error ||
         err.message ||
         "Iimportation a échoué";
-      showAlert(message, "info")
+      showAlert(message, "info");
     } finally {
       setImporting(false);
     }

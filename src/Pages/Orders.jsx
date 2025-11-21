@@ -32,8 +32,8 @@ function Orders() {
   useEffect(() => {
     if (importResult?.failedOrders?.length > 0) {
       setFadeOut(false);
-      const fadeTimer = setTimeout(() => setFadeOut(true), 2500); // start fade after 2.5s
-      const removeTimer = setTimeout(() => setImportResult(null), 3000); // remove after 3s
+      const fadeTimer = setTimeout(() => setFadeOut(true), 9000); // start fade after 2.5s
+      const removeTimer = setTimeout(() => setImportResult(null), 9000); // remove after 3s
 
       return () => {
         clearTimeout(fadeTimer);
@@ -137,7 +137,7 @@ function Orders() {
         setImportResult(response.data);
         // show success toast / message
         showAlert(
-          `Importation terminée: ${response.data.successCount} succès, ${response.data.failedCount} échoué.`,"succès"
+          `Importation terminée:succès: ${response.data.successCount} , échoué: ${response.data.failedCount} .`,"succès"
         );
       } else {
         showAlert(""+ response.data?.message, "info")

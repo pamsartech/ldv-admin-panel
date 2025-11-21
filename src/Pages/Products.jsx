@@ -75,7 +75,7 @@ const handleImport = async (e) => {
   const formData = new FormData();
   formData.append("file", file);
 
-  setImportMessage("Importing products... ⏳");
+  setImportMessage("Importer des produits... ⏳");
 
   try {
     const res = await axios.post(

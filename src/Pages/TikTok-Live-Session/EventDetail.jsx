@@ -14,7 +14,7 @@ import {
 import axios from "axios";
 import { useAlert } from "../../Components/AlertContext";
 
-// 🧩 Material 
+// 🧩 Material
 import { Skeleton } from "@mui/material";
 import Stack from "@mui/material/Stack";
 import Dialog from "@mui/material/Dialog";
@@ -36,14 +36,14 @@ export default function EventDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
-   const [openConfirm, setOpenConfirm] = useState(false); // 🔹 MUI confirm dialog
+  const [openConfirm, setOpenConfirm] = useState(false); // 🔹 MUI confirm dialog
 
   const getStatusStyles = (status) => {
     const styles = {
-      actif : "border-green-400 text-green-600 bg-green-50",
-      inactif : "border-red-400 text-red-600 bg-red-50",
+      actif: "border-green-400 text-green-600 bg-green-50",
+      inactif: "border-red-400 text-red-600 bg-red-50",
       "sur-point-d'arriver": "border-blue-400 text-blue-600 bg-blue-50",
-      suspendu : "border-red-400 text-red-600 bg-red-50",
+      suspendu: "border-red-400 text-red-600 bg-red-50",
     };
     return (
       styles[status?.toLowerCase()] ||
@@ -69,7 +69,9 @@ export default function EventDetail() {
         if (response.data.success && response.data.data) {
           setEvent(response.data.data);
         } else {
-          setError(response.data.message || "Impossible de récupérer l'événement.");
+          setError(
+            response.data.message || "Impossible de récupérer l'événement."
+          );
         }
       } catch (err) {
         setError(err.response?.data?.message || err.message);
@@ -99,7 +101,6 @@ export default function EventDetail() {
   };
 
   const handleDelete = async () => {
-
     try {
       setIsDeleting(true);
       const response = await axios.delete(
@@ -110,15 +111,40 @@ export default function EventDetail() {
         showAlert("Événement supprimé avec succès !", "Succès");
         navigate("/user/tiktok");
       } else {
-        showAlert(response.data.message || "L'élimination du produit a échoué", "info");
+        showAlert(
+          response.data.message || "L'élimination du produit a échoué",
+          "info"
+        );
       }
     } catch (error) {
-      showAlert(`Error: ${error.response?.data?.message || error.message}`, "Erreur");
+      showAlert(
+        `Error: ${error.response?.data?.message || error.message}`,
+        "Erreur"
+      );
     } finally {
       setIsDeleting(false);
       setOpenConfirm(false); // close confirmation dialog
     }
   };
+
+  const formatDateWithAMPM = (date) => {
+  if (!date) return "N/A";
+
+  const d = new Date(date);
+
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const year = d.getFullYear();
+
+  const hours24 = String(d.getHours()).padStart(2, "0");
+  const minutes = String(d.getMinutes()).padStart(2, "0");
+  const seconds = String(d.getSeconds()).padStart(2, "0");
+
+  const ampm = d.getHours() >= 12 ? "PM" : "AM";
+
+  return `${day}/${month}/${year}, ${hours24}:${minutes}:${seconds} ${ampm}`;
+};
+
 
   // ----------------------------
   // 🔹 Skeleton Loader (Full UI)
@@ -256,7 +282,9 @@ export default function EventDetail() {
 
       {/* Top buttons */}
       <div className="flex justify-between mt-5 mx-10">
-        <h1 className="font-medium text-lg">Détails de l'événement en direct</h1>
+        <h1 className="font-medium text-lg">
+          Détails de l'événement en direct
+        </h1>
         <div>
           <button
             onClick={() => setOpenConfirm(true)}
@@ -303,7 +331,8 @@ export default function EventDetail() {
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="confirm-delete-description">
-             Êtes-vous sûr de vouloir annuler définitivement ce événement? Cette action est irréversible.
+            Êtes-vous sûr de vouloir annuler définitivement ce événement? Cette
+            action est irréversible.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -324,7 +353,9 @@ export default function EventDetail() {
       {/* Event Details */}
       <div className="max-w-6xl mx-5 p-6 space-y-6">
         <div className="border border-gray-400 rounded-2xl p-6 space-y-4">
-          <h2 className="text-sm font-medium text-gray-700">Nom de l’événement</h2>
+          <h2 className="text-sm font-medium text-gray-700">
+            Nom de l’événement
+          </h2>
           <p className="text-lg font-medium mt-1">
             {event.eventDetails.eventName}
           </p>
@@ -359,15 +390,15 @@ export default function EventDetail() {
 
             <div>
               <p className="font-medium text-gray-700">Début Date et Temps</p>
-              <p className="mt-3 text-gray-800">
-                {new Date(event.eventDetails.startDateTime).toLocaleString()}
+              <p className="mt-3 text-gray-800 whitespace-nowrap">
+                {formatDateWithAMPM(event.eventDetails.startDateTime)}
               </p>
             </div>
 
             <div>
               <p className="font-medium text-gray-700">Fin Date et Temps</p>
-              <p className="mt-3 text-gray-800">
-                {new Date(event.eventDetails.endDateTime).toLocaleString()}
+              <p className="mt-3 text-gray-800 whitespace-nowrap">
+                {formatDateWithAMPM(event.eventDetails.endDateTime)}
               </p>
             </div>
 
@@ -388,11 +419,11 @@ export default function EventDetail() {
         </div>
 
         {/* Selected Products */}
-       {/* Selected Products */}
-<div className="border border-gray-400 rounded-2xl p-6 space-y-4">
-  <h2 className="text-base font-medium">Selected products for live</h2>
+        {/* Selected Products */}
+        <div className="border border-gray-400 rounded-2xl p-6 space-y-4">
+          <h2 className="text-base font-medium">Selected products for live</h2>
 
-  {/* <div className="flex items-center border border-gray-400 rounded-md px-3 py-2 text-sm bg-white">
+          {/* <div className="flex items-center border border-gray-400 rounded-md px-3 py-2 text-sm bg-white">
     <FontAwesomeIcon icon={faSearch} className="text-gray-500 mr-2" />
     <input
       type="text"
@@ -401,49 +432,47 @@ export default function EventDetail() {
     />
   </div> */}
 
-  <div className="space-y-3">
-    {event.products && event.products.length > 0 ? (
-      event.products.map((product, index) => (
-        <div
-          key={index}
-          className="flex items-center justify-between border border-gray-400 rounded-md px-4 py-3 bg-white"
-        >
-          <div className="flex items-center space-x-3">
-            <img
-              src={
-                product.productId?.images?.[0] ||
-                "https://via.placeholder.com/100x100?text=No+Image"
-              }
-              alt={product.productId?.productName || "Product"}
-              className="w-10 h-10 rounded object-cover"
-            />
-            <div>
-              <p className="text-sm font-medium text-gray-800">
-                {product.productId?.productName || "Unnamed Product"}
+          <div className="space-y-3">
+            {event.products && event.products.length > 0 ? (
+              event.products.map((product, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between border border-gray-400 rounded-md px-4 py-3 bg-white"
+                >
+                  <div className="flex items-center space-x-3">
+                    <img
+                      src={
+                        product.productId?.images?.[0] ||
+                        "https://via.placeholder.com/100x100?text=No+Image"
+                      }
+                      alt={product.productId?.productName || "Product"}
+                      className="w-10 h-10 rounded object-cover"
+                    />
+                    <div>
+                      <p className="text-sm font-medium text-gray-800">
+                        {product.productId?.productName || "Unnamed Product"}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {product.productId?.productCode || "No SKU"}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-4">
+                    <p className="text-sm font-semibold">
+                      {product.productId?.price
+                        ? `€ ${product.productId.price}`
+                        : "N/A"}
+                    </p>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-gray-500 text-sm text-center py-3 border border-gray-200 rounded-md">
+                No products selected for this live event.
               </p>
-              <p className="text-xs text-gray-500">
-                {product.productId?.productCode || "No SKU"}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center space-x-4">
-            <p className="text-sm font-semibold">
-              {product.productId?.price
-                ? `€ ${product.productId.price}`
-                : "N/A"}
-            </p>
-            
+            )}
           </div>
         </div>
-      ))
-    ) : (
-      <p className="text-gray-500 text-sm text-center py-3 border border-gray-200 rounded-md">
-        No products selected for this live event.
-      </p>
-    )}
-  </div>
-</div>
-
 
         {/* Host Information */}
         <section className="border border-gray-400 rounded-2xl p-6 space-y-4">
@@ -470,9 +499,7 @@ export default function EventDetail() {
               />
             </div>
             <div>
-              <p className="font-semibold">
-                {event.hostInformation.hostName}
-              </p>
+              <p className="font-semibold">{event.hostInformation.hostName}</p>
               <p className="text-sm text-gray-500">
                 {event.hostInformation.hostEmailAddress}
               </p>

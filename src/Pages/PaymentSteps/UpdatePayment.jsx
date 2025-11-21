@@ -128,26 +128,26 @@ export default function UpdatePayment() {
 
 
   const getStatusClass = (status, type) => {
-    if (type === "paiements") {
+    if (type === "payment") {
       switch (status) {
-        case "Payé":
+        case "payé":
           return "bg-green-100 text-green-600 border-green-400";
-        case "En-attente":
+        case "enattente":
           return "bg-orange-100 text-orange-600 border-orange-400";
-        case "Échoué":
+        case "échoué":
           return "bg-red-100 text-red-600 border-red-400";
         default:
           return "bg-gray-100 text-gray-600 border-gray-400";
       }
-    } else if (type === "livraison") {
+    } else if (type === "delivery") {
       switch (status) {
-        case "Livraison":
+        case "livraison":
           return "bg-green-100 text-green-600 border-green-400";
-        case "Expédié":
+        case "expédié":
           return "bg-blue-100 text-blue-600 border-blue-600";
-        case "En-attente":
+        case "en-attente":
           return "bg-orange-100 text-orange-600 border-orange-400";
-        case "Annulé":
+        case "annulé":
           return "bg-red-100 text-red-600 border-red-400";
         default:
           return "bg-gray-100 text-gray-600 border-gray-400";
@@ -252,6 +252,7 @@ export default function UpdatePayment() {
               onChange={handleChange}
               options={["Stripe", "PayPal"]}
             />
+            
             <SelectField
               label="Statut du paiement"
               id="paymentStatus"
@@ -308,7 +309,8 @@ export default function UpdatePayment() {
                 )}`}
               >
                 <FontAwesomeIcon icon={faClock} className="pr-2" />
-                {paymentData.paymentStatus || "enattente"}
+                {paymentData.paymentStatus.charAt(0).toUpperCase() +
+                  paymentData.paymentStatus.slice(1) || "enattente"}
               </span>
             </div>
             <div>
@@ -319,7 +321,8 @@ export default function UpdatePayment() {
                   "delivery"
                 )}`}
               >
-                {paymentData.deliveryStatus || "enattente"}
+                {paymentData.deliveryStatus.charAt(0).toUpperCase() +
+                  paymentData.deliveryStatus.slice(1) || "enattente"}
               </span>
             </div>
           </div>

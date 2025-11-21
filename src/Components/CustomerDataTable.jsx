@@ -314,9 +314,9 @@ export default function CustomersTable({ onSelectionChange }) {
 
       {/* customer data table */}
       <div className="p-6 bg-white rounded shadow mt-4">
-        <table className="w-full border-collapse">
+        <table className="w-full border-collapse text-center">
           <thead>
-            <tr className="border-b text-left text-gray-600">
+            <tr className="border-b text-center text-gray-600">
               <th className="py-3 px-3">
                 <input
                   type="checkbox"

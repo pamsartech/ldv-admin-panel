@@ -11,11 +11,12 @@ import {
   faArrowLeft,
   faTrashCan,
   faArrowRotateLeft,
+  faArrowRight,
 } from "@fortawesome/free-solid-svg-icons";
 import { useAlert } from "../../Components/AlertContext";
 
 // 🧩 Material UI
-import { Skeleton } from "@mui/material"; 
+import { Skeleton } from "@mui/material";
 import Stack from "@mui/material/Stack";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
@@ -24,10 +25,9 @@ import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import Button from "@mui/material/Button";
 
-
 /* -------------------- StatusBadge Component -------------------- */
 const STATUS_STYLES = {
-   payment: {
+  payment: {
     payé: "text-green-700 bg-green-100 border-green-700",
     enattente: "text-amber-700 bg-amber-100 border-amber-700",
     échoué: "text-red-700 bg-red-100 border-red-700",
@@ -37,7 +37,7 @@ const STATUS_STYLES = {
     livraison: "text-green-700 bg-green-100 border-green-700",
     expédié: "text-blue-700 bg-blue-100 border-blue-700",
     "in transit": "text-amber-700 bg-amber-100 border-amber-700",
-    annulé : "text-red-700 bg-red-100 border-red-700",
+    annulé: "text-red-700 bg-red-100 border-red-700",
     enattente: "text-amber-700 bg-amber-100 border-amber-700",
     default: "text-gray-600 bg-gray-100 border-gray-600",
   },
@@ -110,6 +110,10 @@ const ViewCustomer = () => {
   const [isBlocking, setIsBlocking] = useState(false);
   const [openConfirm, setOpenConfirm] = useState(false); // 🔹 MUI confirm dialog
 
+  // pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10; // show 10 orders per page
+
   /* Add this function inside ViewCustomer component */
   const handleBlockCustomer = async () => {
     if (!customer) return;
@@ -130,7 +134,8 @@ const ViewCustomer = () => {
         showAlert(
           `Le client était ${
             currentlyBlocked ? "débloqué" : "bloquée"
-          } avec succès!`, "succès"
+          } avec succès!`,
+          "succès"
         );
         // Refresh UI immediately
         setCustomer((prev) => ({
@@ -138,10 +143,14 @@ const ViewCustomer = () => {
           status: currentlyBlocked ? "Actif" : "Inactif",
         }));
       } else {
-        showAlert(response.data?.message || "Impossible de mettre à jour l'état du bloc.", "info");
+        showAlert(
+          response.data?.message ||
+            "Impossible de mettre à jour l'état du bloc.",
+          "info"
+        );
       }
     } catch (error) {
-      showAlert(error.response?.data?.message || error.message,"info");
+      showAlert(error.response?.data?.message || error.message, "info");
     } finally {
       setIsBlocking(false);
     }
@@ -208,7 +217,6 @@ const ViewCustomer = () => {
   }, [customerId]);
 
   const handleDeleteCustomer = async () => {
-    
     try {
       setIsDeleting(true);
       const response = await axios.delete(
@@ -221,17 +229,52 @@ const ViewCustomer = () => {
         showAlert(
           `La suppression du client a échoué: ${
             response.data.message || "Unknown error"
-          }`, "info"
+          }`,
+          "info"
         );
     } catch (err) {
-      showAlert(`Error: ${err.response?.data?.message || err.message}`, "erreur");
+      showAlert(
+        `Error: ${err.response?.data?.message || err.message}`,
+        "erreur"
+      );
     } finally {
       setIsDeleting(false);
       setOpenConfirm(false); // close confirmation dialog
     }
   };
 
-  const handleCancelOrder = (id) => alert(`Cancel order with id: ${id}`);
+  const handleCancelOrder = (id) =>
+    showAlert(`Cancel order with id: ${id}`, "info");
+
+  // Pagination calculations
+  const indexOfLast = currentPage * pageSize;
+  const indexOfFirst = indexOfLast - pageSize;
+  const currentOrders = orders.slice(indexOfFirst, indexOfLast);
+  const totalPages = Math.ceil(orders.length / pageSize);
+
+  const handlePageChange = (page) => {
+    if (page < 1 || page > totalPages) return;
+    setCurrentPage(page);
+  };
+
+  const formatDateWithAMPM = (date) => {
+  if (!date) return "—";
+
+  const d = new Date(date);
+
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const year = d.getFullYear();
+
+  const hours24 = String(d.getHours()).padStart(2, "0");
+  const minutes = String(d.getMinutes()).padStart(2, "0");
+  const seconds = String(d.getSeconds()).padStart(2, "0");
+
+  const ampm = d.getHours() >= 12 ? "PM" : "AM";
+
+  return `${day}/${month}/${year}, ${hours24}:${minutes}:${seconds} ${ampm}`;
+};
+
 
   return (
     <div>
@@ -302,7 +345,8 @@ const ViewCustomer = () => {
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="confirm-delete-description">
-          Êtes-vous sûr de vouloir supprimer définitivement ce client?  Cette action est irréversible.
+            Êtes-vous sûr de vouloir supprimer définitivement ce client? Cette
+            action est irréversible.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -362,7 +406,7 @@ const ViewCustomer = () => {
                   </div>
                   <div className="flex justify-between">
                     <span>Dépenses totales :</span>
-                    <span>€ {customer.totalSpend}</span>
+                    <span>€ {customer.totalSpend.toFixed(2)}</span>
                   </div>
                   <div className="flex py-2 justify-between">
                     <span>Commandes totales :</span>
@@ -397,7 +441,7 @@ const ViewCustomer = () => {
               </div>
               <div className="flex py-2 justify-between text-sm mb-4">
                 <span>Last Login :</span>
-                <span>{new Date(customer.lastLogin).toLocaleString()}</span>
+                <span>{formatDateWithAMPM(customer.lastLogin)}</span>
               </div>
 
               <h4 className="font-medium mb-2">Actions rapides</h4>
@@ -457,7 +501,7 @@ const ViewCustomer = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {orders.map(
+                  {currentOrders.map(
                     ({
                       id,
                       productName,
@@ -498,6 +542,46 @@ const ViewCustomer = () => {
                   )}
                 </tbody>
               </table>
+              {/* Pagination */}
+              <div className="flex justify-center items-center gap-2 mt-4">
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className={`px-3 py-1 border rounded-md ${
+                    currentPage === 1
+                      ? "text-gray-400 border-gray-300"
+                      : "hover:bg-gray-200"
+                  }`}
+                >
+                  <FontAwesomeIcon icon={faArrowLeft} /> Précédent
+                </button>
+
+                {[...Array(totalPages)].map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => handlePageChange(i + 1)}
+                    className={`px-3 py-1 border rounded-md ${
+                      currentPage === i + 1
+                        ? "bg-[#02B978] text-white"
+                        : "hover:bg-gray-200"
+                    }`}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className={`px-3 py-1 border rounded-md ${
+                    currentPage === totalPages
+                      ? "text-gray-400 border-gray-300"
+                      : "hover:bg-gray-200"
+                  }`}
+                >
+                  Suivant <FontAwesomeIcon icon={faArrowRight} />
+                </button>
+              </div>
             </div>
           )}
         </div>

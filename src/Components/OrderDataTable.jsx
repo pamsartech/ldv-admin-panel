@@ -206,6 +206,24 @@ export default function OrdersDataTable({ onSelectionChange }) {
     }
   };
 
+  const formatDateWithAMPM = (date) => {
+    if (!date) return "N/A";
+
+    const d = new Date(date);
+
+    const day = String(d.getDate()).padStart(2, "0");
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const year = d.getFullYear();
+
+    const hours24 = String(d.getHours()).padStart(2, "0");
+    const minutes = String(d.getMinutes()).padStart(2, "0");
+    const seconds = String(d.getSeconds()).padStart(2, "0");
+
+    const ampm = d.getHours() >= 12 ? "PM" : "AM";
+
+    return `${day}/${month}/${year}, ${hours24}:${minutes}:${seconds} ${ampm}`;
+  };
+
   // ✅ Skeletons
   const skeletonRows = Array.from({ length: ordersPerPage }).map((_, idx) => (
     <tr key={idx} className="border-b">
@@ -415,7 +433,7 @@ export default function OrdersDataTable({ onSelectionChange }) {
               selectedOrder ? "col-span-9" : "col-span-12"
             }`}
           >
-            <table className="w-full text-sm text-left border-collapse">
+            <table className="w-full text-sm text-center border-collapse">
               <thead>
                 <tr className="border-b text-gray-600">
                   <th className="py-3 px-4">
@@ -617,16 +635,7 @@ export default function OrdersDataTable({ onSelectionChange }) {
                     </p>
                     <p>
                       <strong>Date:</strong>{" "}
-                      {selectedOrder?.date
-                        ? new Date(selectedOrder.date).toLocaleString("en-GB", {
-                            day: "2-digit",
-                            month: "numeric", // shows "Oct" instead of "10"
-                            year: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            hour12: true, // shows AM/PM instead of 24-hour time
-                          })
-                        : "20/08/2025"}
+                      {formatDateWithAMPM(selectedOrder?.date)}
                     </p>
 
                     <p>
@@ -684,8 +693,8 @@ export default function OrdersDataTable({ onSelectionChange }) {
         <DialogContent>
           <DialogContentText>
             Êtes-vous sûr de vouloir supprimer{" "}
-            <strong>{selectedRows.length}</strong> commandes sélectionnés? This action
-            cannot be undone.
+            <strong>{selectedRows.length}</strong> commandes sélectionnés? This
+            action cannot be undone.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
