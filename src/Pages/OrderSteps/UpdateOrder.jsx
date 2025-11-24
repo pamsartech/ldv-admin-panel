@@ -359,7 +359,7 @@ const UpdateOrder = () => {
                   type="button"
                   className="w-full text-center rounded-lg border border-gray-300 px-2 py-1 text-sm mt-5"
                 >
-                  View Details
+                  Voir Détails
                 </button>
               </div>
             </div>
