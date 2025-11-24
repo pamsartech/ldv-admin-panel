@@ -17,6 +17,7 @@ const UpdateOrder = () => {
   const location = useLocation();
   const existingOrder = location.state?.orderData;
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
 
   // if (!existingOrder) {
   //   // If no data passed, redirect back
@@ -42,11 +43,16 @@ const UpdateOrder = () => {
 
   const [orderItems, setOrderItems] = useState(
     existingOrder.orderItems?.map((item) => ({
+      productId: item.productId,
       productName: item.productName,
       quantity: item.quantity,
       price: item.price,
     })) || [{ productName: "", quantity: 1, price: 0 }]
   );
+
+  const handleViewProduct = (id) => {
+    navigate(`/user/view-product/${id}`);
+  };
 
   const handleChange = (e) => {
     setOrderData({ ...orderData, [e.target.id]: e.target.value });
@@ -66,52 +72,86 @@ const UpdateOrder = () => {
     setOrderItems(orderItems.filter((_, i) => i !== index));
   };
 
+  const validate = () => {
+    const newErrors = {};
+    const { customerName, email, phoneNumber, address } = orderData;
+
+    if (!customerName.trim())
+      newErrors.customerName = "Le nom du client est requis.";
+    if (!email.trim()) newErrors.email = "E-mail est requis.";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+      newErrors.email = "Veuillez entrer une adresse e-mail valide.";
+
+    if (!phoneNumber.trim())
+      newErrors.phoneNumber = "Le numéro de téléphone est requis.";
+    else if (!/^\d{9,15}$/.test(phoneNumber))
+      newErrors.phoneNumber =
+        "Le numéro de téléphone doit contenir entre 9 et 15 chiffres.";
+
+    if (!address.trim())
+      newErrors.address = "L’adresse de livraison est requise.";
+
+    setErrors(newErrors);
+    console.log("🧾 Validation Errors:", newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  
+
   const handleUpdate = async (e) => {
-  e.preventDefault();
-  setLoading(true);
+    e.preventDefault();
+    setLoading(true);
 
-  const { paymentStatus, shippingStatus } = orderData;
+    // ✅ Step 1: Run existing validations
+    if (!validate()) {
+      setLoading(false);
+      return;
+    }
 
-  // ✅ Validation: prevent shipped/delivered if payment not paid
-  if (
-    paymentStatus !== "payé" &&
-    (shippingStatus === "expédié" || shippingStatus === "livraison")
-  ) {
-    showAlert(
-      "Vous ne pouvez marquer une commande comme Expédiée ou Livrée qu’après la confirmation du paiement.",
-      "warning"
-    );
-    setLoading(false);
-    return;
-  }
+    const { paymentStatus, shippingStatus } = orderData;
 
-  try {
-    const payload = { ...orderData };
+    // ✅ Validation: prevent shipped/delivered if payment not paid
+    if (
+      paymentStatus !== "payé" &&
+      (shippingStatus === "expédié" || shippingStatus === "livraison")
+    ) {
+      showAlert(
+        "Vous ne pouvez marquer une commande comme Expédiée ou Livrée qu’après la confirmation du paiement.",
+        "warning"
+      );
+      setLoading(false);
+      return;
+    }
 
-    const response = await axios.put(
-      `https://dev-api.payonlive.com/api/order/update-order/${existingOrder._id}`,
-      payload,
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
+    try {
+      const payload = { ...orderData };
+
+      const response = await axios.put(
+        `https://dev-api.payonlive.com/api/order/update-order/${existingOrder._id}`,
+        payload,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.status === 200 && response.data.success) {
+        showAlert("Commande mise à jour avec succès!", "succès");
+        navigate("/user/Orders");
+      } else {
+        showAlert(
+          "Échec de la mise à jour de la commande. Veuillez réessayer.",
+          "erreur"
+        );
+        setLoading(false);
       }
-    );
-
-    if (response.status === 200 && response.data.success) {
-      showAlert("Commande mise à jour avec succès!", "succès");
-      navigate("/user/Orders");
-    } else {
-      showAlert("Échec de la mise à jour de la commande. Veuillez réessayer.", "erreur");
+    } catch (err) {
+      console.error("❌ Error updating order:", err);
+      showAlert("" + err.response.data.emessage, "erreur");
       setLoading(false);
     }
-  } catch (err) {
-    console.error("❌ Error updating order:", err);
-    showAlert(""+ err.response.data.emessage, "erreur");
-    setLoading(false);
-  }
-};
-
+  };
 
   // Calculate order summary
   const summary = useMemo(() => {
@@ -161,7 +201,6 @@ const UpdateOrder = () => {
                 Nom du client
               </label>
               <input
-                required
                 id="customerName"
                 type="text"
                 value={orderData.customerName}
@@ -169,6 +208,9 @@ const UpdateOrder = () => {
                 placeholder="Nom complet"
                 className="w-full rounded-lg border border-gray-400 px-3 py-2 text-sm"
               />
+               {errors.customerName && (
+                <p className="text-red-500 text-sm">{errors.customerName}</p>
+              )}
             </div>
             <div>
               <label
@@ -178,7 +220,6 @@ const UpdateOrder = () => {
                 E-mail
               </label>
               <input
-                required
                 id="email"
                 type="email"
                 value={orderData.email}
@@ -186,6 +227,9 @@ const UpdateOrder = () => {
                 placeholder="client@email.com"
                 className="w-full rounded-lg border border-gray-400 px-3 py-2 text-sm"
               />
+               {errors.email && (
+                <p className="text-red-500 text-sm">{errors.email}</p>
+              )}
             </div>
             <div>
               <label
@@ -195,7 +239,6 @@ const UpdateOrder = () => {
                 numéro de téléphone
               </label>
               <input
-                required
                 id="phoneNumber"
                 type="text"
                 value={orderData.phoneNumber}
@@ -203,6 +246,9 @@ const UpdateOrder = () => {
                 placeholder="+122 2313 3212"
                 className="w-full rounded-lg border border-gray-400 px-3 py-2 text-sm"
               />
+               {errors.phoneNumber && (
+                <p className="text-red-500 text-sm">{errors.phoneNumber}</p>
+              )}
             </div>
             <div>
               <label
@@ -212,7 +258,6 @@ const UpdateOrder = () => {
                 Adresse de livraison
               </label>
               <input
-                required
                 id="address"
                 type="text"
                 value={orderData.address}
@@ -220,6 +265,9 @@ const UpdateOrder = () => {
                 placeholder="123, ville principale, état"
                 className="w-full rounded-lg border border-gray-400 px-3 py-2 text-sm"
               />
+               {errors.address && (
+                <p className="text-red-500 text-sm">{errors.address}</p>
+              )}
             </div>
           </div>
         </section>
@@ -228,13 +276,6 @@ const UpdateOrder = () => {
         <section className="border border-gray-400 rounded-lg p-6 overflow-x-auto">
           <div className="flex justify-between items-center border-gray-200 pb-3 mb-4">
             <h2 className="text-lg font-semibold">Articles commandés</h2>
-            {/* <button
-              type="button"
-              onClick={addProduct}
-              className="flex items-center gap-2 bg-green-600 text-white text-[12px] font-semibold px-3 py-2 rounded-lg hover:bg-green-700"
-            >
-              <FontAwesomeIcon icon={faPlus} /> Add product
-            </button> */}
           </div>
 
           {orderItems.map((item, idx) => (
@@ -242,22 +283,6 @@ const UpdateOrder = () => {
               key={idx}
               className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center py-3 border-b border-gray-400 last:border-b-0"
             >
-              {/* <div className="md:col-span-5">
-                <select
-                  required
-                  value={item.productName}
-                  onChange={(e) => handleProductChange(idx, "productName", e.target.value)}
-                  className="w-full rounded-xl border border-gray-300 px-2 py-2 text-sm"
-                >
-                  <option value="">Select product</option>
-                  <option>Travel bag</option>
-                  <option>clothes</option>
-                  <option>boots</option>
-                  <option>Asus</option>
-                  <option >Adidas shoes</option>
-                
-                </select>
-              </div> */}
               <div className="md:col-span-5">
                 <label className="block mb-1 text-sm font-medium">
                   Nom du produit
@@ -265,7 +290,7 @@ const UpdateOrder = () => {
                 <input
                   required
                   type="text"
-                   readOnly
+                  readOnly
                   value={item.productName}
                   onChange={(e) =>
                     handleProductChange(idx, "productName", e.target.value)
@@ -282,7 +307,7 @@ const UpdateOrder = () => {
                   required
                   type="number"
                   min="1"
-                   readOnly
+                  readOnly
                   value={item.quantity}
                   onChange={(e) =>
                     handleProductChange(
@@ -301,7 +326,7 @@ const UpdateOrder = () => {
                   type="number"
                   min="0.01"
                   step="0.01"
-                   readOnly
+                  readOnly
                   value={item.price}
                   onChange={(e) =>
                     handleProductChange(
@@ -328,25 +353,22 @@ const UpdateOrder = () => {
                 />
               </div>
 
-              {/* <div className="md:col-span-2 flex justify-center">
+              <div className="md:col-span-2 flex justify-center my-auto">
                 <button
+                  onClick={() => handleViewProduct(item.productId)}
                   type="button"
-                  onClick={() => removeProduct(idx)}
-                  className="w-8 h-8 flex justify-center items-center rounded-full hover:bg-red-100"
+                  className="w-full text-center rounded-lg border border-gray-300 px-2 py-1 text-sm mt-5"
                 >
-                  <FontAwesomeIcon
-                    icon={faTrash}
-                    className="text-red-600 text-sm"
-                  />
+                  Voir Détails
                 </button>
-              </div> */}
+              </div>
             </div>
           ))}
         </section>
 
         {/* Payment & Shipping */}
         <section className="border border-gray-400 rounded-lg p-6 grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <div>
+          {/* <div>
             <label
               htmlFor="paymentMethod"
               className="block mb-1 text-sm font-medium text-gray-600"
@@ -354,7 +376,7 @@ const UpdateOrder = () => {
               Mode de paiement
             </label>
             <select
-              required
+              readOnly
               id="paymentMethod"
               value={orderData.paymentMethod}
               onChange={handleChange}
@@ -365,6 +387,17 @@ const UpdateOrder = () => {
               <option value="paypal">Paypal</option>
               <option value="stripe">Stripe</option>
             </select>
+          </div> */}
+          <div>
+            <label className="block mb-1 text-sm font-medium text-gray-600">
+              Mode de paiement
+            </label>
+            <input
+              type="text"
+              readOnly
+              value={orderData.paymentMethod}
+              className="w-full rounded-lg border border-gray-400 px-3 py-2 text-sm "
+            />
           </div>
           <div>
             <label
@@ -374,19 +407,17 @@ const UpdateOrder = () => {
               Statut du paiement
             </label>
             <select
-              required
               id="paymentStatus"
               value={orderData.paymentStatus}
               onChange={handleChange}
               className="w-full rounded-lg border border-gray-400 px-3 py-2 text-sm"
             >
-              <option value="">Sélectionnez statut du paiement</option>
               <option value="payé">Payé</option>
               <option value="enattente">En-attente</option>
               <option value="échoué">Échoué</option>
             </select>
           </div>
-          <div>
+          {/* <div>
             <label
               htmlFor="shippingMethod"
               className="block mb-1 text-sm font-medium text-gray-600"
@@ -406,46 +437,55 @@ const UpdateOrder = () => {
               <option>Local Pickup</option>
               <option>Express</option>
             </select>
+          </div> */}
+          <div>
+            <label className="block mb-1 text-sm font-medium text-gray-600">
+              Statut de livraison
+            </label>
+            <input
+              type="text"
+              readOnly
+              value={orderData.shippingMethod}
+              className="w-full rounded-lg border border-gray-400 px-3 py-2 text-sm "
+            />
           </div>
 
           <div>
-  <label
-    htmlFor="shippingStatus"
-    className="block mb-1 text-sm font-medium text-gray-600"
-  >
-    Statut de livraison
-  </label>
-  <select
-    required
-    id="shippingStatus"
-    value={orderData.shippingStatus}
-    onChange={handleChange}
-    className="w-full rounded-lg border border-gray-400 px-3 py-2 text-sm"
-  >
-    <option value="">Sélectionnez statut de la livraison</option>
-    <option value="Processing">Processing</option>
-    <option
-      value="expédié"
-      disabled={orderData.paymentStatus !== "payé"}
-    >
-      Expédié
-    </option>
-    <option
-      value="livraison"
-      disabled={orderData.paymentStatus !== "payé"}
-    >
-      Livraison
-    </option>
-  </select>
+            <label
+              htmlFor="shippingStatus"
+              className="block mb-1 text-sm font-medium text-gray-600"
+            >
+              Statut de livraison
+            </label>
+            <select
+              required
+              id="shippingStatus"
+              value={orderData.shippingStatus}
+              onChange={handleChange}
+              className="w-full rounded-lg border border-gray-400 px-3 py-2 text-sm"
+            >
+              <option value="Processing">Processing</option>
+              <option
+                value="expédié"
+                disabled={orderData.paymentStatus !== "payé"}
+              >
+                Expédié
+              </option>
+              <option
+                value="livraison"
+                disabled={orderData.paymentStatus !== "payé"}
+              >
+                Livraison
+              </option>
+            </select>
 
-  {/* 🧩 Optional inline message */}
-  {orderData.paymentStatus !== "payé" && (
-    <p className="text-xs text-gray-500 mt-1">
-      Complete payment before marking as Shipped or Delivered.
-    </p>
-  )}
-</div>
-
+            {/* 🧩 Optional inline message */}
+            {orderData.paymentStatus !== "payé" && (
+              <p className="text-xs text-gray-500 mt-1">
+                Effectuez le paiement avant de marquer comme Expédié ou Livré.
+              </p>
+            )}
+          </div>
 
           {/* <div>
             <label

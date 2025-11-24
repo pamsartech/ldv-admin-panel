@@ -29,6 +29,7 @@ function UpdateProduct() {
   const [selectedColor, setSelectedColor] = useState([]);
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [images, setImages] = useState([]);
+  const [stockError, setStockError] = useState("");
 
   const [productDetails, setProductDetails] = useState({
     productName: "",
@@ -194,8 +195,26 @@ function UpdateProduct() {
     setImages((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const validateStock = (value) => {
+    if (value === "" || value === null) {
+      return "Le stock ne peut pas être vide.";
+    }
+    if (Number(value) < 1) {
+      return "Le stock doit être supérieur à 0.";
+    }
+    return "";
+  };
+
   const handleUpdate = async (e) => {
     e.preventDefault();
+
+    // block submit if stock is invalid
+    const error = validateStock(productDetails.stock);
+    if (error) {
+      setStockError(error);
+      return;
+    }
+
     setBtnLoading(true);
 
     const payload = {
@@ -447,55 +466,6 @@ function UpdateProduct() {
                 </div>
               </div>
 
-              {/* Color Picker */}
-              {/* <div>
-                <h3 className="font-semibold text-gray-800 mb-2">Colours</h3>
-                <div className="flex gap-3 items-center flex-wrap">
-                  {selectedColor.map((color, index) => (
-                    <div
-                      key={index}
-                      className={`w-8 h-8 rounded-full border cursor-pointer transition ${
-                        selectedColor.includes(color)
-                          ? "ring-2 ring-purple-600 scale-110"
-                          : ""
-                      }`}
-                      style={{ backgroundColor: color, cursor: "pointer" }}
-                      onClick={() =>
-                        setSelectedColor(
-                          (prev) =>
-                            prev.includes(color)
-                              ? prev.filter((c) => c !== color) // remove on click
-                              : [...prev, color] // (optional) toggle back on
-                        )
-                      }
-                      title="Click to remove color"
-                    ></div>
-                  ))}
-
-                  <button
-                    type="button"
-                    onClick={() => setShowColorPicker(!showColorPicker)}
-                    className="w-8 h-8 rounded-full border flex items-center justify-center text-gray-600 hover:bg-gray-100"
-                  >
-                    <FontAwesomeIcon icon={faPlus} />
-                  </button>
-                </div>
-
-                {showColorPicker && (
-                  <div className="mt-3">
-                    <SketchPicker
-                      color="#FF0000"
-                      onChangeComplete={(color) =>
-                        setSelectedColor((prev) =>
-                          prev.includes(color.hex)
-                            ? prev // ignore if already added
-                            : [...prev, color.hex]
-                        )
-                      }
-                    />
-                  </div>
-                )}
-              </div> */}
               {/* ✅ Fixed Color Picker Section */}
               <div>
                 <h3 className="font-semibold text-gray-800 mb-2">Couleurs</h3>
@@ -604,13 +574,27 @@ function UpdateProduct() {
                   Produits en stock
                 </h3>
                 <input
-                  required
+                  min="1"
                   type="number"
                   name="stock"
                   value={productDetails.stock}
-                  onChange={handleChange}
-                  className="w-full border rounded-lg border-gray-400 px-3 py-2 bg-gray-50"
+                  // onChange={handleChange}
+                  // className="w-full border rounded-lg border-gray-400 px-3 py-2 bg-gray-50"
+                  onChange={(e) => {
+                    const { value } = e.target;
+
+                    const error = validateStock(value);
+                    setStockError(error);
+
+                    setProductDetails((prev) => ({ ...prev, stock: value }));
+                  }}
+                  className={`w-full border rounded-lg px-3 py-2 bg-gray-50 ${
+                    stockError ? "border-red-500" : "border-gray-400"
+                  }`}
                 />
+                {stockError && (
+                  <p className="text-red-600 text-sm mt-1">{stockError}</p>
+                )}
               </div>
 
               <div>
@@ -622,7 +606,6 @@ function UpdateProduct() {
                   onChange={handleChange}
                   className="w-full bg-gray-50 border border-gray-400 rounded-lg px-3 py-2"
                 >
-                  <option value="">Select Category</option>
                   <option value="vêtements">Vêtements</option>
                   <option value="chaussures">Chaussures</option>
                   <option value="accessoires">Accessoires</option>

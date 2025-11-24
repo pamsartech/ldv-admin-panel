@@ -47,18 +47,18 @@ function Payments() {
         }
       );
 
-      showAlert(res.data.message || "Import completed.", "success");
+      showAlert(res.data.message || "Importation terminée.", "succès");
 
       setImportResult({
         success: true,
-        message: res.data.message || "Payments imported successfully!",
+        message: res.data.message || "Paiements importés avec succès!",
         failedPayments: res.data.failedPayments || [],
       });
     } catch (error) {
       console.error("Import error:", error);
       // ❌ ERROR ALERT
       showAlert(
-        error.response?.data?.message || "Failed to import payments.",
+        error.response?.data?.message || "Importation du paiement a échoué.",
         "error"
       );
 
@@ -66,7 +66,7 @@ function Payments() {
         success: false,
         message:
           error.response?.data?.message ||
-          "Failed to import payments. Please try again.",
+          "Importation du paiement a échoué. Veuillez réessayer.",
         failedPayments: error.response?.data?.failedPayments || [],
       });
     } finally {
@@ -115,11 +115,12 @@ function Payments() {
       document.body.appendChild(link);
       link.click();
       link.remove();
+      showAlert("Paiements exportés avec succès", "succès")
     } catch (error) {
       console.error("❌ Error exporting payments:", error);
       setImportResult({
         success: false,
-        message: "Failed to export payments",
+        message: "Échec de exportation des paiements",
       });
     } finally {
       setExporting(false);
@@ -138,7 +139,7 @@ function Payments() {
           {/* Import */}
           <label className="flex items-center gap-2 border border-gray-400 px-3 py-1.5 rounded-md text-sm text-gray-700 hover:bg-gray-100 transition cursor-pointer">
             <FontAwesomeIcon icon={faDownload} className="text-gray-600" />
-            {importing ? "Importing..." : "Importer"}
+            {importing ? "Importer..." : "Importer"}
             <input
               type="file"
               accept=".xlsx,.xls"
@@ -154,7 +155,7 @@ function Payments() {
             className="flex items-center gap-2 border border-gray-400 px-3 py-1.5 rounded-md text-sm text-gray-700 hover:bg-gray-100 transition cursor-pointer"
           >
             <FontAwesomeIcon icon={faUpload} className="text-gray-600" />
-            {exporting ? "Exporting..." : "Exporter"}
+            {exporting ? "Exporter..." : "Exporter"}
           </button>
 
           {/* Create Payment */}
@@ -191,7 +192,7 @@ function Payments() {
                     </strong>
                   </div>
                   <div className="text-gray-600">
-                    Error: {f.error || "Unknown error"}
+                    Erreur: {f.error || "Unknown error"}
                   </div>
                 </div>
               ))}

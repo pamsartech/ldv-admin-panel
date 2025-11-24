@@ -285,9 +285,18 @@ const CreateOrder = () => {
       if (product.status !== "actif") {
         showAlert(
           `Produit "${product.productName}" est en rupture de stock.`,
-          "erreur"
+          "info"
         );
-        code("");
+        const updated = [...orderItems];
+        updated[index].productCode = "";
+        updated[index].productName = "";
+        updated[index].price = 0;
+        updated[index].availableColors = [];
+        updated[index].availableSizes = [];
+        updated[index].color = "";
+        updated[index].size = "";
+
+        setOrderItems(updated);
         return;
       }
 
@@ -354,6 +363,10 @@ const CreateOrder = () => {
     }
   };
 
+  const clearError = (field) => {
+    setErrors((prev) => ({ ...prev, [field]: "" }));
+  };
+
   const handleColorSelect = (index, selectedColor) => {
     const newItems = [...orderItems];
     newItems[index].color =
@@ -415,7 +428,11 @@ const CreateOrder = () => {
               </label>
               <input
                 value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
+                // onChange={(e) => setCustomerName(e.target.value)}
+                onChange={(e) => {
+                  setCustomerName(e.target.value);
+                  clearError("customerName");
+                }}
                 placeholder="Nom complet"
                 className="w-full rounded-lg border px-3 py-2 text-sm"
               />
@@ -430,12 +447,13 @@ const CreateOrder = () => {
                 // onChange={(e) => setEmail(e.target.value)}
                 onChange={(e) => {
                   setEmail(e.target.value);
+                  clearError("email");
                   setUserChecked(false);
                   setUserExists(false);
                 }}
                 // onBlur={() => fetchUserByEmail(email)}
                 onBlur={(e) => fetchUserByEmail(e.target.value)}
-                type="email"
+                // type="email"
                 placeholder="Saisissez l'adresse e-mail pour obtenir les détails du client"
                 className="w-full rounded-lg border px-3 py-2 text-sm"
               />
@@ -449,7 +467,11 @@ const CreateOrder = () => {
               </label>
               <input
                 value={phoneNumber}
-                onChange={(e) => setphoneNumber(e.target.value)}
+                // onChange={(e) => setphoneNumber(e.target.value)}
+                onChange={(e) => {
+                  setphoneNumber(e.target.value);
+                  clearError("phoneNumber");
+                }}
                 type="number"
                 placeholder="+122 2313 3212"
                 className="w-full rounded-lg border px-3 py-2 text-sm"
@@ -464,7 +486,11 @@ const CreateOrder = () => {
               </label>
               <input
                 value={address}
-                onChange={(e) => setAddress(e.target.value)}
+                // onChange={(e) => setAddress(e.target.value)}
+                onChange={(e) => {
+                  setAddress(e.target.value);
+                  clearError("address");
+                }}
                 placeholder="123, ville principale, état"
                 className="w-full rounded-lg border px-3 py-2 text-sm"
               />
@@ -505,6 +531,7 @@ const CreateOrder = () => {
                     const newItems = [...orderItems];
                     newItems[idx].productCode = e.target.value;
                     setOrderItems(newItems);
+                    clearError(`product_${idx}`);
                   }}
                   onBlur={() => fetchProductByCode(idx, item.productCode)}
                   placeholder="Saisissez le code produit"
@@ -727,7 +754,9 @@ const CreateOrder = () => {
             </label>
             <select
               value={paymentMethod}
-              onChange={(e) => setPaymentMethod(e.target.value)}
+              onChange={(e) =>{ setPaymentMethod(e.target.value);
+                clearError("paymentMethod");
+              }}
               className="w-full rounded-lg border px-3 py-2 text-sm"
             >
               <option value="">Sélectionnez mode de paiement</option>
@@ -744,7 +773,9 @@ const CreateOrder = () => {
             </label>
             <select
               value={paymentStatus}
-              onChange={(e) => setPaymentStatus(e.target.value)}
+              onChange={(e) =>{ setPaymentStatus(e.target.value);
+                clearError("paymentStatus");
+              }}
               className="w-full rounded-lg border px-3 py-2 text-sm"
             >
               <option value="">Sélectionnez statut du paiement</option>
@@ -766,7 +797,9 @@ const CreateOrder = () => {
             </label>
             <select
               value={shippingMethod}
-              onChange={(e) => setShippingMethod(e.target.value)}
+              onChange={(e) =>{ setShippingMethod(e.target.value)
+                clearError("shippingMethod");
+              }}
               className="w-full rounded-lg border px-3 py-2 text-sm"
             >
               <option value="">Sélectionnez mode de livraison</option>
@@ -786,7 +819,9 @@ const CreateOrder = () => {
 
             <select
               value={shippingStatus}
-              onChange={(e) => setShippingStatus(e.target.value)}
+              onChange={(e) =>{ setShippingStatus(e.target.value);
+                clearError("shippingStatus");
+              }}
               className="w-full rounded-lg border px-3 py-2 text-sm"
             >
               <option value="">Sélectionnez statut de la livraison</option>

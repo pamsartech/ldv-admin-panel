@@ -95,7 +95,7 @@ export default function CreatePayment() {
     setLoading(true);
 
     if (!orderID || !amount || !paymentMethod || !date) {
-      showAlert("Veuillez remplir tous les champs obligatoires.", "erreur");
+      showAlert("Veuillez remplir tous les champs obligatoires.", "info");
       setLoading(false);
       return;
     }
@@ -166,6 +166,7 @@ export default function CreatePayment() {
 
       {/* Form */}
       <form
+      noValidate
         onSubmit={handleSubmit}
         className="p-6 max-w-4xl mx-5 mt-6 border border-gray-300 rounded-2xl space-y-6 bg-white shadow-sm"
       >

@@ -257,7 +257,7 @@ export default function ViewOrder() {
 
                 <div className="flex justify-between">
                   <span>Montant de la commande</span>
-                  <span>€{order.orderTotal}</span>
+                  <span>€ {order.orderTotal.toFixed(2) }</span>
                 </div>
 
                 <div className="flex justify-between items-center">
@@ -340,10 +340,10 @@ export default function ViewOrder() {
                         <div className="font-medium">{item.productName}</div>
                         <div className="text-xs font-medium">
                           {" "}
-                          Qty: {item.quantity} x €{item.price}{" "}
+                          Qty: {item.quantity} x € {item.price.toFixed(2) }{" "}
                         </div>
                       </div>
-                      <div className="text-sm">€{item.price}</div>
+                      <div className="text-sm">€ {item.price.toFixed(2) }</div>
                     </div>
                   ))}
                 </div>
@@ -352,11 +352,12 @@ export default function ViewOrder() {
                   <div className="flex justify-between mb-1">
                     <span>Sous Total :</span>
                     <span>
-                      €
+                      € 
+                      
                       {order.orderItems.reduce(
                         (acc, item) => acc + item.total,
                         0
-                      )}
+                      ).toFixed(2) }
                     </span>
                   </div>
                   <div className="flex justify-between mb-1">
@@ -365,7 +366,7 @@ export default function ViewOrder() {
                   </div>
                   <div className="flex justify-between font-semibold">
                     <span>Total :</span>
-                    <span>€{order.orderTotal}</span>
+                    <span>€ {order.orderTotal.toFixed(2) }</span>
                   </div>
                 </div>
               </div>

@@ -33,7 +33,7 @@ const Login = () => {
       console.error("Login failed:", err);
       setError(
         err.response?.data?.message ||
-          "Invalid credentials or server error. Please try again."
+          "Identifiants invalides ou Erreur serveur. Veuillez réessayer."
       );
     } finally {
       setLoading(false);

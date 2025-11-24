@@ -45,6 +45,25 @@ export default function TiktokLiveTable() {
 
   const itemsPerPage = 10;
 
+  const formatDateWithAMPM = (date) => {
+  if (!date) return "N/A";
+
+  const d = new Date(date);
+
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const year = d.getFullYear();
+
+  const hours24 = String(d.getHours()).padStart(2, "0");
+  const minutes = String(d.getMinutes()).padStart(2, "0");
+  const seconds = String(d.getSeconds()).padStart(2, "0");
+
+  const ampm = d.getHours() >= 12 ? "PM" : "AM";
+
+  return `${day}/${month}/${year}, ${hours24}:${minutes}:${seconds} ${ampm}`;
+};
+
+
   // ---- Fetch live events ----
   useEffect(() => {
     const fetchData = async () => {
@@ -61,10 +80,10 @@ export default function TiktokLiveTable() {
           name: item.eventDetails?.eventName || "N/A",
           sessionID: item.eventDetails?.sessionID || "N/A",
           start: item.eventDetails?.startDateTime
-            ? new Date(item.eventDetails.startDateTime).toLocaleString()
+            ? formatDateWithAMPM(item.eventDetails.startDateTime)
             : "N/A",
           end: item.eventDetails?.endDateTime
-            ? new Date(item.eventDetails.endDateTime).toLocaleString()
+            ? formatDateWithAMPM(item.eventDetails.endDateTime)
             : "N/A",
           status: item.eventDetails?.status
             ? item.eventDetails.status.charAt(0).toUpperCase() +
@@ -109,12 +128,11 @@ export default function TiktokLiveTable() {
   //   sortAsc ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name)
   // );
   // ---- Sort by Date (start date) ----
-const sortedData = [...filteredData].sort((a, b) => {
-  const dateA = new Date(a.start);
-  const dateB = new Date(b.start);
-  return sortAsc ? dateA - dateB : dateB - dateA;
-});
-
+  const sortedData = [...filteredData].sort((a, b) => {
+    const dateA = new Date(a.start);
+    const dateB = new Date(b.start);
+    return sortAsc ? dateA - dateB : dateB - dateA;
+  });
 
   const totalPages = Math.ceil(sortedData.length / itemsPerPage);
   const indexOfLast = currentPage * itemsPerPage;
@@ -147,12 +165,9 @@ const sortedData = [...filteredData].sort((a, b) => {
     try {
       setDeleting(true);
       // Example API endpoint – replace with your actual delete API
-      await axios.post(
-        "https://dev-api.payonlive.com/api/event/bulk-delete",
-        {
+      await axios.post("https://dev-api.payonlive.com/api/event/bulk-delete", {
         event_ids: selectedRows,
-        }
-      );
+      });
 
       setLiveData((prev) =>
         prev.filter((item) => !selectedRows.includes(item.id))
@@ -169,7 +184,9 @@ const sortedData = [...filteredData].sort((a, b) => {
     }
   };
 
-   const handleFilterSelect = (status) => {
+  
+
+  const handleFilterSelect = (status) => {
     setSelectedStatus(status);
     setShowFilter(false);
     setCurrentPage(1);
@@ -255,19 +272,23 @@ const sortedData = [...filteredData].sort((a, b) => {
 
           {showFilter && (
             <div className="absolute right-0 top-12 w-48 bg-white border rounded-md shadow-md p-2 z-50">
-              {["All", "Actif", "Inactif", "Aur-point-d'arriver", "Suspendu"].map(
-                (status) => (
-                  <button
-                    key={status}
-                    onClick={() => handleFilterSelect(status)}
-                    className={`block w-full text-left px-3 py-2 text-sm rounded hover:bg-gray-100 ${
-                      selectedStatus === status ? "font-medium text-black" : ""
-                    }`}
-                  >
-                    {status}
-                  </button>
-                )
-              )}
+              {[
+                "All",
+                "Actif",
+                "Inactif",
+                "Aur-point-d'arriver",
+                "Suspendu",
+              ].map((status) => (
+                <button
+                  key={status}
+                  onClick={() => handleFilterSelect(status)}
+                  className={`block w-full text-left px-3 py-2 text-sm rounded hover:bg-gray-100 ${
+                    selectedStatus === status ? "font-medium text-black" : ""
+                  }`}
+                >
+                  {status}
+                </button>
+              ))}
             </div>
           )}
 
@@ -280,16 +301,15 @@ const sortedData = [...filteredData].sort((a, b) => {
           </button> */}
 
           <button
-  onClick={() => setSortAsc(!sortAsc)}
-  className="flex items-center gap-2 border border-gray-400 px-3 py-1.5 rounded-md text-sm text-gray-900 hover:bg-gray-100 transition"
->
-  <img src="/icons/flowbite_sort-outline.svg" alt="icon" />
-  Trier par date
-  {/* {sortAsc ? "Oldest → Newest" : "Newest → Oldest"} */}
-</button>
+            onClick={() => setSortAsc(!sortAsc)}
+            className="flex items-center gap-2 border border-gray-400 px-3 py-1.5 rounded-md text-sm text-gray-900 hover:bg-gray-100 transition"
+          >
+            <img src="/icons/flowbite_sort-outline.svg" alt="icon" />
+            Trier par date
+            {/* {sortAsc ? "Oldest → Newest" : "Newest → Oldest"} */}
+          </button>
 
-
-           {/* Bulk Delete button */}
+          {/* Bulk Delete button */}
           <button
             onClick={handleBulkDelete}
             disabled={selectedRows.length === 0 || deleting}
@@ -332,9 +352,9 @@ const sortedData = [...filteredData].sort((a, b) => {
       {/* Table */}
       <div className="p-6">
         <div className="overflow-x-auto rounded-lg">
-          <table className="min-w-full text-sm">
+          <table className="min-w-full text-sm text-center">
             <thead className="border-b">
-              <tr className="text-left">
+              <tr className="text-center">
                 <th className="p-3">
                   <input
                     type="checkbox"
@@ -439,7 +459,8 @@ const sortedData = [...filteredData].sort((a, b) => {
         <DialogContent>
           <DialogContentText>
             Êtes-vous sûr de vouloir supprimer{" "}
-            <strong>{selectedRows.length}</strong> événement sélectionné(s)? Cette action est irréversible.
+            <strong>{selectedRows.length}</strong> événement sélectionné(s)?
+            Cette action est irréversible.
           </DialogContentText>
         </DialogContent>
         <DialogActions>

@@ -12,8 +12,8 @@ import {
 import axios from "axios";
 import { useAlert } from "../../Components/AlertContext";
 
-// MUI 
-import { Skeleton } from "@mui/material"; 
+// MUI
+import { Skeleton } from "@mui/material";
 import Stack from "@mui/material/Stack";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
@@ -21,7 +21,6 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import Button from "@mui/material/Button";
-
 
 function ViewPayment() {
   const navigate = useNavigate();
@@ -62,7 +61,6 @@ function ViewPayment() {
 
   // ✅ Delete Payment Function
   const handleDelete = async () => {
-
     try {
       setIsDeleting(true);
       const response = await axios.post(
@@ -73,12 +71,11 @@ function ViewPayment() {
       );
       // console.log('rsponse', response)
 
-
       if (response.data.message) {
         showAlert("Payment deleted successfully!", "success");
         navigate("/user/Payments");
       } else {
-      showAlert(response.data.message || "Failed to delete product", "error");
+        showAlert(response.data.message || "Failed to delete product", "error");
       }
     } catch (error) {
       showAlert(`Error: ${error.response?.data?.message || error.message}`);
@@ -86,6 +83,24 @@ function ViewPayment() {
       setIsDeleting(false);
       setOpenConfirm(false); // close confirmation dialog
     }
+  };
+
+  const formatDateWithAMPM = (date) => {
+    if (!date) return "N/A";
+
+    const d = new Date(date);
+
+    const day = String(d.getDate()).padStart(2, "0");
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const year = d.getFullYear();
+
+    const hours24 = String(d.getHours()).padStart(2, "0");
+    const minutes = String(d.getMinutes()).padStart(2, "0");
+    const seconds = String(d.getSeconds()).padStart(2, "0");
+
+    const ampm = d.getHours() >= 12 ? "PM" : "AM";
+
+    return `${day}/${month}/${year}, ${hours24}:${minutes}:${seconds} ${ampm}`;
   };
 
   // ✅ Render Skeleton UI when loading
@@ -155,7 +170,9 @@ function ViewPayment() {
   // Error handling
   if (error) return <p className="text-center mt-10 text-red-600">{error}</p>;
   if (!paymentData)
-    return <p className="text-center mt-10">Aucune donnée de paiement trouvée</p>;
+    return (
+      <p className="text-center mt-10">Aucune donnée de paiement trouvée</p>
+    );
 
   // ✅ Destructure all fields directly from API response
   const {
@@ -179,7 +196,9 @@ function ViewPayment() {
 
       {/* Top Buttons */}
       <div className="flex justify-between mt-5 mx-10">
-        <h1 className="font-medium text-lg">Détails du paiement et de la commande</h1>
+        <h1 className="font-medium text-lg">
+          Détails du paiement et de la commande
+        </h1>
         <div>
           <button
             onClick={() => setOpenConfirm(true)}
@@ -224,7 +243,8 @@ function ViewPayment() {
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="confirm-delete-description">
-            Êtes-vous sûr de vouloir supprimer définitivement ce paiement?  Cette action est irréversible.
+            Êtes-vous sûr de vouloir supprimer définitivement ce paiement? Cette
+            action est irréversible.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -309,7 +329,10 @@ function ViewPayment() {
                     type="button"
                     className="px-3 py-1 text-white rounded-full bg-red-700 hover:bg-red-600"
                   >
-                    <FontAwesomeIcon icon={faUndoAlt} className="h-3 w-3 pr-2" />
+                    <FontAwesomeIcon
+                      icon={faUndoAlt}
+                      className="h-3 w-3 pr-2"
+                    />
                     Remboursement
                   </button>
 
@@ -344,7 +367,7 @@ function ViewPayment() {
               <div className="grid grid-cols-2 py-2">
                 <span className="font-medium text-gray-700">Date et Temps</span>
                 <span className="text-gray-900 text-right">
-                  {new Date(createdAt).toLocaleString()}
+                  {formatDateWithAMPM(createdAt)}
                 </span>
               </div>
               <div className="grid grid-cols-2">
@@ -355,7 +378,9 @@ function ViewPayment() {
               </div>
               <div className="grid grid-cols-2">
                 <span className="font-medium text-gray-700">Montant</span>
-                <span className="text-gray-900 text-right">€ {orderTotal.toFixed(2)}</span>
+                <span className="text-gray-900 text-right">
+                  € {orderTotal.toFixed(2)}
+                </span>
               </div>
             </div>
 
@@ -387,7 +412,9 @@ function ViewPayment() {
                   </div>
                 ))
               ) : (
-                <p className="text-gray-500 text-sm">Aucun article de commande trouvé.</p>
+                <p className="text-gray-500 text-sm">
+                  Aucun article de commande trouvé.
+                </p>
               )}
             </div>
           </div>

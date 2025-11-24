@@ -214,6 +214,25 @@ export default function PaymentDataTable({ onSelectionChange }) {
     }
   };
 
+  const formatDateWithAMPM = (date) => {
+  if (!date) return "";
+
+  const d = new Date(date);
+
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const year = d.getFullYear();
+
+  const hours24 = String(d.getHours()).padStart(2, "0");
+  const minutes = String(d.getMinutes()).padStart(2, "0");
+  const seconds = String(d.getSeconds()).padStart(2, "0");
+
+  const ampm = d.getHours() >= 12 ? "PM" : "AM";
+
+  return `${day}/${month}/${year}, ${hours24}:${minutes}:${seconds} ${ampm}`;
+};
+
+
   // ---- Skeleton Rows ----
   const skeletonRows = Array.from({ length: paymentsPerPage }).map((_, idx) => (
     <tr key={idx} className="border-b">
@@ -344,8 +363,8 @@ export default function PaymentDataTable({ onSelectionChange }) {
 
       {/* Table */}
       <div className="overflow-x-auto rounded-lg bg-white shadow">
-        <table className="min-w-full text-sm">
-          <thead className="border-b text-left bg-gray-50">
+        <table className="min-w-full text-sm text-center">
+          <thead className="border-b text-center bg-gray-50">
             <tr>
               <th className="p-3">
                 <input
@@ -387,7 +406,7 @@ export default function PaymentDataTable({ onSelectionChange }) {
                   <td className="p-3">{p.transactionId}</td>
                   <td className="p-3">{p.orderId}</td>
                   <td className="p-3">{p.email}</td>
-                  <td className="p-3">{p.date.toLocaleString()}</td>
+                  <td className="p-3">{formatDateWithAMPM(p.date)}</td>
                   <td className="p-3">{p.method}</td>
                   <td className="p-3">
                     <span
